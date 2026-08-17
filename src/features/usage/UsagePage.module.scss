@@ -1,0 +1,440 @@
+@use '../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  min-width: 0;
+}
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+.header h1 {
+  margin: 4px 0 6px;
+  font-size: clamp(26px, 4vw, 38px);
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+}
+.header p {
+  margin: 0;
+  color: var(--text-secondary);
+  max-width: 720px;
+}
+.eyebrow {
+  color: var(--success-color);
+  font: 700 11px/1 $font-mono;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+.metric,
+.panel {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+.metric {
+  min-height: 108px;
+  padding: 17px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  position: relative;
+}
+.metric::after {
+  content: '';
+  position: absolute;
+  inset: auto -20px -40px auto;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: var(--primary-8);
+}
+.metric span {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+.metric strong {
+  color: var(--text-primary);
+  font: 700 clamp(22px, 3vw, 31px)/1 $font-mono;
+  letter-spacing: -0.04em;
+  z-index: 1;
+}
+.metric.cost strong {
+  color: var(--success-color);
+}
+.metric.success::after {
+  background: color-mix(in srgb, var(--success-color) 13%, transparent);
+}
+.metric.warning strong {
+  color: var(--warning-color);
+}
+.gridTwo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.panel {
+  padding: 18px;
+  min-width: 0;
+}
+.panelHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.panelHeader h2,
+.storagePanel h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+.panelHeader span {
+  color: var(--text-tertiary);
+  font: 11px/1.4 $font-mono;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.trend {
+  height: 220px;
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  overflow-x: auto;
+  padding-top: 12px;
+}
+.trendColumn {
+  flex: 1 0 18px;
+  min-width: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.trendValue {
+  height: 14px;
+  color: var(--text-tertiary);
+  font: 9px/1 $font-mono;
+  white-space: nowrap;
+}
+.trendTrack {
+  flex: 1;
+  width: min(70%, 18px);
+  display: flex;
+  align-items: flex-end;
+  border-radius: 6px;
+  background: var(--bg-tertiary);
+  overflow: hidden;
+}
+.trendBar {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(
+    180deg,
+    var(--success-color),
+    color-mix(in srgb, var(--success-color) 45%, var(--primary-color))
+  );
+  transition: height 0.25s var(--ease-out-strong);
+}
+.trendColumn > span {
+  color: var(--text-tertiary);
+  font: 9px/1 $font-mono;
+  white-space: nowrap;
+}
+.tokenGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.tokenItem {
+  padding: 13px;
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.tokenItem span {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.tokenItem strong {
+  color: var(--text-primary);
+  font: 650 15px/1 $font-mono;
+}
+.storageMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-tertiary);
+  font: 10px/1.4 $font-mono;
+}
+.ranking {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.rankRow {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 6px;
+  border-bottom: 1px solid var(--border-color);
+}
+.rankRow:last-child {
+  border-bottom: 0;
+}
+.rankIndex {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  font: 11px/1 $font-mono;
+}
+.rankRow div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.rankRow strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+  font-size: 12.5px;
+}
+.rankRow small {
+  color: var(--text-tertiary);
+  font: 10px/1.3 $font-mono;
+}
+.rankRow b {
+  color: var(--success-color);
+  font: 650 12px/1 $font-mono;
+}
+.tableWrap {
+  width: 100%;
+  overflow-x: auto;
+}
+.pricingTableWrap {
+  max-height: 560px;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+.pricingTableWrap th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-primary);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 850px;
+}
+th {
+  color: var(--text-tertiary);
+  font: 600 10px/1.3 $font-mono;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--border-primary);
+}
+td {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+tbody tr:hover {
+  background: var(--primary-8);
+}
+td strong {
+  display: block;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+td small {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-tertiary);
+  font: 9.5px/1.2 $font-mono;
+}
+.success,
+.failed {
+  display: inline-flex;
+  min-width: 40px;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 4px 7px;
+  font: 650 10px/1 $font-mono;
+}
+.success {
+  color: var(--success-badge-text);
+  background: var(--success-badge-bg);
+  border: 1px solid var(--success-badge-border);
+}
+.failed {
+  color: var(--failure-badge-text);
+  background: var(--failure-badge-bg);
+  border: 1px solid var(--failure-badge-border);
+}
+.muted,
+.empty {
+  color: var(--text-tertiary);
+}
+.empty {
+  text-align: center;
+  padding: 28px !important;
+}
+.pricingToolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.pricingToolbar input,
+.priceForm input {
+  width: 100%;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  padding: 9px 11px;
+  outline: none;
+}
+.pricingToolbar input:focus,
+.priceForm input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-10);
+}
+.rowActions {
+  white-space: nowrap;
+}
+.rowActions button {
+  border: 0;
+  background: none;
+  color: var(--primary-active);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 4px 6px;
+}
+.priceForm {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+.priceForm label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+.storagePanel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.storagePanel p {
+  margin: 5px 0 0;
+  color: var(--text-tertiary);
+  font: 10px/1.5 $font-mono;
+  overflow-wrap: anywhere;
+}
+.errorBanner {
+  color: var(--warning-text);
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.loading {
+  min-height: 300px;
+  display: grid;
+  place-items: center;
+}
+
+@media (max-width: 1180px) {
+  .metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .priceForm {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 800px) {
+  .header,
+  .storagePanel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .gridTwo {
+    grid-template-columns: 1fr;
+  }
+  .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .headerActions > * {
+    flex: 1;
+  }
+  .priceForm {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 520px) {
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+  .tokenGrid,
+  .priceForm {
+    grid-template-columns: 1fr;
+  }
+  .panel {
+    padding: 14px;
+  }
+  .storageMeta {
+    flex-direction: column;
+  }
+}
