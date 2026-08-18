@@ -55,6 +55,18 @@ const detailAccount = (detail: UsageRequestDetail) =>
   detail.source ||
   (detail.auth_index ? `${detail.provider}:${detail.auth_index}` : detail.provider);
 
+const hasUnreportedCodexCacheWrite = (detail: UsageRequestDetail) => {
+  const model = (detail.alias || detail.billing?.pricing?.matched_model || '').toLowerCase();
+  return (
+    detail.billing?.reason === 'cache_write_tokens_unreported' ||
+    (detail.provider.toLowerCase() === 'codex' &&
+      detail.auth_type.toLowerCase() === 'oauth' &&
+      model.startsWith('gpt-5.6') &&
+      detail.tokens.input_tokens + detail.tokens.cache_read_tokens > 0 &&
+      detail.tokens.cache_write_tokens === 0)
+  );
+};
+
 export function UsagePage() {
   const { t } = useTranslation();
   const { showNotification, showConfirmation } = useNotificationStore();
@@ -113,6 +125,11 @@ export function UsagePage() {
   const storage = response?.storage;
   const details = useMemo(() => flattenUsageDetails(usage), [usage]);
   const recentDetails = details.slice(0, 30);
+  const cacheWriteUnreported = useMemo(() => details.some(hasUnreportedCodexCacheWrite), [details]);
+  const hasEstimatedCost = useMemo(
+    () => cacheWriteUnreported || details.some((detail) => detail.billing?.pricing?.estimated),
+    [cacheWriteUnreported, details]
+  );
   const accounts = useMemo(() => sortedDimensions(usage?.accounts).slice(0, 12), [usage]);
   const models = useMemo(() => sortedDimensions(usage?.models).slice(0, 12), [usage]);
   const trend = useMemo(() => buildUsageTrend(details, range), [details, range]);
@@ -260,11 +277,14 @@ export function UsagePage() {
       </header>
 
       {storage?.last_error ? <div className={styles.errorBanner}>{storage.last_error}</div> : null}
+      {cacheWriteUnreported ? (
+        <div className={styles.warningBanner}>{t('usage_stats.cache_write_unreported')}</div>
+      ) : null}
 
       <section className={styles.metrics} aria-busy={loading}>
         <MetricCard
           label={t('usage_stats.total_cost')}
-          value={formatUSD(usage?.total_cost_usd ?? 0)}
+          value={`${hasEstimatedCost ? '≈ ' : ''}${formatUSD(usage?.total_cost_usd ?? 0)}`}
           accent="cost"
         />
         <MetricCard
@@ -407,7 +427,12 @@ export function UsagePage() {
                         <td>{formatTokens(detail.tokens.total_tokens)}</td>
                         <td>
                           {detail.billing?.priced ? (
-                            formatUSD(detail.cost_usd ?? detail.billing.total_usd)
+                            `${
+                              detail.billing.pricing?.estimated ||
+                              hasUnreportedCodexCacheWrite(detail)
+                                ? '≈ '
+                                : ''
+                            }${formatUSD(detail.cost_usd ?? detail.billing.total_usd)}`
                           ) : (
                             <span className={styles.muted}>{detail.billing?.reason || '—'}</span>
                           )}
