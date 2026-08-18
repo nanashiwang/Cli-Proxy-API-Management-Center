@@ -2,6 +2,8 @@ import { apiClient } from './client';
 import type {
   ModelPricingStatus,
   ModelPricingSummary,
+  UsageAccountRangeInput,
+  UsageAccountRangesResponse,
   UsageAccountSummaryResponse,
   UsageResponse,
 } from '@/types/usage';
@@ -30,6 +32,14 @@ export const usageApi = {
       params: { ...(from ? { from } : {}), ...(to ? { to } : {}) },
       timeout: 60_000,
     }),
+  getAccountUsageRanges: (ranges: UsageAccountRangeInput[]) =>
+    apiClient.post<UsageAccountRangesResponse>(
+      '/usage/accounts/ranges',
+      { ranges },
+      {
+        timeout: 60_000,
+      }
+    ),
   exportUsage: () => apiClient.get<Record<string, unknown>>('/usage/export', { timeout: 60_000 }),
   importUsage: (payload: unknown) =>
     apiClient.post<Record<string, unknown>>('/usage/import', payload, { timeout: 60_000 }),

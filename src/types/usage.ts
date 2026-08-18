@@ -133,6 +133,27 @@ export interface UsageAccountSummaryResponse {
   storage: UsageStorageStatus;
 }
 
+export interface UsageAccountRangeInput {
+  key: string;
+  auth_index: string;
+  from: string;
+  to: string;
+}
+
+export interface UsageAccountRangeSummary extends UsageDimensionSnapshot {
+  key: string;
+  auth_index: string;
+  from: string;
+  to: string;
+  estimated: boolean;
+  cache_write_unreported: boolean;
+}
+
+export interface UsageAccountRangesResponse {
+  ranges: UsageAccountRangeSummary[];
+  storage: UsageStorageStatus;
+}
+
 export interface ModelPricingStatus {
   enabled: boolean;
   source_url: string;

@@ -20,8 +20,8 @@ import { useInterval } from '@/hooks/useInterval';
 import { useNow } from '@/hooks/useNow';
 import { useRevealGroup } from '@/hooks/motion';
 import { useAuthStore, useQuotaStore, useThemeStore } from '@/stores';
-import type { AuthFileItem, ResolvedTheme } from '@/types';
-import type { UsageAccountSummaryResponse } from '@/types/usage';
+import type { AuthFileItem, CodexQuotaState, ResolvedTheme } from '@/types';
+import type { UsageAccountRangesResponse, UsageAccountSummaryResponse } from '@/types/usage';
 import { ProviderTabs } from '@/features/authFiles/components/ProviderTabs';
 import { QuotaHeader } from './components/QuotaHeader';
 import { QuotaCard } from './components/QuotaCard';
@@ -48,7 +48,13 @@ import type { QuotaProviderType } from './providers/types';
 import { useQuotaActions } from './hooks/useQuotaActions';
 import { useQuotaBatchLoader } from './hooks/useQuotaBatchLoader';
 import { readQuotaUiState, writeQuotaUiState } from './uiState';
-import { buildAccountUsageByAuthIndex, resolveQuotaUsageCost } from './usageCost';
+import {
+  buildAccountRangeUsageByKey,
+  buildAccountUsageByAuthIndex,
+  resolveCodexWeeklyUsageBasis,
+  resolveQuotaUsageCost,
+  type WeeklyUsageBasis,
+} from './usageCost';
 import styles from './QuotaPage.module.scss';
 
 const TAB_IDS: string[] = ['all', ...QUOTA_TAB_ORDER];
@@ -61,6 +67,7 @@ const ACCOUNT_USAGE_REFRESH_MS = 60 * 1000;
  * 提到模块级是为了引用稳定 —— 它进了泳道 memo 的依赖数组。
  */
 const displayNameFor = (name: string) => name;
+const quotaEntryKey = (entry: QuotaFileEntry) => `${entry.type}:${entry.file.name}`;
 
 export function QuotaPage() {
   const { t } = useTranslation();
@@ -69,6 +76,12 @@ export function QuotaPage() {
 
   const [files, setFiles] = useState<AuthFileItem[]>([]);
   const [accountUsage, setAccountUsage] = useState<UsageAccountSummaryResponse | null>(null);
+  const [accountRangeUsage, setAccountRangeUsage] = useState<UsageAccountRangesResponse | null>(
+    null
+  );
+  const [accountRangeStatus, setAccountRangeStatus] = useState<
+    'idle' | 'loading' | 'ready' | 'error'
+  >('idle');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tab, setTab] = useState<QuotaTabId>(() => readQuotaUiState()?.tab ?? 'all');
@@ -134,11 +147,6 @@ export function QuotaPage() {
     () => buildAccountUsageByAuthIndex(accountUsage?.accounts ?? []),
     [accountUsage]
   );
-  const getUsageCost = useCallback(
-    (entry: QuotaFileEntry) =>
-      resolveQuotaUsageCost(entry.file, usageByAuthIndex, accountUsage?.storage.enabled === true),
-    [accountUsage?.storage.enabled, usageByAuthIndex]
-  );
 
   /* ---------- 额度缓存 ----------
    * 排在归类/排序之前：「最快恢复优先」要读它算排序键。 */
@@ -174,6 +182,84 @@ export function QuotaPage() {
   const sortNow = sortMode === 'default' ? 0 : tick;
 
   const entries = useMemo(() => classifyQuotaFiles(files), [files]);
+  const weeklyBasisByEntryKey = useMemo(() => {
+    const result = new Map<string, WeeklyUsageBasis>();
+    entries.forEach((entry) => {
+      if (entry.type !== 'codex') return;
+      const basis = resolveCodexWeeklyUsageBasis(
+        entry.file,
+        codexQuota[entry.file.name] as CodexQuotaState | undefined
+      );
+      if (basis) result.set(quotaEntryKey(entry), basis);
+    });
+    return result;
+  }, [codexQuota, entries]);
+  const weeklyBasisList = useMemo(
+    () => Array.from(weeklyBasisByEntryKey.values()),
+    [weeklyBasisByEntryKey]
+  );
+
+  useEffect(() => {
+    if (disableControls || accountUsage?.storage.enabled !== true || weeklyBasisList.length === 0) {
+      setAccountRangeUsage(null);
+      setAccountRangeStatus('idle');
+      return;
+    }
+
+    let active = true;
+    const nowMs = Date.now();
+    setAccountRangeStatus('loading');
+    void usageApi
+      .getAccountUsageRanges(
+        weeklyBasisList.map((basis) => ({
+          key: basis.key,
+          auth_index: basis.authIndex,
+          from: new Date(basis.fromMs).toISOString(),
+          to: new Date(Math.min(nowMs, basis.resetAtMs)).toISOString(),
+        }))
+      )
+      .then((response) => {
+        if (!active) return;
+        setAccountRangeUsage(response);
+        setAccountRangeStatus('ready');
+      })
+      .catch(() => {
+        if (!active) return;
+        setAccountRangeUsage(null);
+        setAccountRangeStatus('error');
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [accountUsage, disableControls, weeklyBasisList]);
+
+  const rangeUsageByKey = useMemo(
+    () => buildAccountRangeUsageByKey(accountRangeUsage?.ranges ?? []),
+    [accountRangeUsage]
+  );
+  const getUsageCost = useCallback(
+    (entry: QuotaFileEntry) => {
+      const weeklyBasis = weeklyBasisByEntryKey.get(quotaEntryKey(entry));
+      return resolveQuotaUsageCost(
+        entry.file,
+        usageByAuthIndex,
+        accountUsage?.storage.enabled === true,
+        weeklyBasis,
+        weeklyBasis ? rangeUsageByKey.get(weeklyBasis.key) : undefined,
+        accountUsage?.storage,
+        accountRangeStatus
+      );
+    },
+    [
+      accountRangeStatus,
+      accountUsage?.storage,
+      rangeUsageByKey,
+      usageByAuthIndex,
+      weeklyBasisByEntryKey,
+    ]
+  );
+
   const tabCounts = useMemo(() => buildTabCounts(entries), [entries]);
   const filteredEntries = useMemo(() => filterEntriesByTab(entries, tab), [entries, tab]);
 

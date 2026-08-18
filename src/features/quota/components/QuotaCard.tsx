@@ -81,12 +81,45 @@ export function QuotaCard(props: QuotaCardProps) {
     Boolean(adapter.canResetQuota?.(quota));
   const usageCostHint = usageCost
     ? [
+        t('quota_management.cost_requests', { count: usageCost.totalRequests }),
         usageCost.estimated ? t('quota_management.estimated_cost_hint') : '',
         usageCost.cacheWriteUnreported ? t('quota_management.cache_write_unreported_hint') : '',
       ]
         .filter(Boolean)
         .join(' · ')
     : '';
+  const weekly = usageCost?.weekly;
+  const weeklyValue = weekly
+    ? weekly.status === 'ready' && weekly.totalUsd !== undefined
+      ? `≈ ${formatUSD(weekly.totalUsd)}`
+      : t(`quota_management.weekly_estimate_${weekly.status}`)
+    : '';
+  const weeklyConfidence = weekly?.confidence
+    ? t(`quota_management.confidence_${weekly.confidence}`)
+    : '';
+  const weeklyMeta =
+    weekly && weekly.status === 'ready' && weeklyConfidence
+      ? t('quota_management.weekly_usage_confidence', {
+          percent: Math.round(weekly.usedPercent),
+          confidence: weeklyConfidence,
+        })
+      : '';
+  const weeklyHint =
+    weekly && weekly.status === 'ready' && weekly.windowCostUsd !== undefined
+      ? [
+          t('quota_management.weekly_estimate_hint', {
+            cost: formatUSD(weekly.windowCostUsd),
+            percent: Math.round(weekly.usedPercent),
+          }),
+          weekly.coverageComplete === false
+            ? t('quota_management.weekly_partial_coverage_hint')
+            : '',
+          weekly.estimated ? t('quota_management.estimated_cost_hint') : '',
+          weekly.cacheWriteUnreported ? t('quota_management.cache_write_unreported_hint') : '',
+        ]
+          .filter(Boolean)
+          .join(' · ')
+      : '';
 
   return (
     <article
@@ -146,45 +179,54 @@ export function QuotaCard(props: QuotaCardProps) {
         )}
       </div>
 
-      {usageCost && (
-        <div className={styles.costRow}>
-          <div className={styles.costCopy}>
-            <span className={styles.costLabel}>{t('quota_management.seven_day_cost')}</span>
-            <span className={styles.costMeta}>
-              {t('quota_management.cost_requests', { count: usageCost.totalRequests })}
-            </span>
-          </div>
-          <strong className={styles.costValue} title={usageCostHint || undefined}>
-            {usageCost.estimated ? '≈ ' : ''}
-            {formatUSD(usageCost.totalUsd)}
-          </strong>
-        </div>
-      )}
-
-      {status !== 'idle' && (
+      {(usageCost || status !== 'idle') && (
         <footer className={styles.actionRow}>
-          {showReset && (
-            <button
-              type="button"
-              className={styles.actionPill}
-              onClick={onReset}
-              disabled={!canRefresh || loading || resetting}
-              title={t('codex_quota.reset_button')}
-            >
-              <IconRefreshCw size={13} className={resetting ? styles.spinning : undefined} />
-              {t('codex_quota.reset_button')}
-            </button>
+          {usageCost && (
+            <div className={styles.costInline}>
+              <span className={styles.costItem} title={usageCostHint || undefined}>
+                <span className={styles.costLabel}>{t('quota_management.seven_day_cost')}</span>
+                <strong className={styles.costValue}>
+                  {usageCost.estimated ? '≈ ' : ''}
+                  {formatUSD(usageCost.totalUsd)}
+                </strong>
+              </span>
+              {weekly && (
+                <span className={styles.costItem} title={weeklyHint || undefined}>
+                  <span className={styles.costLabel}>
+                    {t('quota_management.weekly_cost_estimate')}
+                  </span>
+                  <strong className={styles.costValue}>{weeklyValue}</strong>
+                  {weeklyMeta && <span className={styles.weeklyMeta}>{weeklyMeta}</span>}
+                </span>
+              )}
+            </div>
           )}
-          <button
-            type="button"
-            className={styles.actionPill}
-            onClick={onRefresh}
-            disabled={isQuotaRefreshDisabled(canRefresh, loading, resetting)}
-            title={t('auth_files.quota_refresh_hint')}
-          >
-            <IconRefreshCw size={13} className={loading ? styles.spinning : undefined} />
-            {t('auth_files.quota_refresh_single')}
-          </button>
+          {status !== 'idle' && (
+            <div className={styles.actionButtons}>
+              {showReset && (
+                <button
+                  type="button"
+                  className={styles.actionPill}
+                  onClick={onReset}
+                  disabled={!canRefresh || loading || resetting}
+                  title={t('codex_quota.reset_button')}
+                >
+                  <IconRefreshCw size={13} className={resetting ? styles.spinning : undefined} />
+                  {t('codex_quota.reset_button')}
+                </button>
+              )}
+              <button
+                type="button"
+                className={styles.actionPill}
+                onClick={onRefresh}
+                disabled={isQuotaRefreshDisabled(canRefresh, loading, resetting)}
+                title={t('auth_files.quota_refresh_hint')}
+              >
+                <IconRefreshCw size={13} className={loading ? styles.spinning : undefined} />
+                {t('auth_files.quota_refresh_single')}
+              </button>
+            </div>
+          )}
         </footer>
       )}
     </article>
