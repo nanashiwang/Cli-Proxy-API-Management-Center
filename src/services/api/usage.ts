@@ -1,5 +1,10 @@
 import { apiClient } from './client';
-import type { ModelPricingStatus, ModelPricingSummary, UsageResponse } from '@/types/usage';
+import type {
+  ModelPricingStatus,
+  ModelPricingSummary,
+  UsageAccountSummaryResponse,
+  UsageResponse,
+} from '@/types/usage';
 
 export interface ModelPricingListResponse {
   count: number;
@@ -17,6 +22,11 @@ export interface PricingOverrideInput {
 export const usageApi = {
   getUsage: (from?: string, to?: string) =>
     apiClient.get<UsageResponse>('/usage', {
+      params: { ...(from ? { from } : {}), ...(to ? { to } : {}) },
+      timeout: 60_000,
+    }),
+  getAccountUsage: (from?: string, to?: string) =>
+    apiClient.get<UsageAccountSummaryResponse>('/usage/accounts', {
       params: { ...(from ? { from } : {}), ...(to ? { to } : {}) },
       timeout: 60_000,
     }),

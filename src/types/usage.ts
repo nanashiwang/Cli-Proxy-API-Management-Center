@@ -118,6 +118,21 @@ export interface UsageResponse {
   storage: UsageStorageStatus;
 }
 
+export interface UsageAccountSummary extends UsageDimensionSnapshot {
+  key: string;
+  auth_index?: string;
+  auth_id?: string;
+  source?: string;
+  provider: string;
+  estimated: boolean;
+  cache_write_unreported: boolean;
+}
+
+export interface UsageAccountSummaryResponse {
+  accounts: UsageAccountSummary[];
+  storage: UsageStorageStatus;
+}
+
 export interface ModelPricingStatus {
   enabled: boolean;
   source_url: string;

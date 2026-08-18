@@ -10,16 +10,18 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { authFilesApi } from '@/services/api';
+import { authFilesApi, usageApi } from '@/services/api';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Select } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useHeaderRefresh } from '@/hooks/useHeaderRefresh';
+import { useInterval } from '@/hooks/useInterval';
 import { useNow } from '@/hooks/useNow';
 import { useRevealGroup } from '@/hooks/motion';
 import { useAuthStore, useQuotaStore, useThemeStore } from '@/stores';
 import type { AuthFileItem, ResolvedTheme } from '@/types';
+import type { UsageAccountSummaryResponse } from '@/types/usage';
 import { ProviderTabs } from '@/features/authFiles/components/ProviderTabs';
 import { QuotaHeader } from './components/QuotaHeader';
 import { QuotaCard } from './components/QuotaCard';
@@ -46,10 +48,13 @@ import type { QuotaProviderType } from './providers/types';
 import { useQuotaActions } from './hooks/useQuotaActions';
 import { useQuotaBatchLoader } from './hooks/useQuotaBatchLoader';
 import { readQuotaUiState, writeQuotaUiState } from './uiState';
+import { buildAccountUsageByAuthIndex, resolveQuotaUsageCost } from './usageCost';
 import styles from './QuotaPage.module.scss';
 
 const TAB_IDS: string[] = ['all', ...QUOTA_TAB_ORDER];
 const SKELETON_CARD_COUNT = 6;
+const ACCOUNT_USAGE_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+const ACCOUNT_USAGE_REFRESH_MS = 60 * 1000;
 
 /**
  * 时间线泳道名 = 卡片标题，两者必须一致。卡片显示的就是文件名，所以这里是恒等。
@@ -63,6 +68,7 @@ export function QuotaPage() {
   const resolvedTheme: ResolvedTheme = useThemeStore((state) => state.resolvedTheme);
 
   const [files, setFiles] = useState<AuthFileItem[]>([]);
+  const [accountUsage, setAccountUsage] = useState<UsageAccountSummaryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tab, setTab] = useState<QuotaTabId>(() => readQuotaUiState()?.tab ?? 'all');
@@ -96,6 +102,43 @@ export function QuotaPage() {
   useEffect(() => {
     void loadFiles();
   }, [loadFiles]);
+
+  /* ---------- 账号费用 ---------- */
+
+  const loadAccountUsage = useCallback(async () => {
+    if (disableControls) {
+      setAccountUsage(null);
+      return;
+    }
+    try {
+      const to = new Date();
+      const from = new Date(to.getTime() - ACCOUNT_USAGE_WINDOW_MS);
+      setAccountUsage(await usageApi.getAccountUsage(from.toISOString(), to.toISOString()));
+    } catch {
+      // Older backends may not expose the lightweight account summary endpoint yet.
+    }
+  }, [disableControls]);
+
+  useEffect(() => {
+    void loadAccountUsage();
+  }, [loadAccountUsage]);
+
+  useInterval(
+    () => {
+      void loadAccountUsage();
+    },
+    disableControls ? null : ACCOUNT_USAGE_REFRESH_MS
+  );
+
+  const usageByAuthIndex = useMemo(
+    () => buildAccountUsageByAuthIndex(accountUsage?.accounts ?? []),
+    [accountUsage]
+  );
+  const getUsageCost = useCallback(
+    (entry: QuotaFileEntry) =>
+      resolveQuotaUsageCost(entry.file, usageByAuthIndex, accountUsage?.storage.enabled === true),
+    [accountUsage?.storage.enabled, usageByAuthIndex]
+  );
 
   /* ---------- 额度缓存 ----------
    * 排在归类/排序之前：「最快恢复优先」要读它算排序键。 */
@@ -211,8 +254,9 @@ export function QuotaPage() {
   const handleRefreshAll = useCallback(() => {
     if (disableControls) return;
     pendingRefreshRef.current = true;
+    void loadAccountUsage();
     void loadFiles();
-  }, [disableControls, loadFiles]);
+  }, [disableControls, loadAccountUsage, loadFiles]);
 
   useEffect(() => {
     const wasLoading = prevLoadingRef.current;
@@ -324,6 +368,7 @@ export function QuotaPage() {
                 resolvedTheme={resolvedTheme}
                 canRefresh={canUseActions && !entry.file.disabled}
                 resetting={resettingQuotaName === entry.file.name}
+                usageCost={getUsageCost(entry)}
                 entranceDelayMs={cardEntranceDelay(index)}
                 onRefresh={() => void refreshQuota(entry.file, QUOTA_ADAPTERS[entry.type])}
                 onReset={() => resetQuota(entry.file, QUOTA_ADAPTERS[entry.type])}

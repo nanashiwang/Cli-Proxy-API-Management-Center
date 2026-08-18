@@ -11,6 +11,7 @@ import { useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconRefreshCw } from '@/components/ui/icons';
 import type { ResolvedTheme } from '@/types';
+import { formatUSD } from '@/features/usage/utils';
 import { resolveQuotaErrorMessage } from '@/utils/quota';
 import {
   getAuthFileIcon,
@@ -21,6 +22,7 @@ import {
 import { bindQuotaClasses } from '../types';
 import { QUOTA_ADAPTERS, type QuotaCardState } from '../providers';
 import { isQuotaRefreshDisabled, type QuotaFileEntry } from '../logic';
+import type { QuotaUsageCost } from '../usageCost';
 import bodyStyles from './QuotaBody.module.scss';
 import styles from './QuotaCard.module.scss';
 
@@ -33,6 +35,7 @@ export type QuotaCardProps = {
   resolvedTheme: ResolvedTheme;
   canRefresh: boolean;
   resetting: boolean;
+  usageCost?: QuotaUsageCost;
   /** 首屏级联入场延迟；null = 不入场（切 tab / 翻页 / 刷新新挂载的卡片）。 */
   entranceDelayMs?: number | null;
   onRefresh: () => void;
@@ -46,6 +49,7 @@ export function QuotaCard(props: QuotaCardProps) {
     resolvedTheme,
     canRefresh,
     resetting,
+    usageCost,
     entranceDelayMs,
     onRefresh,
     onReset,
@@ -75,6 +79,14 @@ export function QuotaCard(props: QuotaCardProps) {
     Boolean(adapter.resetQuota) &&
     quota !== undefined &&
     Boolean(adapter.canResetQuota?.(quota));
+  const usageCostHint = usageCost
+    ? [
+        usageCost.estimated ? t('quota_management.estimated_cost_hint') : '',
+        usageCost.cacheWriteUnreported ? t('quota_management.cache_write_unreported_hint') : '',
+      ]
+        .filter(Boolean)
+        .join(' · ')
+    : '';
 
   return (
     <article
@@ -133,6 +145,21 @@ export function QuotaCard(props: QuotaCardProps) {
           <div className={styles.idleHint}>{t(`${adapter.i18nPrefix}.idle`)}</div>
         )}
       </div>
+
+      {usageCost && (
+        <div className={styles.costRow}>
+          <div className={styles.costCopy}>
+            <span className={styles.costLabel}>{t('quota_management.seven_day_cost')}</span>
+            <span className={styles.costMeta}>
+              {t('quota_management.cost_requests', { count: usageCost.totalRequests })}
+            </span>
+          </div>
+          <strong className={styles.costValue} title={usageCostHint || undefined}>
+            {usageCost.estimated ? '≈ ' : ''}
+            {formatUSD(usageCost.totalUsd)}
+          </strong>
+        </div>
+      )}
 
       {status !== 'idle' && (
         <footer className={styles.actionRow}>
