@@ -1813,6 +1813,7 @@
     "clear_title": "Clear statistics",
     "clear_confirm": "This deletes all persistent usage records and cannot be undone.",
     "clear_success": "Statistics cleared",
-    "cache_write_unreported": "The Codex OAuth upstream may report zero cache-write tokens even after populating a cache. Costs do not fabricate missing writes, so totals marked “≈” may be lower than the equivalent official API cost."
+    "cache_write_unreported": "The Codex OAuth upstream may report zero cache-write tokens even after populating a cache. Costs do not fabricate missing writes, so totals marked “≈” may be lower than the equivalent official API cost.",
+    "precomputed_meta": "Precomputed · Updated {{seconds}}s ago"
   }
 }

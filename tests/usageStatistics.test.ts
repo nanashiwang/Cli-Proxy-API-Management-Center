@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import {
   buildUsageTrend,
+  buildUsageTrendFromSnapshot,
   flattenUsageDetails,
   formatTokens,
   formatUSD,
@@ -64,10 +65,7 @@ describe('usage statistics helpers', () => {
               total_requests: 2,
               total_tokens: 30,
               total_cost_usd: 0.3,
-              details: [
-                detail('2026-08-17T10:00:00Z', 0.1),
-                detail('2026-08-17T11:00:00Z', 0.2),
-              ],
+              details: [detail('2026-08-17T10:00:00Z', 0.1), detail('2026-08-17T11:00:00Z', 0.2)],
             },
           },
         },
@@ -112,6 +110,26 @@ describe('usage statistics helpers', () => {
     expect(trend.at(-2)?.cost).toBeCloseTo(0.25);
     expect(trend.at(-1)?.cost).toBeCloseTo(0.5);
     expect(usageRangeStart('24h', now)?.toISOString()).toBe('2026-08-16T12:30:00.000Z');
+  });
+
+  test('uses precomputed snapshot buckets for trends', () => {
+    const now = new Date('2026-08-17T12:30:00Z');
+    const usage = {
+      requests_by_day: {},
+      requests_by_hour_window: {
+        '2026-08-17T11:00:00Z': 1,
+        '2026-08-17T12:00:00Z': 2,
+      },
+      cost_by_day: {},
+      cost_by_hour_window: {
+        '2026-08-17T11:00:00Z': 0.25,
+        '2026-08-17T12:00:00Z': 0.5,
+      },
+    } as UsageSnapshot;
+    const trend = buildUsageTrendFromSnapshot(usage, '24h', now);
+    expect(trend.at(-2)?.cost).toBeCloseTo(0.25);
+    expect(trend.at(-1)?.cost).toBeCloseTo(0.5);
+    expect(trend.at(-1)?.requests).toBe(2);
   });
 
   test('formats cost and token values', () => {

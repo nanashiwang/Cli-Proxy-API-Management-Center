@@ -13,14 +13,13 @@ import type {
   UsageResponse,
 } from '@/types/usage';
 import {
-  buildUsageTrend,
+  buildUsageTrendFromSnapshot,
   flattenUsageDetails,
   formatTokens,
   formatUSD,
   sortedDimensions,
-  usageRangeStart,
-  type UsageRange,
 } from './utils';
+import type { UsageRange } from '@/types/usage';
 import styles from './UsagePage.module.scss';
 
 type PricingDraft = {
@@ -84,9 +83,8 @@ export function UsagePage() {
   const loadUsage = useCallback(async () => {
     setLoading(true);
     try {
-      const from = usageRangeStart(range)?.toISOString();
       const [usage, status] = await Promise.all([
-        usageApi.getUsage(from),
+        usageApi.getUsage(undefined, undefined, range),
         usageApi.getPricingStatus().catch(() => null),
       ]);
       setResponse(usage);
@@ -125,14 +123,15 @@ export function UsagePage() {
   const storage = response?.storage;
   const details = useMemo(() => flattenUsageDetails(usage), [usage]);
   const recentDetails = details.slice(0, 30);
-  const cacheWriteUnreported = useMemo(() => details.some(hasUnreportedCodexCacheWrite), [details]);
-  const hasEstimatedCost = useMemo(
-    () => cacheWriteUnreported || details.some((detail) => detail.billing?.pricing?.estimated),
-    [cacheWriteUnreported, details]
-  );
+  const cacheWriteUnreported =
+    Boolean(usage?.cache_write_unreported) || details.some(hasUnreportedCodexCacheWrite);
+  const hasEstimatedCost =
+    Boolean(usage?.estimated) ||
+    cacheWriteUnreported ||
+    details.some((detail) => detail.billing?.pricing?.estimated);
   const accounts = useMemo(() => sortedDimensions(usage?.accounts).slice(0, 12), [usage]);
   const models = useMemo(() => sortedDimensions(usage?.models).slice(0, 12), [usage]);
-  const trend = useMemo(() => buildUsageTrend(details, range), [details, range]);
+  const trend = useMemo(() => buildUsageTrendFromSnapshot(usage, range), [usage, range]);
   const maxTrendCost = Math.max(0, ...trend.map((point) => point.cost));
   const successRate = usage?.total_requests
     ? (usage.success_count / usage.total_requests) * 100
@@ -277,6 +276,11 @@ export function UsagePage() {
       </header>
 
       {storage?.last_error ? <div className={styles.errorBanner}>{storage.last_error}</div> : null}
+      {response?.cache?.precomputed ? (
+        <div className={styles.cacheMeta}>
+          {t('usage_stats.precomputed_meta', { seconds: response.cache.age_seconds })}
+        </div>
+      ) : null}
       {cacheWriteUnreported ? (
         <div className={styles.warningBanner}>{t('usage_stats.cache_write_unreported')}</div>
       ) : null}

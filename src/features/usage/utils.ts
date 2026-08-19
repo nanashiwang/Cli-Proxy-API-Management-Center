@@ -1,6 +1,9 @@
-import type { UsageDimensionSnapshot, UsageRequestDetail, UsageSnapshot } from '@/types/usage';
-
-export type UsageRange = '24h' | '7d' | '30d' | 'all';
+import type {
+  UsageDimensionSnapshot,
+  UsageRange,
+  UsageRequestDetail,
+  UsageSnapshot,
+} from '@/types/usage';
 
 export interface UsageTrendPoint {
   key: string;
@@ -83,6 +86,42 @@ export const buildUsageTrend = (
     points[index].requests += 1;
     points[index].cost +=
       detail.cost_usd ?? (detail.billing?.priced ? detail.billing.total_usd : 0);
+  });
+  return points;
+};
+
+export const buildUsageTrendFromSnapshot = (
+  usage: UsageSnapshot | null | undefined,
+  range: UsageRange,
+  now = new Date()
+): UsageTrendPoint[] => {
+  const hourly = range === '24h';
+  const count = hourly ? 24 : range === '7d' ? 7 : 30;
+  const bucketMs = hourly ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+  const end = new Date(now);
+  if (hourly) {
+    end.setUTCMinutes(0, 0, 0);
+  } else {
+    end.setUTCHours(0, 0, 0, 0);
+  }
+  const startMs = end.getTime() - (count - 1) * bucketMs;
+  const formatter = new Intl.DateTimeFormat(
+    undefined,
+    hourly ? { hour: '2-digit' } : { month: 'short', day: 'numeric' }
+  );
+  const points = Array.from({ length: count }, (_, index) => {
+    const date = new Date(startMs + index * bucketMs);
+    const key = hourly
+      ? date.toISOString().slice(0, 13) + ':00:00Z'
+      : date.toISOString().slice(0, 10);
+    return {
+      key: date.toISOString(),
+      label: formatter.format(date),
+      cost: hourly ? (usage?.cost_by_hour_window?.[key] ?? 0) : (usage?.cost_by_day?.[key] ?? 0),
+      requests: hourly
+        ? (usage?.requests_by_hour_window?.[key] ?? 0)
+        : (usage?.requests_by_day?.[key] ?? 0),
+    };
   });
   return points;
 };

@@ -390,6 +390,11 @@ td small {
   font-size: 12px;
   overflow-wrap: anywhere;
 }
+.cacheMeta {
+  color: var(--text-tertiary);
+  font: 11px/1.4 $font-mono;
+  margin-top: -6px;
+}
 .warningBanner {
   color: var(--warning-text);
   background: var(--warning-bg);

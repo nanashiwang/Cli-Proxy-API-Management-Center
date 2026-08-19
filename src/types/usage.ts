@@ -78,6 +78,8 @@ export interface UsageAPISnapshot {
   models: Record<string, UsageModelSnapshot>;
 }
 
+export type UsageRange = '24h' | '7d' | '30d' | 'all';
+
 export interface UsageSnapshot {
   total_requests: number;
   success_count: number;
@@ -85,6 +87,8 @@ export interface UsageSnapshot {
   priced_requests: number;
   unpriced_requests: number;
   total_tokens: number;
+  estimated?: boolean;
+  cache_write_unreported?: boolean;
   tokens: UsageTokenStats;
   total_cost_usd: number;
   apis: Record<string, UsageAPISnapshot>;
@@ -93,10 +97,13 @@ export interface UsageSnapshot {
   models: Record<string, UsageDimensionSnapshot>;
   requests_by_day: Record<string, number>;
   requests_by_hour: Record<string, number>;
+  requests_by_hour_window?: Record<string, number>;
   tokens_by_day: Record<string, number>;
   tokens_by_hour: Record<string, number>;
+  tokens_by_hour_window?: Record<string, number>;
   cost_by_day: Record<string, number>;
   cost_by_hour: Record<string, number>;
+  cost_by_hour_window?: Record<string, number>;
 }
 
 export interface UsageStorageStatus {
@@ -112,10 +119,18 @@ export interface UsageStorageStatus {
   last_error?: string;
 }
 
+export interface UsageCacheStatus {
+  window: UsageRange;
+  precomputed: boolean;
+  computed_at?: string;
+  age_seconds: number;
+}
+
 export interface UsageResponse {
   usage: UsageSnapshot;
   failed_requests: number;
   storage: UsageStorageStatus;
+  cache?: UsageCacheStatus;
 }
 
 export interface UsageAccountSummary extends UsageDimensionSnapshot {

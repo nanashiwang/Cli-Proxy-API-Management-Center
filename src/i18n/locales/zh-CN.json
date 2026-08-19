@@ -1813,6 +1813,7 @@
     "clear_title": "清空统计数据",
     "clear_confirm": "将删除全部持久化使用记录，此操作无法撤销。",
     "clear_success": "统计数据已清空",
-    "cache_write_unreported": "Codex OAuth 上游即使已经建立缓存，仍可能返回缓存写入 Token 为 0。当前费用不会虚构写入量，因此总费用以“≈”标记，可能低于官方 API 等价费用。"
+    "cache_write_unreported": "Codex OAuth 上游即使已经建立缓存，仍可能返回缓存写入 Token 为 0。当前费用不会虚构写入量，因此总费用以“≈”标记，可能低于官方 API 等价费用。",
+    "precomputed_meta": "已预计算 · 数据更新于 {{seconds}} 秒前"
   }
 }

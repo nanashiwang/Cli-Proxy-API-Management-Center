@@ -5,6 +5,7 @@ import type {
   UsageAccountRangeInput,
   UsageAccountRangesResponse,
   UsageAccountSummaryResponse,
+  UsageRange,
   UsageResponse,
 } from '@/types/usage';
 
@@ -22,10 +23,14 @@ export interface PricingOverrideInput {
 }
 
 export const usageApi = {
-  getUsage: (from?: string, to?: string) =>
+  getUsage: (from?: string, to?: string, range?: UsageRange) =>
     apiClient.get<UsageResponse>('/usage', {
-      params: { ...(from ? { from } : {}), ...(to ? { to } : {}) },
-      timeout: 60_000,
+      params: {
+        ...(from ? { from } : {}),
+        ...(to ? { to } : {}),
+        ...(range ? { range, details_limit: 50 } : {}),
+      },
+      timeout: range ? 15_000 : 60_000,
     }),
   getAccountUsage: (from?: string, to?: string) =>
     apiClient.get<UsageAccountSummaryResponse>('/usage/accounts', {
