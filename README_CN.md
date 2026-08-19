@@ -119,6 +119,18 @@ bun run build
 - 打 `vX.Y.Z` 标签会触发 `.github/workflows/release.yml`，发布 `dist/management.html`。
 - 系统信息页显示的 UI 版本在构建期注入（优先使用环境变量 `VERSION`，否则使用 git tag / `package.json`）。
 
+## 发布管理面板
+
+推送到 `main` 后，`auto-cpa-release` 会自动创建新的 `v*-cpa.N` 标签并构建
+`management.html` Release。CPA 节点的管理面板更新器只读取 Release，不直接读取 main 分支。
+
+如果需要手动发布：
+
+```bash
+git tag -a v1.22.2-cpa.4 -m "发布管理面板"
+git push origin v1.22.2-cpa.4
+```
+
 ## 安全提示
 
 - 管理密钥会存入浏览器 `localStorage`，并使用轻量混淆格式（`enc::v1::...`）避免明文；仍应视为敏感信息。

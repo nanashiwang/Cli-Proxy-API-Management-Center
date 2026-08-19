@@ -120,6 +120,18 @@ The UI language is automatically detected from browser settings and can be manua
 - Tagging `vX.Y.Z` triggers `.github/workflows/release.yml` to publish `dist/management.html`.
 - The UI version shown on the System page is injected at build time (env `VERSION`, git tag, or `package.json` fallback).
 
+## Management panel releases
+
+Pushing to `main` automatically creates a `v*-cpa.N` tag and publishes the single-file
+`management.html` release. CPA nodes update the panel from Releases, not directly from the main branch.
+
+For a manual release:
+
+```bash
+git tag -a v1.22.2-cpa.4 -m "Publish management panel"
+git push origin v1.22.2-cpa.4
+```
+
 ## Security notes
 
 - The management key is stored in browser `localStorage` using a lightweight obfuscation format (`enc::v1::...`) to avoid plaintext storage; treat it as sensitive.
