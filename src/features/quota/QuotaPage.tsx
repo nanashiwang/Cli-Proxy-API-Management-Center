@@ -49,6 +49,13 @@ import { useQuotaActions } from './hooks/useQuotaActions';
 import { useQuotaBatchLoader } from './hooks/useQuotaBatchLoader';
 import { readQuotaUiState, writeQuotaUiState } from './uiState';
 import {
+  appendWeeklyUsageSample,
+  getWeeklyUsageSamples,
+  readWeeklyUsageHistory,
+  writeWeeklyUsageHistory,
+  type WeeklyUsageHistory,
+} from './weeklyUsageHistory';
+import {
   buildAccountRangeUsageByKey,
   buildAccountUsageByAuthIndex,
   resolveCodexWeeklyUsageBasis,
@@ -72,6 +79,7 @@ const quotaEntryKey = (entry: QuotaFileEntry) => `${entry.type}:${entry.file.nam
 export function QuotaPage() {
   const { t } = useTranslation();
   const connectionStatus = useAuthStore((state) => state.connectionStatus);
+  const apiBase = useAuthStore((state) => state.apiBase);
   const resolvedTheme: ResolvedTheme = useThemeStore((state) => state.resolvedTheme);
 
   const [files, setFiles] = useState<AuthFileItem[]>([]);
@@ -82,6 +90,10 @@ export function QuotaPage() {
   const [accountRangeStatus, setAccountRangeStatus] = useState<
     'idle' | 'loading' | 'ready' | 'error'
   >('idle');
+  const [weeklyUsageHistory, setWeeklyUsageHistory] = useState<WeeklyUsageHistory>(() =>
+    readWeeklyUsageHistory(apiBase)
+  );
+  const [weeklySampleCapturedAtMs, setWeeklySampleCapturedAtMs] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tab, setTab] = useState<QuotaTabId>(() => readQuotaUiState()?.tab ?? 'all');
@@ -131,6 +143,11 @@ export function QuotaPage() {
       // Older backends may not expose the lightweight account summary endpoint yet.
     }
   }, [disableControls]);
+
+  useEffect(() => {
+    setWeeklyUsageHistory(readWeeklyUsageHistory(apiBase));
+    setWeeklySampleCapturedAtMs(null);
+  }, [apiBase]);
 
   useEffect(() => {
     void loadAccountUsage();
@@ -220,7 +237,29 @@ export function QuotaPage() {
       )
       .then((response) => {
         if (!active) return;
+        const capturedAtMs = Date.now();
         setAccountRangeUsage(response);
+        setWeeklySampleCapturedAtMs(capturedAtMs);
+        setWeeklyUsageHistory((previous) => {
+          let next = previous;
+          const basisByKey = new Map(weeklyBasisList.map((basis) => [basis.key, basis]));
+          response.ranges.forEach((range) => {
+            const basis = basisByKey.get(range.key);
+            if (!basis) return;
+            next = appendWeeklyUsageSample(
+              next,
+              basis,
+              {
+                capturedAtMs,
+                costUsd: range.total_cost_usd,
+                usedPercent: basis.usedPercent,
+              },
+              capturedAtMs
+            );
+          });
+          if (next !== previous) writeWeeklyUsageHistory(apiBase, next);
+          return next;
+        });
         setAccountRangeStatus('ready');
       })
       .catch(() => {
@@ -232,7 +271,7 @@ export function QuotaPage() {
     return () => {
       active = false;
     };
-  }, [accountUsage, disableControls, weeklyBasisList]);
+  }, [accountUsage, apiBase, disableControls, weeklyBasisList]);
 
   const rangeUsageByKey = useMemo(
     () => buildAccountRangeUsageByKey(accountRangeUsage?.ranges ?? []),
@@ -248,7 +287,9 @@ export function QuotaPage() {
         weeklyBasis,
         weeklyBasis ? rangeUsageByKey.get(weeklyBasis.key) : undefined,
         accountUsage?.storage,
-        accountRangeStatus
+        accountRangeStatus,
+        weeklyBasis ? getWeeklyUsageSamples(weeklyUsageHistory, weeklyBasis.key) : [],
+        weeklySampleCapturedAtMs ?? Date.now()
       );
     },
     [
@@ -257,6 +298,8 @@ export function QuotaPage() {
       rangeUsageByKey,
       usageByAuthIndex,
       weeklyBasisByEntryKey,
+      weeklySampleCapturedAtMs,
+      weeklyUsageHistory,
     ]
   );
 

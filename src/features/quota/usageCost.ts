@@ -5,9 +5,11 @@ import type {
   UsageStorageStatus,
 } from '@/types/usage';
 import { normalizeAuthIndex } from '@/utils/authIndex';
+import type { WeeklyUsageSample } from './weeklyUsageHistory';
 
 const DEFAULT_WEEKLY_WINDOW_HOURS = 7 * 24;
-const MINIMUM_ESTIMATE_USED_PERCENT = 3;
+const MINIMUM_ESTIMATE_DELTA_PERCENT = 3;
+const MINIMUM_ESTIMATE_DELTA_COST_USD = 0.01;
 
 export type WeeklyEstimateConfidence = 'low' | 'medium' | 'high';
 export type WeeklyEstimateStatus =
@@ -26,6 +28,8 @@ export interface WeeklyUsageEstimate {
   usedPercent: number;
   totalUsd?: number;
   windowCostUsd?: number;
+  sampledCostUsd?: number;
+  sampledPercent?: number;
   confidence?: WeeklyEstimateConfidence;
   coverageComplete?: boolean;
   estimated?: boolean;
@@ -103,12 +107,12 @@ const lowerConfidence = (confidence: WeeklyEstimateConfidence): WeeklyEstimateCo
 };
 
 const resolveConfidence = (
-  usedPercent: number,
+  sampledPercent: number,
   range: UsageAccountRangeSummary,
   coverageComplete: boolean
 ): WeeklyEstimateConfidence => {
   let confidence: WeeklyEstimateConfidence =
-    usedPercent >= 30 ? 'high' : usedPercent >= 10 ? 'medium' : 'low';
+    sampledPercent >= 10 ? 'high' : sampledPercent >= 5 ? 'medium' : 'low';
   if (!coverageComplete) confidence = 'low';
   if (range.unpriced_requests > 0 || range.estimated || range.cache_write_unreported) {
     confidence = lowerConfidence(confidence);
@@ -120,19 +124,42 @@ export const resolveWeeklyUsageEstimate = (
   basis: WeeklyUsageBasis,
   range: UsageAccountRangeSummary | undefined,
   storage: UsageStorageStatus,
-  requestStatus: 'idle' | 'loading' | 'ready' | 'error'
+  requestStatus: 'idle' | 'loading' | 'ready' | 'error',
+  previousSamples: readonly WeeklyUsageSample[] = [],
+  capturedAtMs = Date.now()
 ): WeeklyUsageEstimate => {
-  if (basis.usedPercent < MINIMUM_ESTIMATE_USED_PERCENT) {
-    return { status: 'sampling', usedPercent: basis.usedPercent };
-  }
   if (requestStatus === 'loading' || requestStatus === 'idle') {
     return { status: 'loading', usedPercent: basis.usedPercent };
   }
   if (requestStatus === 'error') {
     return { status: 'unavailable', usedPercent: basis.usedPercent };
   }
-  if (!range || range.priced_requests === 0 || range.total_cost_usd <= 0) {
+  if (!range || !Number.isFinite(range.total_cost_usd) || range.total_cost_usd < 0) {
     return { status: 'insufficient', usedPercent: basis.usedPercent };
+  }
+
+  const currentSample: WeeklyUsageSample = {
+    capturedAtMs,
+    costUsd: range.total_cost_usd,
+    usedPercent: basis.usedPercent,
+  };
+  const baseline = previousSamples.find(
+    (sample) =>
+      sample.capturedAtMs < currentSample.capturedAtMs &&
+      sample.costUsd <= currentSample.costUsd + 0.000001 &&
+      sample.usedPercent < currentSample.usedPercent
+  );
+  if (!baseline) {
+    return { status: 'sampling', usedPercent: basis.usedPercent };
+  }
+
+  const sampledCostUsd = currentSample.costUsd - baseline.costUsd;
+  const sampledPercent = currentSample.usedPercent - baseline.usedPercent;
+  if (
+    sampledCostUsd < MINIMUM_ESTIMATE_DELTA_COST_USD ||
+    sampledPercent < MINIMUM_ESTIMATE_DELTA_PERCENT
+  ) {
+    return { status: 'sampling', usedPercent: basis.usedPercent };
   }
 
   const oldestAtMs = Date.parse(storage.oldest_at ?? '');
@@ -140,9 +167,11 @@ export const resolveWeeklyUsageEstimate = (
   return {
     status: 'ready',
     usedPercent: basis.usedPercent,
-    totalUsd: range.total_cost_usd / (basis.usedPercent / 100),
+    totalUsd: sampledCostUsd / (sampledPercent / 100),
     windowCostUsd: range.total_cost_usd,
-    confidence: resolveConfidence(basis.usedPercent, range, coverageComplete),
+    sampledCostUsd,
+    sampledPercent,
+    confidence: resolveConfidence(sampledPercent, range, coverageComplete),
     coverageComplete,
     estimated: range.estimated,
     cacheWriteUnreported: range.cache_write_unreported,
@@ -156,7 +185,9 @@ export const resolveQuotaUsageCost = (
   weeklyBasis?: WeeklyUsageBasis,
   weeklyRange?: UsageAccountRangeSummary,
   storage?: UsageStorageStatus,
-  weeklyRequestStatus: 'idle' | 'loading' | 'ready' | 'error' = 'idle'
+  weeklyRequestStatus: 'idle' | 'loading' | 'ready' | 'error' = 'idle',
+  weeklyPreviousSamples: readonly WeeklyUsageSample[] = [],
+  weeklyCapturedAtMs = Date.now()
 ): QuotaUsageCost | undefined => {
   if (!storageEnabled) return undefined;
   const authIndex = normalizeAuthIndex(file['auth_index'] ?? file.authIndex);
@@ -170,7 +201,14 @@ export const resolveQuotaUsageCost = (
     cacheWriteUnreported: usage?.cache_write_unreported ?? false,
     weekly:
       weeklyBasis && storage
-        ? resolveWeeklyUsageEstimate(weeklyBasis, weeklyRange, storage, weeklyRequestStatus)
+        ? resolveWeeklyUsageEstimate(
+            weeklyBasis,
+            weeklyRange,
+            storage,
+            weeklyRequestStatus,
+            weeklyPreviousSamples,
+            weeklyCapturedAtMs
+          )
         : undefined,
   };
 };

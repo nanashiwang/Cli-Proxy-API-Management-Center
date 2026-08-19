@@ -5,6 +5,10 @@ import {
   resolveQuotaUsageCost,
   resolveWeeklyUsageEstimate,
 } from '../src/features/quota/usageCost';
+import {
+  appendWeeklyUsageSample,
+  getWeeklyUsageSamples,
+} from '../src/features/quota/weeklyUsageHistory';
 import type {
   UsageAccountRangeSummary,
   UsageAccountSummary,
@@ -131,42 +135,135 @@ describe('quota account usage cost', () => {
     });
   });
 
-  test('estimates a $20 weekly value from $19.20 cost at 96% usage', () => {
+  test('estimates the weekly value from cost and official usage deltas', () => {
     const basis = {
       key: 'codex:42:1787205600000',
       authIndex: '42',
       fromMs: Date.parse('2026-08-13T11:30:00.000Z'),
       resetAtMs: Date.parse('2026-08-20T11:30:00.000Z'),
-      usedPercent: 96,
+      usedPercent: 23,
     };
     const estimate = resolveWeeklyUsageEstimate(
       basis,
-      range(19.2),
+      range(61.75),
       storage('2026-08-12T00:00:00.000Z'),
-      'ready'
+      'ready',
+      [
+        {
+          capturedAtMs: Date.parse('2026-08-19T02:30:00.000Z'),
+          costUsd: 60,
+          usedPercent: 20,
+        },
+      ],
+      Date.parse('2026-08-19T03:30:00.000Z')
     );
 
     expect(estimate.status).toBe('ready');
-    expect(estimate.totalUsd).toBeCloseTo(20, 10);
-    expect(estimate.windowCostUsd).toBe(19.2);
-    expect(estimate.confidence).toBe('high');
+    expect(estimate.totalUsd).toBeCloseTo(58.3333333333, 10);
+    expect(estimate.windowCostUsd).toBe(61.75);
+    expect(estimate.sampledCostUsd).toBeCloseTo(1.75, 10);
+    expect(estimate.sampledPercent).toBe(3);
+    expect(estimate.confidence).toBe('low');
   });
 
-  test('keeps estimates in sampling state below 3% usage', () => {
+  test('keeps estimates in sampling state without a historical baseline', () => {
     const estimate = resolveWeeklyUsageEstimate(
       {
         key: 'codex:42:1787205600000',
         authIndex: '42',
         fromMs: Date.parse('2026-08-13T11:30:00.000Z'),
         resetAtMs: Date.parse('2026-08-20T11:30:00.000Z'),
-        usedPercent: 2.9,
+        usedPercent: 23,
       },
-      range(1),
+      range(61.75),
       storage('2026-08-12T00:00:00.000Z'),
       'ready'
     );
 
-    expect(estimate).toEqual({ status: 'sampling', usedPercent: 2.9 });
+    expect(estimate).toEqual({ status: 'sampling', usedPercent: 23 });
+  });
+
+  test('keeps estimates in sampling state when the usage delta is too small', () => {
+    const estimate = resolveWeeklyUsageEstimate(
+      {
+        key: 'codex:42:1787205600000',
+        authIndex: '42',
+        fromMs: Date.parse('2026-08-13T11:30:00.000Z'),
+        resetAtMs: Date.parse('2026-08-20T11:30:00.000Z'),
+        usedPercent: 21,
+      },
+      range(62),
+      storage('2026-08-12T00:00:00.000Z'),
+      'ready',
+      [
+        {
+          capturedAtMs: Date.parse('2026-08-19T02:30:00.000Z'),
+          costUsd: 60,
+          usedPercent: 20,
+        },
+      ],
+      Date.parse('2026-08-19T03:30:00.000Z')
+    );
+
+    expect(estimate).toEqual({ status: 'sampling', usedPercent: 21 });
+  });
+
+  test('does not estimate across a project statistics reset', () => {
+    const estimate = resolveWeeklyUsageEstimate(
+      {
+        key: 'codex:42:1787205600000',
+        authIndex: '42',
+        fromMs: Date.parse('2026-08-13T11:30:00.000Z'),
+        resetAtMs: Date.parse('2026-08-20T11:30:00.000Z'),
+        usedPercent: 23,
+      },
+      range(0),
+      storage('2026-08-19T03:00:00.000Z'),
+      'ready',
+      [
+        {
+          capturedAtMs: Date.parse('2026-08-19T02:30:00.000Z'),
+          costUsd: 60,
+          usedPercent: 20,
+        },
+      ],
+      Date.parse('2026-08-19T03:30:00.000Z')
+    );
+
+    expect(estimate).toEqual({ status: 'sampling', usedPercent: 23 });
+  });
+
+  test('starts a new sampling segment after a project statistics reset', () => {
+    const basis = { key: 'codex:42:1787205600000' };
+    const history = {
+      samplesByKey: {
+        [basis.key]: [
+          {
+            capturedAtMs: Date.parse('2026-08-19T02:30:00.000Z'),
+            costUsd: 60,
+            usedPercent: 20,
+          },
+        ],
+      },
+    };
+    const next = appendWeeklyUsageSample(
+      history,
+      basis,
+      {
+        capturedAtMs: Date.parse('2026-08-19T03:30:00.000Z'),
+        costUsd: 0,
+        usedPercent: 23,
+      },
+      Date.parse('2026-08-19T03:30:00.000Z')
+    );
+
+    expect(getWeeklyUsageSamples(next, basis.key)).toEqual([
+      {
+        capturedAtMs: Date.parse('2026-08-19T03:30:00.000Z'),
+        costUsd: 0,
+        usedPercent: 23,
+      },
+    ]);
   });
 
   test('lowers confidence when retained statistics do not cover the whole weekly window', () => {
@@ -180,7 +277,15 @@ describe('quota account usage cost', () => {
       },
       range(19.2),
       storage('2026-08-18T00:00:00.000Z'),
-      'ready'
+      'ready',
+      [
+        {
+          capturedAtMs: Date.parse('2026-08-18T23:30:00.000Z'),
+          costUsd: 18.2,
+          usedPercent: 90,
+        },
+      ],
+      Date.parse('2026-08-19T03:30:00.000Z')
     );
 
     expect(estimate.status).toBe('ready');

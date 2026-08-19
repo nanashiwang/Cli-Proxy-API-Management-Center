@@ -226,75 +226,152 @@
   overflow-wrap: anywhere;
 }
 
-/* ---------- 费用与 footer 动作 ---------- */
+/* ---------- 费用统计与 footer 动作 ---------- */
 
-.actionRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+.statsFooter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr) 1px minmax(104px, auto);
+  align-items: stretch;
   min-width: 0;
-  padding-top: 10px;
-  border-top: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--bg-secondary) 48%, transparent);
 }
 
-.costInline {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  flex: 1;
-  white-space: nowrap;
+.statsFooterNoWeekly {
+  grid-template-columns: minmax(0, 1fr) 1px minmax(104px, auto);
 }
 
-.costItem {
-  display: inline-flex;
-  align-items: baseline;
+.statsFooterActionsOnly {
+  display: flex;
+  justify-content: flex-end;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+
+.statBlock {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 9px 10px;
+}
+
+.statHeading {
+  display: flex;
+  align-items: center;
   gap: 4px;
   min-width: 0;
-}
-
-.costLabel {
   font-size: 10.5px;
-  font-weight: 600;
+  font-weight: 650;
+  line-height: 1.25;
   color: var(--text-secondary);
+
+  > svg:first-child {
+    flex-shrink: 0;
+    color: var(--primary-color);
+  }
+
+  > span {
+    @include text-ellipsis;
+  }
 }
 
-.costValue {
-  font-family: $font-mono;
-  font-size: 11.5px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--primary-color);
-}
-
-.weeklyMeta {
-  font-family: $font-mono;
-  font-size: 9.5px;
+.statInfo {
+  flex-shrink: 0;
   color: var(--text-tertiary);
 }
 
-.actionButtons {
+.statValueRow {
   display: flex;
-  justify-content: flex-end;
-  gap: 6px;
-  flex-shrink: 0;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
 }
 
-/* 安静描边药丸（与凭证卡图标动作同族：hover 才显色块） */
-.actionPill {
-  display: inline-flex;
+.statValue {
+  min-width: 0;
+  font-family: $font-mono;
+  font-size: 13px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  color: var(--text-primary);
+  @include text-ellipsis;
+}
+
+.statBadge {
+  flex-shrink: 0;
+  font-family: $font-mono;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+}
+
+.statProgressRow {
+  display: flex;
   align-items: center;
   gap: 5px;
+  min-width: 0;
+}
+
+.statProgress {
+  flex: 1;
+  min-width: 28px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: $radius-full;
+  background: color-mix(in srgb, var(--text-primary) 9%, transparent);
+
+  > span {
+    display: block;
+    width: var(--quota-stat-progress, 0%);
+    height: 100%;
+    border-radius: inherit;
+    background: var(--primary-color);
+    transition: width var(--dur-hover, 200ms) var(--ease-out-strong, ease-out);
+  }
+}
+
+.statProgressLabel {
+  flex-shrink: 0;
+  font-family: $font-mono;
+  font-size: 8.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+}
+
+.statDivider {
+  width: 1px;
+  min-height: 54px;
+  align-self: center;
+  background: color-mix(in srgb, var(--border-color) 80%, transparent);
+}
+
+.actionBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 5px;
+  min-width: 104px;
+  padding: 9px 10px;
+}
+
+.refreshButton,
+.resetButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
   cursor: pointer;
-  border: 1px solid var(--border-color);
   border-radius: $radius-full;
   background: none;
-  padding: 5px 11px;
-  font-size: 11.5px;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--text-secondary);
+  font-weight: 650;
+  line-height: 1.35;
   white-space: nowrap;
   transition:
     transform var(--dur-press, 160ms) var(--ease-out-strong, ease-out),
@@ -317,10 +394,30 @@
   }
 }
 
+.refreshButton {
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid color-mix(in srgb, var(--primary-color) 24%, var(--border-color));
+  font-size: 11px;
+  color: var(--text-primary);
+}
+
+.resetButton {
+  padding: 2px 8px;
+  border: 0;
+  font-size: 9.5px;
+  color: var(--text-tertiary);
+}
+
 @media (hover: hover) and (pointer: fine) {
-  .actionPill:hover:not(:disabled) {
-    border-color: var(--border-hover);
-    background: color-mix(in srgb, var(--bg-tertiary) 55%, transparent);
+  .refreshButton:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--primary-color) 52%, var(--border-color));
+    background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+    color: var(--primary-color);
+  }
+
+  .resetButton:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--bg-tertiary) 68%, transparent);
     color: var(--text-primary);
   }
 }
@@ -336,30 +433,42 @@
 }
 
 @media (max-width: 560px) {
-  .actionRow {
-    align-items: flex-end;
+  .statsFooter,
+  .statsFooterNoWeekly {
+    grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
   }
 
-  .costInline {
-    flex-wrap: wrap;
-    gap: 2px 8px;
-    white-space: normal;
+  .statsFooterNoWeekly {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .costItem {
-    white-space: nowrap;
+  .statsFooter > .statDivider:last-of-type,
+  .statsFooterNoWeekly > .statDivider {
+    display: none;
+  }
+
+  .actionBlock {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    padding-top: 0;
+  }
+
+  .refreshButton {
+    flex: 1;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .card,
   .idleBody,
-  .actionPill {
+  .refreshButton,
+  .resetButton {
     transition: none;
   }
 
   .idleBody:active:not(:disabled),
-  .actionPill:active:not(:disabled) {
+  .refreshButton:active:not(:disabled),
+  .resetButton:active:not(:disabled) {
     transform: none;
   }
 
