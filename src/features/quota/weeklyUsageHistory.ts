@@ -1,5 +1,5 @@
-const STORAGE_KEY_PREFIX = 'quotaPage.weeklyUsageHistory.v1:';
-const MAX_SAMPLES_PER_BASIS = 32;
+const STORAGE_KEY_PREFIX = 'quotaPage.weeklyUsageHistory.v2:';
+const MAX_SAMPLES_PER_BASIS = 256;
 const MAX_BASIS_KEYS = 256;
 const MAX_SAMPLE_AGE_MS = 21 * 24 * 60 * 60 * 1000;
 const COST_RESET_EPSILON_USD = 0.000001;
@@ -110,6 +110,8 @@ export const appendWeeklyUsageSample = (
 
   const current = history.samplesByKey[basis.key] ?? [];
   const latest = current[current.length - 1];
+  if (latest && sample.capturedAtMs <= latest.capturedAtMs) return history;
+
   const statisticsReset =
     latest &&
     (sample.costUsd + COST_RESET_EPSILON_USD < latest.costUsd ||

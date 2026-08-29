@@ -48,6 +48,7 @@ type CodexResetCreditsData = {
 };
 
 export type CodexQuotaData = {
+  capturedAtMs: number;
   planType: string | null;
   subscriptionActiveUntil: string | number | null;
   rateLimitResetCreditsAvailableCount: number | null;
@@ -376,6 +377,7 @@ const fetchCodexQuota = async (file: AuthFileItem, t: TFunction): Promise<CodexQ
   if (!payload) {
     throw new Error(t('codex_quota.empty_windows'));
   }
+  const capturedAtMs = Date.now();
 
   const planTypeFromUsage = normalizePlanType(payload.plan_type ?? payload.planType);
   const resetCredits = payload.rate_limit_reset_credits ?? payload.rateLimitResetCredits ?? null;
@@ -394,6 +396,7 @@ const fetchCodexQuota = async (file: AuthFileItem, t: TFunction): Promise<CodexQ
   const planType = planTypeFromUsage ?? planTypeFromFile;
   const windows = buildCodexQuotaWindows(payload, t);
   return {
+    capturedAtMs,
     planType,
     subscriptionActiveUntil,
     rateLimitResetCreditsAvailableCount,
@@ -466,6 +469,7 @@ export const CODEX_CONFIG: QuotaProviderData<CodexQuotaState, CodexQuotaData> = 
   buildSuccessState: (data) => ({
     status: 'success',
     windows: data.windows,
+    capturedAtMs: data.capturedAtMs,
     planType: data.planType,
     subscriptionActiveUntil: data.subscriptionActiveUntil,
     rateLimitResetCreditsAvailableCount: data.rateLimitResetCreditsAvailableCount,

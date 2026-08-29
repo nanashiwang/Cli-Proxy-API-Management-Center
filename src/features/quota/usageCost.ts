@@ -8,7 +8,8 @@ import { normalizeAuthIndex } from '@/utils/authIndex';
 import type { WeeklyUsageSample } from './weeklyUsageHistory';
 
 const DEFAULT_WEEKLY_WINDOW_HOURS = 7 * 24;
-const MINIMUM_ESTIMATE_DELTA_PERCENT = 3;
+const MINIMUM_ESTIMATE_DELTA_PERCENT = 5;
+const WEEKLY_RESET_KEY_BUCKET_MS = 60 * 1000;
 const MINIMUM_ESTIMATE_DELTA_COST_USD = 0.01;
 
 export type WeeklyEstimateConfidence = 'low' | 'medium' | 'high';
@@ -21,6 +22,7 @@ export interface WeeklyUsageBasis {
   fromMs: number;
   resetAtMs: number;
   usedPercent: number;
+  capturedAtMs: number;
 }
 
 export interface WeeklyUsageEstimate {
@@ -92,12 +94,20 @@ export const resolveCodexWeeklyUsageBasis = (
   const fromMs = resetAtMs - periodHours * 60 * 60 * 1000;
   if (!Number.isFinite(fromMs) || fromMs >= nowMs) return undefined;
 
+  const resetKeyMs =
+    Math.round(resetAtMs / WEEKLY_RESET_KEY_BUCKET_MS) * WEEKLY_RESET_KEY_BUCKET_MS;
+  const capturedAtMs =
+    typeof quota.capturedAtMs === 'number' && Number.isFinite(quota.capturedAtMs)
+      ? quota.capturedAtMs
+      : nowMs;
+
   return {
-    key: `codex:${authIndex}:${Math.round(resetAtMs)}`,
+    key: `codex:${authIndex}:${resetKeyMs}`,
     authIndex,
     fromMs,
     resetAtMs,
     usedPercent: Math.max(0, Math.min(100, usedPercent)),
+    capturedAtMs,
   };
 };
 
@@ -138,8 +148,11 @@ export const resolveWeeklyUsageEstimate = (
     return { status: 'insufficient', usedPercent: basis.usedPercent };
   }
 
-  const currentSample: WeeklyUsageSample = {
-    capturedAtMs,
+  const synchronizedSample = [...previousSamples]
+    .reverse()
+    .find((sample) => sample.capturedAtMs === basis.capturedAtMs);
+  const currentSample: WeeklyUsageSample = synchronizedSample ?? {
+    capturedAtMs: basis.capturedAtMs || capturedAtMs,
     costUsd: range.total_cost_usd,
     usedPercent: basis.usedPercent,
   };

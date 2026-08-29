@@ -235,6 +235,8 @@ export interface CodexQuotaWindow {
 export interface CodexQuotaState {
   status: 'idle' | 'loading' | 'success' | 'error';
   windows: CodexQuotaWindow[];
+  /** Instant when the official usage payload was received. */
+  capturedAtMs?: number;
   planType?: string | null;
   subscriptionActiveUntil?: string | number | null;
   rateLimitResetCreditsAvailableCount?: number | null;

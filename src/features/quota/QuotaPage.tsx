@@ -93,7 +93,6 @@ export function QuotaPage() {
   const [weeklyUsageHistory, setWeeklyUsageHistory] = useState<WeeklyUsageHistory>(() =>
     readWeeklyUsageHistory(apiBase)
   );
-  const [weeklySampleCapturedAtMs, setWeeklySampleCapturedAtMs] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tab, setTab] = useState<QuotaTabId>(() => readQuotaUiState()?.tab ?? 'all');
@@ -146,7 +145,6 @@ export function QuotaPage() {
 
   useEffect(() => {
     setWeeklyUsageHistory(readWeeklyUsageHistory(apiBase));
-    setWeeklySampleCapturedAtMs(null);
   }, [apiBase]);
 
   useEffect(() => {
@@ -237,9 +235,8 @@ export function QuotaPage() {
       )
       .then((response) => {
         if (!active) return;
-        const capturedAtMs = Date.now();
+        const storedAtMs = Date.now();
         setAccountRangeUsage(response);
-        setWeeklySampleCapturedAtMs(capturedAtMs);
         setWeeklyUsageHistory((previous) => {
           let next = previous;
           const basisByKey = new Map(weeklyBasisList.map((basis) => [basis.key, basis]));
@@ -250,11 +247,11 @@ export function QuotaPage() {
               next,
               basis,
               {
-                capturedAtMs,
+                capturedAtMs: basis.capturedAtMs,
                 costUsd: range.total_cost_usd,
                 usedPercent: basis.usedPercent,
               },
-              capturedAtMs
+              storedAtMs
             );
           });
           if (next !== previous) writeWeeklyUsageHistory(apiBase, next);
@@ -289,7 +286,7 @@ export function QuotaPage() {
         accountUsage?.storage,
         accountRangeStatus,
         weeklyBasis ? getWeeklyUsageSamples(weeklyUsageHistory, weeklyBasis.key) : [],
-        weeklySampleCapturedAtMs ?? Date.now()
+        weeklyBasis?.capturedAtMs ?? Date.now()
       );
     },
     [
@@ -298,7 +295,6 @@ export function QuotaPage() {
       rangeUsageByKey,
       usageByAuthIndex,
       weeklyBasisByEntryKey,
-      weeklySampleCapturedAtMs,
       weeklyUsageHistory,
     ]
   );

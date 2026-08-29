@@ -104,6 +104,7 @@ describe('quota account usage cost', () => {
       { name: 'codex.json', authIndex: '42' },
       {
         status: 'success',
+        capturedAtMs: nowMs,
         windows: [
           {
             id: 'gpt-5-3-codex-spark-weekly-0',
@@ -132,6 +133,7 @@ describe('quota account usage cost', () => {
       fromMs: resetAtMs - 168 * 60 * 60 * 1000,
       resetAtMs,
       usedPercent: 96,
+      capturedAtMs: nowMs,
     });
   });
 
@@ -141,7 +143,8 @@ describe('quota account usage cost', () => {
       authIndex: '42',
       fromMs: Date.parse('2026-08-13T11:30:00.000Z'),
       resetAtMs: Date.parse('2026-08-20T11:30:00.000Z'),
-      usedPercent: 23,
+      usedPercent: 25,
+      capturedAtMs: Date.parse('2026-08-19T03:30:00.000Z'),
     };
     const estimate = resolveWeeklyUsageEstimate(
       basis,
@@ -159,11 +162,96 @@ describe('quota account usage cost', () => {
     );
 
     expect(estimate.status).toBe('ready');
-    expect(estimate.totalUsd).toBeCloseTo(58.3333333333, 10);
+    expect(estimate.totalUsd).toBeCloseTo(35, 10);
     expect(estimate.windowCostUsd).toBe(61.75);
     expect(estimate.sampledCostUsd).toBeCloseTo(1.75, 10);
-    expect(estimate.sampledPercent).toBe(3);
-    expect(estimate.confidence).toBe('low');
+    expect(estimate.sampledPercent).toBe(5);
+    expect(estimate.confidence).toBe('medium');
+  });
+
+  test('uses the cost captured with the same quota observation', () => {
+    const capturedAtMs = Date.parse('2026-08-19T03:30:00.000Z');
+    const estimate = resolveWeeklyUsageEstimate(
+      {
+        key: 'codex:42:1787205600000',
+        authIndex: '42',
+        fromMs: Date.parse('2026-08-13T11:30:00.000Z'),
+        resetAtMs: Date.parse('2026-08-20T11:30:00.000Z'),
+        usedPercent: 25,
+        capturedAtMs,
+      },
+      range(70),
+      storage('2026-08-12T00:00:00.000Z'),
+      'ready',
+      [
+        {
+          capturedAtMs: Date.parse('2026-08-19T02:30:00.000Z'),
+          costUsd: 60,
+          usedPercent: 20,
+        },
+        { capturedAtMs, costUsd: 61.75, usedPercent: 25 },
+      ],
+      Date.parse('2026-08-19T04:30:00.000Z')
+    );
+
+    expect(estimate.status).toBe('ready');
+    expect(estimate.totalUsd).toBeCloseTo(35, 10);
+    expect(estimate.windowCostUsd).toBe(70);
+    expect(estimate.sampledCostUsd).toBeCloseTo(1.75, 10);
+  });
+
+  test('keeps the weekly history key stable across one-second reset drift', () => {
+    const nowMs = Date.parse('2026-08-19T03:30:00.000Z');
+    const resetAtMs = Date.parse('2026-08-20T11:30:04.000Z');
+    const makeQuota = (resetAt: number) => ({
+      status: 'success' as const,
+      capturedAtMs: nowMs,
+      windows: [
+        {
+          id: 'weekly',
+          label: 'Weekly',
+          usedPercent: 25,
+          resetLabel: '',
+          resetAtMs: resetAt,
+          periodHours: 168,
+        },
+      ],
+    });
+
+    const first = resolveCodexWeeklyUsageBasis(
+      { name: 'codex.json', authIndex: '42' },
+      makeQuota(resetAtMs),
+      nowMs
+    );
+    const second = resolveCodexWeeklyUsageBasis(
+      { name: 'codex.json', authIndex: '42' },
+      makeQuota(resetAtMs + 1000),
+      nowMs
+    );
+
+    expect(first?.key).toBe(second?.key);
+  });
+
+  test('does not append another cost snapshot for the same quota observation', () => {
+    const basis = { key: 'codex:42:1787205600000' };
+    const capturedAtMs = Date.parse('2026-08-19T03:30:00.000Z');
+    const history = appendWeeklyUsageSample(
+      { samplesByKey: {} },
+      basis,
+      { capturedAtMs, costUsd: 61.75, usedPercent: 25 },
+      capturedAtMs
+    );
+    const next = appendWeeklyUsageSample(
+      history,
+      basis,
+      { capturedAtMs, costUsd: 70, usedPercent: 25 },
+      capturedAtMs + 60_000
+    );
+
+    expect(next).toBe(history);
+    expect(getWeeklyUsageSamples(next, basis.key)).toEqual([
+      { capturedAtMs, costUsd: 61.75, usedPercent: 25 },
+    ]);
   });
 
   test('keeps estimates in sampling state without a historical baseline', () => {
@@ -174,6 +262,7 @@ describe('quota account usage cost', () => {
         fromMs: Date.parse('2026-08-13T11:30:00.000Z'),
         resetAtMs: Date.parse('2026-08-20T11:30:00.000Z'),
         usedPercent: 23,
+        capturedAtMs: Date.parse('2026-08-19T03:30:00.000Z'),
       },
       range(61.75),
       storage('2026-08-12T00:00:00.000Z'),
@@ -190,7 +279,8 @@ describe('quota account usage cost', () => {
         authIndex: '42',
         fromMs: Date.parse('2026-08-13T11:30:00.000Z'),
         resetAtMs: Date.parse('2026-08-20T11:30:00.000Z'),
-        usedPercent: 21,
+        usedPercent: 24,
+        capturedAtMs: Date.parse('2026-08-19T03:30:00.000Z'),
       },
       range(62),
       storage('2026-08-12T00:00:00.000Z'),
@@ -205,7 +295,7 @@ describe('quota account usage cost', () => {
       Date.parse('2026-08-19T03:30:00.000Z')
     );
 
-    expect(estimate).toEqual({ status: 'sampling', usedPercent: 21 });
+    expect(estimate).toEqual({ status: 'sampling', usedPercent: 24 });
   });
 
   test('does not estimate across a project statistics reset', () => {
@@ -215,7 +305,8 @@ describe('quota account usage cost', () => {
         authIndex: '42',
         fromMs: Date.parse('2026-08-13T11:30:00.000Z'),
         resetAtMs: Date.parse('2026-08-20T11:30:00.000Z'),
-        usedPercent: 23,
+        usedPercent: 25,
+        capturedAtMs: Date.parse('2026-08-19T03:30:00.000Z'),
       },
       range(0),
       storage('2026-08-19T03:00:00.000Z'),
@@ -230,7 +321,7 @@ describe('quota account usage cost', () => {
       Date.parse('2026-08-19T03:30:00.000Z')
     );
 
-    expect(estimate).toEqual({ status: 'sampling', usedPercent: 23 });
+    expect(estimate).toEqual({ status: 'sampling', usedPercent: 25 });
   });
 
   test('starts a new sampling segment after a project statistics reset', () => {
@@ -274,6 +365,7 @@ describe('quota account usage cost', () => {
         fromMs: Date.parse('2026-08-13T11:30:00.000Z'),
         resetAtMs: Date.parse('2026-08-20T11:30:00.000Z'),
         usedPercent: 96,
+        capturedAtMs: Date.parse('2026-08-19T03:30:00.000Z'),
       },
       range(19.2),
       storage('2026-08-18T00:00:00.000Z'),
