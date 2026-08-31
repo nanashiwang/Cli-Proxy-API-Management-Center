@@ -20,6 +20,8 @@ import { ProviderStatusBar } from '@/components/providers/ProviderStatusBar';
 import {
   getOpenAIProviderRecentStatusData,
   getOpenAIProviderTotalStats,
+  getOpenCodeProviderRecentStatusData,
+  getOpenCodeProviderTotalStats,
   getProviderRecentStatusData,
   getProviderTotalStats,
   getProviderUsageKey,
@@ -55,6 +57,9 @@ const resolveStatusBarData = (
   if (resource.brand === 'openaiCompatibility') {
     return getOpenAIProviderRecentStatusData(resource.raw as OpenAIProviderConfig, usageByProvider);
   }
+  if (resource.brand === 'openCode') {
+    return getOpenCodeProviderRecentStatusData(usageByProvider);
+  }
   return getProviderRecentStatusData(
     usageByProvider,
     getProviderUsageKey(resource.brand),
@@ -69,6 +74,9 @@ const resolveTotalStats = (
 ): { success: number; failure: number } => {
   if (resource.brand === 'openaiCompatibility') {
     return getOpenAIProviderTotalStats(resource.raw as OpenAIProviderConfig, usageByProvider);
+  }
+  if (resource.brand === 'openCode') {
+    return getOpenCodeProviderTotalStats(usageByProvider);
   }
   return getProviderTotalStats(
     usageByProvider,

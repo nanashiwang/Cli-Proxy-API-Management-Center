@@ -186,6 +186,32 @@ export function getProviderRecentStatusData(
   );
 }
 
+/**
+ * Native providers with a masked multi-key configuration (for example OpenCode)
+ * cannot be looked up by one API key in the browser. Aggregate all runtime
+ * entries in the provider bucket instead.
+ */
+export function getOpenCodeProviderRecentStatusData(
+  usageByProvider: ProviderRecentUsageMap
+): StatusBarData {
+  const entries = Array.from(usageByProvider.get('opencode')?.values() ?? []);
+  return statusBarDataFromRecentRequests(
+    mergeRecentRequestBucketGroups(entries.map((entry) => entry.recentRequests))
+  );
+}
+
+export function getOpenCodeProviderTotalStats(
+  usageByProvider: ProviderRecentUsageMap
+): { success: number; failure: number } {
+  return Array.from(usageByProvider.get('opencode')?.values() ?? []).reduce(
+    (total, entry) => ({
+      success: total.success + entry.success,
+      failure: total.failure + entry.failed,
+    }),
+    { success: 0, failure: 0 }
+  );
+}
+
 export function getProviderTotalStats(
   usageByProvider: ProviderRecentUsageMap,
   provider: string,
