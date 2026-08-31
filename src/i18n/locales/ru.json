@@ -1735,6 +1735,8 @@
       "tierHint": "Официальные адреса фиксированы и доступны только для чтения; другой upstream указать нельзя.",
       "keyEntry": "Ключ {{index}}",
       "addKey": "Добавить ключ",
+      "note": "Заметка",
+      "notePlaceholder": "например: аккаунт Алисы, команда A, резервный 01",
       "headers": "Заголовки (JSON)",
       "protocolOverrides": "Переопределения протокола (JSON)",
       "protocolOverridesHint": "Укажите для модели chat, responses или anthropic; пусто — автоматическое определение.",

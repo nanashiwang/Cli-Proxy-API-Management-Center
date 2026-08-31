@@ -1238,6 +1238,27 @@
   word-break: break-all;
 }
 
+.apiKeyEntryIdentity {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.apiKeyEntryNote {
+  color: var(--text-primary);
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.apiKeyEntryNoteLabel {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
 .apiKeyEntryProxy {
   color: var(--text-tertiary);
   font-size: 11px;

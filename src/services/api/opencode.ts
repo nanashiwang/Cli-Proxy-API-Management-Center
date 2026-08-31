@@ -29,6 +29,9 @@ const normalizeKey = (value: unknown): OpenCodeKeyConfig | null => {
   const apiKeyConfigured = value['api-key-configured'] === true || Boolean(apiKey);
   if (!apiKey && !apiKeyConfigured) return null;
   const key: OpenCodeKeyConfig = { apiKey };
+  if (typeof value.note === 'string' && value.note.trim()) {
+    key.note = value.note.trim();
+  }
   if (!apiKey && apiKeyConfigured) key.apiKeyConfigured = true;
   if (typeof value['api-key-preview'] === 'string' && value['api-key-preview'].trim()) {
     key.apiKeyPreview = value['api-key-preview'].trim();
@@ -100,6 +103,7 @@ const serializeKey = (key: OpenCodeKeyConfig) => {
   const apiKey = key.apiKey.trim();
   const result: Record<string, unknown> = {
     'api-key': apiKey,
+    note: key.note?.trim() || undefined,
     'api-key-configured': apiKey ? undefined : key.apiKeyConfigured,
     'api-key-preview': apiKey ? undefined : key.apiKeyPreview,
     'source-index': key.sourceIndex,
@@ -116,7 +120,9 @@ const serializeKey = (key: OpenCodeKeyConfig) => {
 
 const serializeTier = (tier: OpenCodeTierConfig) => ({
   'base-url': tier.baseUrl,
-  'api-key-entries': tier.apiKeyEntries.map(serializeKey).filter((key) => key['api-key'] || key['api-key-configured']),
+  'api-key-entries': tier.apiKeyEntries
+    .map(serializeKey)
+    .filter((key) => key['api-key'] || key['api-key-configured']),
   headers: serializeHeaders(tier.headers),
 });
 

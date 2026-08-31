@@ -29,8 +29,10 @@ export function ResourceDetailView({ resource, usageByProvider }: ResourceDetail
 
   if (resource.brand === 'openCode') {
     const raw = resource.raw as OpenCodeConfig;
-    const zenKeys = raw.zen.apiKeyEntries.length;
-    const goKeys = raw.go.apiKeyEntries.length;
+    const openCodeTiers = [
+      { label: t('providersPage.openCode.zen'), tier: raw.zen },
+      { label: t('providersPage.openCode.go'), tier: raw.go },
+    ];
     return (
       <div>
         <div className={styles.detailHeader}>
@@ -50,11 +52,11 @@ export function ResourceDetailView({ resource, usageByProvider }: ResourceDetail
           </div>
           <div>
             <dt className={styles.dt}>{t('providersPage.openCode.zen')}</dt>
-            <dd className={styles.dd}>{zenKeys}</dd>
+            <dd className={styles.dd}>{raw.zen.apiKeyEntries.length}</dd>
           </div>
           <div>
             <dt className={styles.dt}>{t('providersPage.openCode.go')}</dt>
-            <dd className={styles.dd}>{goKeys}</dd>
+            <dd className={styles.dd}>{raw.go.apiKeyEntries.length}</dd>
           </div>
           <div>
             <dt className={styles.dt}>{t('providersPage.openCode.anonymous')}</dt>
@@ -69,6 +71,48 @@ export function ResourceDetailView({ resource, usageByProvider }: ResourceDetail
             <dd className={styles.dd}>{raw.refreshSeconds ?? 300}</dd>
           </div>
         </dl>
+        {openCodeTiers.some(({ tier }) => tier.apiKeyEntries.length > 0) ? (
+          <div className={styles.apiKeyEntriesSection}>
+            {openCodeTiers.map(({ label, tier }) =>
+              tier.apiKeyEntries.length > 0 ? (
+                <div key={label}>
+                  <div className={styles.apiKeyEntriesLabel}>
+                    {label} · {t('providersPage.form.apiKeyEntriesSection')}:{' '}
+                    {tier.apiKeyEntries.length}
+                  </div>
+                  <div className={styles.apiKeyEntryList}>
+                    {tier.apiKeyEntries.map((entry, entryIndex) => {
+                      const keyPreview =
+                        entry.apiKeyPreview ||
+                        (entry.apiKey
+                          ? maskApiKey(entry.apiKey)
+                          : t('providersPage.status.notSet'));
+                      return (
+                        <div key={`${label}-${entryIndex}`} className={styles.apiKeyEntryCard}>
+                          <span className={styles.apiKeyEntryIndex}>{entryIndex + 1}</span>
+                          <div className={styles.apiKeyEntryIdentity}>
+                            {entry.note ? (
+                              <span className={styles.apiKeyEntryNote}>
+                                <span className={styles.apiKeyEntryNoteLabel}>
+                                  {t('providersPage.openCode.note')}:
+                                </span>{' '}
+                                {entry.note}
+                              </span>
+                            ) : null}
+                            <span className={styles.apiKeyEntryKey}>{keyPreview}</span>
+                          </div>
+                          {entry.proxyUrl ? (
+                            <span className={styles.apiKeyEntryProxy}>{entry.proxyUrl}</span>
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null
+            )}
+          </div>
+        ) : null}
       </div>
     );
   }

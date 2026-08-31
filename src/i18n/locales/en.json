@@ -1757,6 +1757,8 @@
       "tierHint": "Official endpoints are fixed read-only URLs and cannot be changed to another upstream.",
       "keyEntry": "Key {{index}}",
       "addKey": "Add key",
+      "note": "Note",
+      "notePlaceholder": "e.g. Alice account, Team A, backup 01",
       "headers": "Headers (JSON)",
       "protocolOverrides": "Protocol overrides (JSON)",
       "protocolOverridesHint": "Set chat, responses, or anthropic per model; leave empty for automatic detection.",

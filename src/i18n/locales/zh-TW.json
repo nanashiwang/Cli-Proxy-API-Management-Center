@@ -1783,6 +1783,8 @@
       "tierHint": "官方端點固定為唯讀地址，不能修改為其他上游。",
       "keyEntry": "金鑰 {{index}}",
       "addKey": "新增金鑰",
+      "note": "備註",
+      "notePlaceholder": "例如：張三帳號、團隊 A、備用帳號 01",
       "headers": "請求標頭（JSON）",
       "protocolOverrides": "協定覆蓋（JSON）",
       "protocolOverridesHint": "按模型指定 chat、responses 或 anthropic 協定；留空使用自動識別。",

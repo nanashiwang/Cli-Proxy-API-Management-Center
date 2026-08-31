@@ -76,6 +76,8 @@ export interface OpenAIProviderConfig {
 
 export interface OpenCodeKeyConfig {
   apiKey: string;
+  /** Optional operator-facing label for the account or purpose of this key. */
+  note?: string;
   /** Returned by the management API when the real credential is hidden. */
   apiKeyConfigured?: boolean;
   apiKeyPreview?: string;
@@ -107,6 +109,7 @@ export interface OpenCodeConfig {
 
 export interface OpenCodeKeyFormInput {
   apiKey: string;
+  note: string;
   existingApiKey?: string;
   existingApiKeyConfigured?: boolean;
   existingApiKeyPreview?: string;

@@ -24,6 +24,7 @@ interface OpenCodeProviderFormProps {
 
 const emptyKey = (): OpenCodeKeyFormInput => ({
   apiKey: '',
+  note: '',
   proxyUrl: '',
   priority: undefined,
   weight: undefined,
@@ -33,6 +34,7 @@ const keysFromTier = (tier: OpenCodeTierConfig): OpenCodeKeyFormInput[] =>
   tier.apiKeyEntries.length
     ? tier.apiKeyEntries.map((entry, index) => ({
         apiKey: '',
+        note: entry.note ?? '',
         existingApiKey: entry.apiKey || undefined,
         existingApiKeyConfigured: entry.apiKeyConfigured ?? Boolean(entry.apiKey),
         existingApiKeyPreview: entry.apiKeyPreview,
@@ -119,6 +121,7 @@ const buildTier = (
         priority: entry.priority,
         weight: entry.weight,
         proxyUrl: entry.proxyUrl.trim() || undefined,
+        note: entry.note.trim() || undefined,
       } satisfies OpenCodeKeyConfig;
     })
     .filter(Boolean) as OpenCodeKeyConfig[];
@@ -264,6 +267,18 @@ export function OpenCodeProviderForm({
                 onChange={(event) => updateKey(tier, index, { apiKey: event.target.value })}
                 disabled={mutating}
                 autoComplete="new-password"
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>{t('providersPage.openCode.note')}</label>
+              <input
+                className={styles.input}
+                type="text"
+                value={entry.note}
+                onChange={(event) => updateKey(tier, index, { note: event.target.value })}
+                disabled={mutating}
+                placeholder={t('providersPage.openCode.notePlaceholder')}
+                maxLength={200}
               />
             </div>
             <div className={styles.fieldRow}>

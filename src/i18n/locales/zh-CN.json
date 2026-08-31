@@ -1757,6 +1757,8 @@
       "tierHint": "官方端点固定为只读地址，不能修改为其他上游。",
       "keyEntry": "密钥 {{index}}",
       "addKey": "添加密钥",
+      "note": "备注",
+      "notePlaceholder": "例如：张三账号、团队 A、备用账号 01",
       "headers": "请求头（JSON）",
       "protocolOverrides": "协议覆盖（JSON）",
       "protocolOverridesHint": "按模型指定 chat、responses 或 anthropic 协议；留空使用自动识别。",

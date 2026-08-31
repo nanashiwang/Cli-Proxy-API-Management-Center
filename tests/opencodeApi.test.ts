@@ -10,7 +10,9 @@ describe('OpenCode management config', () => {
         'refresh-seconds': 600,
         zen: {
           'base-url': 'https://opencode.ai/zen',
-          'api-key-entries': [{ 'api-key': 'zen-key', priority: 3, weight: 2 }],
+          'api-key-entries': [
+            { 'api-key': 'zen-key', note: '  张三账号  ', priority: 3, weight: 2 },
+          ],
         },
         go: { 'base-url': 'https://opencode.ai/zen/go', 'api-key-entries': [] },
       },
@@ -21,6 +23,7 @@ describe('OpenCode management config', () => {
     expect(config.refreshSeconds).toBe(600);
     expect(config.zen.apiKeyEntries[0]).toEqual({
       apiKey: 'zen-key',
+      note: '张三账号',
       priority: 3,
       weight: 2,
     });
@@ -38,6 +41,7 @@ describe('OpenCode management config', () => {
               'api-key-configured': true,
               'api-key-preview': 'zens...key',
               'source-index': 2,
+              note: '张三账号',
             },
           ],
         },
@@ -50,6 +54,7 @@ describe('OpenCode management config', () => {
       apiKeyConfigured: true,
       apiKeyPreview: 'zens...key',
       sourceIndex: 2,
+      note: '张三账号',
     });
   });
 
@@ -62,7 +67,13 @@ describe('OpenCode management config', () => {
       zen: {
         baseUrl: 'https://opencode.ai/zen',
         apiKeyEntries: [
-          { apiKey: '', apiKeyConfigured: true, sourceIndex: 1, apiKeyPreview: 'hidden' },
+          {
+            apiKey: '',
+            apiKeyConfigured: true,
+            sourceIndex: 1,
+            apiKeyPreview: 'hidden',
+            note: '  备用账号  ',
+          },
         ],
       },
       go: { baseUrl: 'https://opencode.ai/zen/go', apiKeyEntries: [] },
@@ -71,6 +82,7 @@ describe('OpenCode management config', () => {
     expect(serialized.zen['api-key-entries']).toEqual([
       {
         'api-key': '',
+        note: '备用账号',
         'api-key-configured': true,
         'api-key-preview': 'hidden',
         'source-index': 1,
@@ -86,7 +98,7 @@ describe('OpenCode management config', () => {
       refreshSeconds: 300,
       zen: {
         baseUrl: 'https://opencode.ai/zen',
-        apiKeyEntries: [{ apiKey: 'zen-key', proxyUrl: 'http://127.0.0.1:7890' }],
+        apiKeyEntries: [{ apiKey: 'zen-key', note: 'Zen 账号', proxyUrl: 'http://127.0.0.1:7890' }],
       },
       go: {
         baseUrl: 'https://opencode.ai/zen/go',
@@ -95,7 +107,7 @@ describe('OpenCode management config', () => {
     });
 
     expect(serialized.zen['api-key-entries']).toEqual([
-      { 'api-key': 'zen-key', 'proxy-url': 'http://127.0.0.1:7890' },
+      { 'api-key': 'zen-key', note: 'Zen 账号', 'proxy-url': 'http://127.0.0.1:7890' },
     ]);
     expect(serialized.go['api-key-entries']).toEqual([
       { 'api-key': 'go-key', 'disable-cooling': true },
