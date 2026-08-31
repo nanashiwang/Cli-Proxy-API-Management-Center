@@ -9,6 +9,7 @@ import { isMultiProtocolSponsorBrand } from '../sponsorDefinitions';
 import type { ProviderBrand, ProviderEntryFormInput, ProviderResource } from '../types';
 import type { UseProviderWorkbenchResult } from '../useProviderWorkbench';
 import { BaseProviderForm } from './forms/BaseProviderForm';
+import { OpenCodeProviderForm } from './forms/OpenCodeProviderForm';
 import { ResourceDetailView } from './ResourceDetailView';
 import { SponsorProviderForm } from './forms/SponsorProviderForm';
 import styles from './forms/sharedForm.module.scss';
@@ -143,6 +144,19 @@ export function ProviderSheet({
       return <ResourceDetailView resource={state.resource} usageByProvider={usageByProvider} />;
     }
     const formKey = `${state.brand}:${state.resource?.id ?? 'new'}:${state.mode}`;
+    if (state.brand === 'openCode') {
+      return (
+        <OpenCodeProviderForm
+          key={formKey}
+          resource={state.resource}
+          mode={state.mode}
+          mutating={formMutating}
+          formId={formId}
+          onSubmit={state.mode === 'create' ? handleCreate : handleUpdate}
+          onDirtyChange={handleDirtyChange}
+        />
+      );
+    }
     if (isMultiProtocolSponsorBrand(state.brand)) {
       return (
         <SponsorProviderForm
@@ -240,25 +254,27 @@ export function ProviderSheet({
       title={titleText}
       description={t('providersPage.table.description', {
         route:
-          state.brand === 'openaiCompatibility'
-            ? '/ai-providers/openai'
-            : state.brand === 'apikeyFun'
-              ? '/quick-start'
-              : state.brand === 'claudeApi'
-                ? '/ai-providers/claudeapi'
-                : state.brand === 'code0'
-                  ? '/ai-providers/code0'
-                  : state.brand === 'fennoAI'
-                    ? '/ai-providers/fennoai'
-                    : state.brand === 'qiniuCloud'
-                      ? '/ai-providers/qiniu'
-                      : state.brand === 'lmuAI'
-                        ? '/ai-providers/lmuai'
-                        : state.brand === 'infistar'
-                          ? '/ai-providers/infistar'
-                          : state.brand === 'kimi'
-                            ? '/ai-providers/kimi'
-                            : `/ai-providers/${state.brand}`,
+          state.brand === 'openCode'
+            ? '/ai-providers/opencode'
+            : state.brand === 'openaiCompatibility'
+              ? '/ai-providers/openai'
+              : state.brand === 'apikeyFun'
+                ? '/quick-start'
+                : state.brand === 'claudeApi'
+                  ? '/ai-providers/claudeapi'
+                  : state.brand === 'code0'
+                    ? '/ai-providers/code0'
+                    : state.brand === 'fennoAI'
+                      ? '/ai-providers/fennoai'
+                      : state.brand === 'qiniuCloud'
+                        ? '/ai-providers/qiniu'
+                        : state.brand === 'lmuAI'
+                          ? '/ai-providers/lmuai'
+                          : state.brand === 'infistar'
+                            ? '/ai-providers/infistar'
+                            : state.brand === 'kimi'
+                              ? '/ai-providers/kimi'
+                              : `/ai-providers/${state.brand}`,
       })}
       footer={footer}
       closeDisabled={submitting}

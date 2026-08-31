@@ -1495,7 +1495,8 @@
       "qiniuCloud": "Qiniu Cloud",
       "lmuAI": "LMU AI (Lingmou AI)",
       "infistar": "Infistar",
-      "kimi": "Kimi"
+      "kimi": "Kimi",
+      "openCode": "OpenCode"
     },
     "table": {
       "key": "Key",
@@ -1741,6 +1742,27 @@
     },
     "modelCatalog": {
       "notLoaded": "Not loaded"
+    },
+    "openCode": {
+      "title": "OpenCode Zen / Go",
+      "description": "Configure native OpenCode Zen/Go here. Keys are used only to connect to the official OpenCode endpoints.",
+      "enabled": "Enable OpenCode",
+      "enabledHint": "When enabled, CPA includes OpenCode models in unified routing.",
+      "prefer": "Preferred tier",
+      "anonymous": "Allow anonymous Zen",
+      "anonymousHint": "Only models marked free in the public OpenCode catalog are exposed.",
+      "refreshSeconds": "Model catalog refresh interval (seconds)",
+      "zen": "OpenCode Zen",
+      "go": "OpenCode Go",
+      "tierHint": "Official endpoints are fixed read-only URLs and cannot be changed to another upstream.",
+      "keyEntry": "Key {{index}}",
+      "addKey": "Add key",
+      "headers": "Headers (JSON)",
+      "protocolOverrides": "Protocol overrides (JSON)",
+      "protocolOverridesHint": "Set chat, responses, or anthropic per model; leave empty for automatic detection.",
+      "validation": {
+        "credentials": "When OpenCode is enabled, add at least one key or allow anonymous Zen."
+      }
     }
   },
   "usage_stats": {

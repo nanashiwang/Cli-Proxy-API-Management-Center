@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { opencodeApi } from '@/services/api/opencode';
 import { providersApi } from '@/services/api';
 import { getErrorMessage } from '@/utils/helpers';
 import { useAuthStore, useConfigStore } from '@/stores';
@@ -7,7 +8,13 @@ import {
   withDisableAllModelsRule,
   withoutDisableAllModelsRule,
 } from '@/components/providers/utils';
-import type { GeminiKeyConfig, ModelAlias, OpenAIProviderConfig, ProviderKeyConfig } from '@/types';
+import type {
+  GeminiKeyConfig,
+  ModelAlias,
+  OpenAIProviderConfig,
+  OpenCodeConfig,
+  ProviderKeyConfig,
+} from '@/types';
 import {
   apiKeyFunToResource,
   claudeApiToResource,
@@ -22,6 +29,7 @@ import {
   lmuAIToResource,
   infistarToResource,
   kimiToResource,
+  openCodeToResource,
   vertexToResource,
   xaiToResource,
 } from './adapters';
@@ -405,6 +413,7 @@ export function useProviderWorkbench(): UseProviderWorkbenchResult {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [mutating, setMutating] = useState<boolean>(false);
   const [fetchedAt, setFetchedAt] = useState<string>(() => new Date().toISOString());
+  const [openCodeConfig, setOpenCodeConfig] = useState<OpenCodeConfig | null>(null);
 
   const hasFetchedRef = useRef(false);
 
@@ -414,10 +423,11 @@ export function useProviderWorkbench(): UseProviderWorkbenchResult {
     setIsFetching(true);
     setErrorMessage(null);
     try {
-      const [configResult, vertexResult, openaiResult] = await Promise.allSettled([
+      const [configResult, vertexResult, openaiResult, openCodeResult] = await Promise.allSettled([
         fetchConfig(true),
         providersApi.getVertexConfigs(),
         providersApi.getOpenAIProviders(),
+        opencodeApi.getConfig(),
       ]);
       if (configResult.status !== 'fulfilled') {
         throw configResult.reason;
@@ -428,6 +438,7 @@ export function useProviderWorkbench(): UseProviderWorkbenchResult {
       if (openaiResult.status === 'fulfilled') {
         updateConfigValue('openai-compatibility', openaiResult.value || []);
       }
+      setOpenCodeConfig(openCodeResult.status === 'fulfilled' ? openCodeResult.value : null);
       setFetchedAt(new Date().toISOString());
     } catch (err) {
       setErrorMessage(getErrorMessage(err) || 'Failed to load providers');
@@ -549,6 +560,9 @@ export function useProviderWorkbench(): UseProviderWorkbenchResult {
             []
           );
           break;
+        case 'openCode':
+          resources = openCodeConfig ? [openCodeToResource(openCodeConfig)] : [];
+          break;
         case 'apikeyFun': {
           const sponsorResource = apiKeyFunToResource(buildApiKeyFunRaw(config));
           resources = sponsorResource ? [sponsorResource] : [];
@@ -594,7 +608,7 @@ export function useProviderWorkbench(): UseProviderWorkbenchResult {
       fetchedAt,
       groups: groups.filter((group) => !isTemporarilyHiddenSponsorBrand(group.id)),
     };
-  }, [config, fetchedAt]);
+  }, [config, fetchedAt, openCodeConfig]);
 
   /* ------------------- mutations ------------------- */
 
@@ -743,6 +757,9 @@ export function useProviderWorkbench(): UseProviderWorkbenchResult {
           );
         } else if (brand === 'openaiCompatibility') {
           await providersApi.createOpenAIProvider(buildOpenAIConfig(input));
+        } else if (brand === 'openCode') {
+          if (!input.openCode) throw new Error('OpenCode configuration is required');
+          await opencodeApi.saveConfig(input.openCode);
         } else if (
           brand === 'apikeyFun' ||
           brand === 'code0' ||
@@ -822,6 +839,9 @@ export function useProviderWorkbench(): UseProviderWorkbenchResult {
             selector.index,
             buildOpenAIConfig(input, resource.raw as OpenAIProviderConfig)
           );
+        } else if (brand === 'openCode' && selector.brand === 'openCode') {
+          if (!input.openCode) throw new Error('OpenCode configuration is required');
+          await opencodeApi.saveConfig(input.openCode);
         } else if (
           brand === 'apikeyFun' ||
           brand === 'code0' ||
@@ -880,6 +900,8 @@ export function useProviderWorkbench(): UseProviderWorkbenchResult {
             (item, index) => (item.sourceIndex ?? index) !== sel.index
           );
           updateConfigValue('openai-compatibility', next);
+        } else if (sel.brand === 'openCode') {
+          await opencodeApi.deleteConfig();
         } else if (
           sel.brand === 'apikeyFun' ||
           sel.brand === 'code0' ||
@@ -963,6 +985,11 @@ export function useProviderWorkbench(): UseProviderWorkbenchResult {
           }
         } else if (brand === 'openaiCompatibility' && selector.brand === 'openaiCompatibility') {
           await providersApi.updateOpenAIProviderDisabled(selector.index, disabled);
+        } else if (brand === 'openCode' && selector.brand === 'openCode') {
+          await opencodeApi.saveConfig({
+            ...(resource.raw as OpenCodeConfig),
+            enabled: !disabled,
+          });
         } else if (
           brand === 'apikeyFun' ||
           brand === 'code0' ||

@@ -73,3 +73,62 @@ export interface OpenAIProviderConfig {
   sourceIndex?: number;
   [key: string]: unknown;
 }
+
+export interface OpenCodeKeyConfig {
+  apiKey: string;
+  /** Returned by the management API when the real credential is hidden. */
+  apiKeyConfigured?: boolean;
+  apiKeyPreview?: string;
+  sourceIndex?: number;
+  priority?: number;
+  weight?: number;
+  proxyUrl?: string;
+  headers?: Record<string, string>;
+  disableCooling?: boolean;
+  requestRetry?: number;
+  requestScopedErrors?: Array<Record<string, unknown>>;
+}
+
+export interface OpenCodeTierConfig {
+  baseUrl: string;
+  apiKeyEntries: OpenCodeKeyConfig[];
+  headers?: Record<string, string>;
+}
+
+export interface OpenCodeConfig {
+  enabled: boolean;
+  prefer?: 'zen' | 'go';
+  anonymous?: boolean;
+  refreshSeconds?: number;
+  zen: OpenCodeTierConfig;
+  go: OpenCodeTierConfig;
+  protocolOverrides?: Record<string, string>;
+}
+
+export interface OpenCodeKeyFormInput {
+  apiKey: string;
+  existingApiKey?: string;
+  existingApiKeyConfigured?: boolean;
+  existingApiKeyPreview?: string;
+  sourceIndex?: number;
+  priority?: number;
+  weight?: number;
+  proxyUrl: string;
+  existingConfig?: OpenCodeKeyConfig;
+}
+
+export interface OpenCodeFormInput {
+  enabled: boolean;
+  prefer: 'zen' | 'go';
+  anonymous: boolean;
+  refreshSeconds: number;
+  zen: {
+    keys: OpenCodeKeyFormInput[];
+    headersJson: string;
+  };
+  go: {
+    keys: OpenCodeKeyFormInput[];
+    headersJson: string;
+  };
+  protocolOverridesJson: string;
+}

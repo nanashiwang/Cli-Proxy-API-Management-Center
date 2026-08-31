@@ -2,7 +2,12 @@
  * AI 提供商 Workbench 视图模型(归一化各 brand 的异构 config)
  */
 
-import type { GeminiKeyConfig, OpenAIProviderConfig, ProviderKeyConfig } from '@/types';
+import type {
+  GeminiKeyConfig,
+  OpenAIProviderConfig,
+  OpenCodeConfig,
+  ProviderKeyConfig,
+} from '@/types';
 import type { ThinkingLevel } from './thinkingLevels';
 
 export type ProviderBrand =
@@ -20,7 +25,8 @@ export type ProviderBrand =
   | 'qiniuCloud'
   | 'lmuAI'
   | 'infistar'
-  | 'kimi';
+  | 'kimi'
+  | 'openCode';
 
 export type SponsorProviderBrand =
   'apikeyFun' | 'code0' | 'fennoAI' | 'qiniuCloud' | 'lmuAI' | 'infistar' | 'kimi';
@@ -40,6 +46,7 @@ export type ProviderResourceSelector =
   | { brand: 'claudeApi'; apiKey: string; baseUrl?: string; index: number }
   | { brand: 'vertex'; apiKey: string; baseUrl?: string; index: number }
   | { brand: 'openaiCompatibility'; name: string; index: number }
+  | { brand: 'openCode' }
   | {
       brand: 'apikeyFun';
       openaiIndices: number[];
@@ -225,4 +232,6 @@ export interface ProviderEntryFormInput {
   apiKeyEntries?: ApiKeyEntryInput[];
   /** APIKEY.FUN stores one grouped key per platform protocol. */
   sponsorKeyEntries?: SponsorKeyEntryInput[];
+  /** Native OpenCode Zen/Go form payload. */
+  openCode?: OpenCodeConfig;
 }

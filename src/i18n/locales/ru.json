@@ -1473,7 +1473,8 @@
       "qiniuCloud": "Qiniu Cloud",
       "lmuAI": "LMU AI (Lingmou AI)",
       "infistar": "Infistar",
-      "kimi": "Kimi"
+      "kimi": "Kimi",
+      "openCode": "OpenCode"
     },
     "table": {
       "key": "Ключ",
@@ -1719,6 +1720,27 @@
     },
     "modelCatalog": {
       "notLoaded": "Не загружено"
+    },
+    "openCode": {
+      "title": "OpenCode Zen / Go",
+      "description": "Настройте нативный OpenCode Zen/Go. Ключи используются только для подключения к официальным конечным точкам OpenCode.",
+      "enabled": "Включить OpenCode",
+      "enabledHint": "После включения CPA добавит модели OpenCode в единую маршрутизацию.",
+      "prefer": "Предпочтительный канал",
+      "anonymous": "Разрешить анонимный Zen",
+      "anonymousHint": "Доступны только бесплатные модели из публичного каталога OpenCode.",
+      "refreshSeconds": "Интервал обновления каталога моделей (секунды)",
+      "zen": "OpenCode Zen",
+      "go": "OpenCode Go",
+      "tierHint": "Официальные адреса фиксированы и доступны только для чтения; другой upstream указать нельзя.",
+      "keyEntry": "Ключ {{index}}",
+      "addKey": "Добавить ключ",
+      "headers": "Заголовки (JSON)",
+      "protocolOverrides": "Переопределения протокола (JSON)",
+      "protocolOverridesHint": "Укажите для модели chat, responses или anthropic; пусто — автоматическое определение.",
+      "validation": {
+        "credentials": "При включённом OpenCode добавьте хотя бы один ключ или разрешите анонимный Zen."
+      }
     }
   },
   "usage_stats": {

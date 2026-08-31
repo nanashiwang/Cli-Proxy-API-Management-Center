@@ -1,9 +1,10 @@
 name: auto-cpa-release
 
 on:
+  # Publish a personal release for every branch push; [skip release] remains the opt-out.
   push:
     branches:
-      - main
+      - '**'
 
 permissions:
   actions: write
@@ -15,7 +16,9 @@ concurrency:
 
 jobs:
   tag-and-release:
-    if: github.repository == 'nanashiwang/Cli-Proxy-API-Management-Center'
+    if: >-
+      github.repository == 'nanashiwang/Cli-Proxy-API-Management-Center' &&
+      !contains(github.event.head_commit.message, '[skip release]')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

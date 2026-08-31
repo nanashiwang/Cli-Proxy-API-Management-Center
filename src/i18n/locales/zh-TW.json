@@ -1521,7 +1521,8 @@
       "qiniuCloud": "七牛雲",
       "lmuAI": "LMU AI（靈眸AI）",
       "infistar": "無限星河",
-      "kimi": "Kimi"
+      "kimi": "Kimi",
+      "openCode": "OpenCode"
     },
     "table": {
       "key": "金鑰",
@@ -1767,6 +1768,27 @@
     },
     "modelCatalog": {
       "notLoaded": "未載入"
+    },
+    "openCode": {
+      "title": "OpenCode Zen / Go",
+      "description": "在此設定原生 OpenCode Zen/Go。金鑰僅用於 CPA 連線官方 OpenCode 端點。",
+      "enabled": "啟用 OpenCode",
+      "enabledHint": "啟用後，CPA 會將 OpenCode 模型納入統一路由。",
+      "prefer": "優先通道",
+      "anonymous": "允許匿名 Zen",
+      "anonymousHint": "僅使用 OpenCode 公開目錄中標記為免費的模型。",
+      "refreshSeconds": "模型目錄更新間隔（秒）",
+      "zen": "OpenCode Zen",
+      "go": "OpenCode Go",
+      "tierHint": "官方端點固定為唯讀地址，不能修改為其他上游。",
+      "keyEntry": "金鑰 {{index}}",
+      "addKey": "新增金鑰",
+      "headers": "請求標頭（JSON）",
+      "protocolOverrides": "協定覆蓋（JSON）",
+      "protocolOverridesHint": "按模型指定 chat、responses 或 anthropic 協定；留空使用自動識別。",
+      "validation": {
+        "credentials": "啟用 OpenCode 時，請至少新增一個金鑰或開啟匿名 Zen。"
+      }
     }
   },
   "usage_stats": {

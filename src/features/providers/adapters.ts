@@ -1,4 +1,9 @@
-import type { GeminiKeyConfig, OpenAIProviderConfig, ProviderKeyConfig } from '@/types';
+import type {
+  GeminiKeyConfig,
+  OpenAIProviderConfig,
+  OpenCodeConfig,
+  ProviderKeyConfig,
+} from '@/types';
 import { hasDisableAllModelsRule, stripDisableAllModelsRule } from '@/components/providers/utils';
 import { maskApiKey } from '@/utils/format';
 import {
@@ -155,6 +160,41 @@ export function claudeApiToResource(config: ProviderKeyConfig, index: number): P
 
 export function vertexToResource(config: ProviderKeyConfig, index: number): ProviderResource {
   return providerKeyToResource('vertex', config, index);
+}
+
+export function openCodeToResource(config: OpenCodeConfig): ProviderResource {
+  const keys = [...config.zen.apiKeyEntries, ...config.go.apiKeyEntries];
+  const firstEntry = keys.find(
+    (entry) => entry.apiKey.trim() || entry.apiKeyConfigured || entry.apiKeyPreview
+  );
+  const firstKeyPreview =
+    firstEntry?.apiKeyPreview || (firstEntry?.apiKey ? maskApiKey(firstEntry.apiKey) : '');
+  return {
+    id: 'openCode:0:opencode',
+    brand: 'openCode',
+    originalIndex: 0,
+    name: 'OpenCode',
+    identifier: firstKeyPreview || 'OpenCode',
+    apiKeyPreview: firstKeyPreview || null,
+    apiKey: null,
+    authIndex: null,
+    baseUrl: `${config.zen.baseUrl} / ${config.go.baseUrl}`,
+    proxyUrl: keys.find((entry) => entry.proxyUrl?.trim())?.proxyUrl ?? null,
+    prefix: null,
+    modelCount: 0,
+    models: [],
+    priority: Math.max(0, ...keys.map((entry) => normalizePriority(entry.priority))),
+    headerCount:
+      countHeaders(config.zen.headers) +
+      countHeaders(config.go.headers) +
+      keys.reduce((count, entry) => count + countHeaders(entry.headers), 0),
+    excludedModelCount: 0,
+    apiKeyEntryCount: keys.length,
+    disabled: config.enabled !== true,
+    flags: { protocols: ['chat', 'responses', 'anthropic'] },
+    selector: { brand: 'openCode' },
+    raw: config,
+  };
 }
 
 export function openaiToResource(config: OpenAIProviderConfig, index: number): ProviderResource {

@@ -122,6 +122,11 @@ export function ProviderResourceTable({
         renderMetric('keys', t('providersPage.table.metrics.keys'), r.apiKeyEntryCount),
         renderMetric('headers', t('providersPage.table.metrics.headers'), r.headerCount)
       );
+    } else if (r.brand === 'openCode') {
+      items.push(
+        renderMetric('keys', t('providersPage.table.metrics.keys'), r.apiKeyEntryCount),
+        renderMetric('headers', t('providersPage.table.metrics.headers'), r.headerCount)
+      );
     } else {
       items.push(
         renderMetric('models', t('providersPage.table.metrics.models'), r.modelCount),

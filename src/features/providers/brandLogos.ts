@@ -15,6 +15,7 @@ import xaiLightLogo from '@/assets/icons/grok.svg';
 import xaiDarkLogo from '@/assets/icons/grok-dark.svg';
 import kimiLightLogo from '@/assets/icons/kimi-light.svg';
 import kimiDarkLogo from '@/assets/icons/kimi-dark.svg';
+import opencodeLogo from '@/assets/icons/opencode.svg';
 import type { ProviderBrand } from './types';
 
 export interface ProviderBrandLogo {
@@ -40,6 +41,7 @@ export const PROVIDER_LOGOS: Record<ProviderBrand, ProviderBrandLogo> = {
   qiniuCloud: { src: qiniuCloudLogo, transparent: true },
   lmuAI: { src: lmuAILogo, transparent: true },
   infistar: { src: infistarLogo, transparent: true },
+  openCode: { src: opencodeLogo, transparent: true },
   kimi: {
     src: kimiDarkLogo,
     darkSrc: kimiLightLogo,

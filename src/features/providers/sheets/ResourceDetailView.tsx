@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Collapsible } from '@/components/ui/Collapsible';
 import { IconCheck, IconX } from '@/components/ui/icons';
 import { getProviderTotalStats, type ProviderRecentUsageMap } from '@/components/providers/utils';
-import type { OpenAIProviderConfig } from '@/types';
+import type { OpenAIProviderConfig, OpenCodeConfig } from '@/types';
 import { maskApiKey } from '@/utils/format';
 import {
   getSponsorProviderDefinition,
@@ -26,6 +26,52 @@ const sponsorProtocolEntryKey = (protocol: string): string => {
 
 export function ResourceDetailView({ resource, usageByProvider }: ResourceDetailViewProps) {
   const { t } = useTranslation();
+
+  if (resource.brand === 'openCode') {
+    const raw = resource.raw as OpenCodeConfig;
+    const zenKeys = raw.zen.apiKeyEntries.length;
+    const goKeys = raw.go.apiKeyEntries.length;
+    return (
+      <div>
+        <div className={styles.detailHeader}>
+          <div className={styles.sectionTitle}>{t('providersPage.providerNames.openCode')}</div>
+          <p className={styles.sectionDesc}>{t('providersPage.openCode.description')}</p>
+        </div>
+        <dl className={styles.dl}>
+          <div>
+            <dt className={styles.dt}>{t('providersPage.openCode.enabled')}</dt>
+            <dd className={styles.dd}>
+              {raw.enabled ? t('providersPage.status.enabled') : t('providersPage.status.disabled')}
+            </dd>
+          </div>
+          <div>
+            <dt className={styles.dt}>{t('providersPage.openCode.prefer')}</dt>
+            <dd className={styles.dd}>{raw.prefer === 'zen' ? 'OpenCode Zen' : 'OpenCode Go'}</dd>
+          </div>
+          <div>
+            <dt className={styles.dt}>{t('providersPage.openCode.zen')}</dt>
+            <dd className={styles.dd}>{zenKeys}</dd>
+          </div>
+          <div>
+            <dt className={styles.dt}>{t('providersPage.openCode.go')}</dt>
+            <dd className={styles.dd}>{goKeys}</dd>
+          </div>
+          <div>
+            <dt className={styles.dt}>{t('providersPage.openCode.anonymous')}</dt>
+            <dd className={styles.dd}>
+              {raw.anonymous
+                ? t('providersPage.status.enabled')
+                : t('providersPage.status.disabled')}
+            </dd>
+          </div>
+          <div>
+            <dt className={styles.dt}>{t('providersPage.openCode.refreshSeconds')}</dt>
+            <dd className={styles.dd}>{raw.refreshSeconds ?? 300}</dd>
+          </div>
+        </dl>
+      </div>
+    );
+  }
 
   if (isMultiProtocolSponsorBrand(resource.brand)) {
     const definition = getSponsorProviderDefinition(resource.brand);
