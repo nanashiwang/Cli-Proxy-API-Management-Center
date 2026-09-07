@@ -26,6 +26,7 @@ import { ProviderTabs } from '@/features/authFiles/components/ProviderTabs';
 import { QuotaHeader } from './components/QuotaHeader';
 import { QuotaCard } from './components/QuotaCard';
 import { QuotaTimeline } from './components/QuotaTimeline';
+import { QuotaCapacitySummary } from './components/QuotaCapacitySummary';
 import {
   CARD_ENTRANCE_BUDGET_MS,
   QUOTA_PAGE_SIZE,
@@ -197,6 +198,10 @@ export function QuotaPage() {
   const sortNow = sortMode === 'default' ? 0 : tick;
 
   const entries = useMemo(() => classifyQuotaFiles(files), [files]);
+  const capacityFiles = useMemo(
+    () => entries.filter((entry) => entry.type === 'codex').map((entry) => entry.file),
+    [entries]
+  );
   const weeklyBasisByEntryKey = useMemo(() => {
     const result = new Map<string, WeeklyUsageBasis>();
     entries.forEach((entry) => {
@@ -529,6 +534,15 @@ export function QuotaPage() {
             </Button>
           </div>
         )}
+
+        <QuotaCapacitySummary
+          key={apiBase}
+          server={apiBase}
+          files={capacityFiles}
+          quota={codexQuota}
+          enabled={!loading && !disableControls}
+          visible={tab === 'all' || tab === 'codex'}
+        />
 
         {/* 时间线只比较当前页凭证，避免大量凭证一次性生成无界泳道。 */}
         <QuotaTimeline
