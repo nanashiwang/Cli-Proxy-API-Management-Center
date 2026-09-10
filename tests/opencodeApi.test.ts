@@ -114,3 +114,55 @@ describe('OpenCode management config', () => {
     ]);
   });
 });
+
+describe('OpenCode retention round trip', () => {
+  test('keeps source identity, note and advanced fields after deleting an earlier key', () => {
+    const config = normalizeOpenCodeConfig({
+      opencode: {
+        enabled: true,
+        zen: {
+          'api-key-entries': [0, 1].map((index) => ({
+            'api-key': '',
+            'api-key-configured': true,
+            'source-index': index,
+            'api-key-preview': `key${index}...tail`,
+            'api-key-revision': `revision-${index}`,
+            note: `account ${index}`,
+            headers: { Authorization: 'Bearer head...tail' },
+            'disable-cooling': false,
+            'request-retry': 0,
+          })),
+        },
+      },
+    });
+    config.zen.apiKeyEntries.shift();
+    config.zen.apiKeyEntries[0].note = '';
+    const key = serializeOpenCodeConfig(config).zen['api-key-entries'][0];
+    expect(key).toMatchObject({
+      'api-key': '',
+      'api-key-configured': true,
+      'source-index': 1,
+      'api-key-preview': 'key1...tail',
+      'api-key-revision': 'revision-1',
+      headers: { Authorization: 'Bearer head...tail' },
+      'disable-cooling': false,
+      'request-retry': 0,
+    });
+    expect(key.note).toBeUndefined();
+  });
+
+  test('does not turn null retention indices or optional numbers into zero', () => {
+    const config = normalizeOpenCodeConfig({
+      'refresh-seconds': null,
+      zen: {
+        'api-key-entries': [
+          { 'api-key-configured': true, 'source-index': null, weight: null, 'request-retry': null },
+        ],
+      },
+    });
+    expect(config.refreshSeconds).toBe(300);
+    expect(config.zen.apiKeyEntries[0].sourceIndex).toBeUndefined();
+    expect(config.zen.apiKeyEntries[0].weight).toBeUndefined();
+    expect(config.zen.apiKeyEntries[0].requestRetry).toBeUndefined();
+  });
+});

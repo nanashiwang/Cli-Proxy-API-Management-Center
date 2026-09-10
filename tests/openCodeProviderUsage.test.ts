@@ -44,3 +44,29 @@ describe('OpenCode provider usage', () => {
     expect(getOpenCodeProviderRecentStatusData(usageByProvider).totalFailure).toBe(0);
   });
 });
+
+test('aggregates opaque OpenCode identities and uses recent buckets separately from lifetime totals', () => {
+  const usage: ProviderRecentUsageMap = new Map([
+    [
+      'opencode',
+      new Map([
+        [
+          'https://opencode.ai/zen|zen-auth',
+          { success: 100, failed: 10, recentRequests: [{ success: 1, failed: 0 }] },
+        ],
+        [
+          'https://opencode.ai/zen/go|go-auth',
+          { success: 200, failed: 20, recentRequests: [{ success: 2, failed: 1 }] },
+        ],
+        [
+          'https://opencode.ai/zen|anonymous-auth',
+          { success: 1, failed: 0, recentRequests: [{ success: 1, failed: 0 }] },
+        ],
+      ]),
+    ],
+  ]);
+  expect(getOpenCodeProviderTotalStats(usage)).toEqual({ success: 301, failure: 30 });
+  const recent = getOpenCodeProviderRecentStatusData(usage);
+  expect(recent.totalSuccess).toBe(4);
+  expect(recent.totalFailure).toBe(1);
+});

@@ -8,6 +8,8 @@ export const OPENCODE_ZEN_URL = 'https://opencode.ai/zen';
 export const OPENCODE_GO_URL = 'https://opencode.ai/zen/go';
 
 const numberOrUndefined = (value: unknown): number | undefined => {
+  if (value === null || value === undefined || value === '' || typeof value === 'boolean')
+    return undefined;
   const parsed = typeof value === 'number' ? value : Number(value);
   return Number.isFinite(parsed) ? parsed : undefined;
 };
@@ -35,6 +37,9 @@ const normalizeKey = (value: unknown): OpenCodeKeyConfig | null => {
   if (!apiKey && apiKeyConfigured) key.apiKeyConfigured = true;
   if (typeof value['api-key-preview'] === 'string' && value['api-key-preview'].trim()) {
     key.apiKeyPreview = value['api-key-preview'].trim();
+  }
+  if (typeof value['api-key-revision'] === 'string') {
+    key.apiKeyRevision = value['api-key-revision'];
   }
   const sourceIndex = numberOrUndefined(value['source-index']);
   if (sourceIndex !== undefined && Number.isInteger(sourceIndex) && sourceIndex >= 0) {
@@ -106,6 +111,7 @@ const serializeKey = (key: OpenCodeKeyConfig) => {
     note: key.note?.trim() || undefined,
     'api-key-configured': apiKey ? undefined : key.apiKeyConfigured,
     'api-key-preview': apiKey ? undefined : key.apiKeyPreview,
+    'api-key-revision': apiKey ? undefined : key.apiKeyRevision,
     'source-index': key.sourceIndex,
     priority: key.priority,
     weight: key.weight,

@@ -7,6 +7,7 @@ import { useAuthStore, useNotificationStore } from '@/stores';
 import { useProviderRecentRequests } from '@/components/providers/hooks/useProviderRecentRequests';
 import {
   getOpenAIProviderRecentWindowStats,
+  getOpenCodeProviderRecentStatusData,
   getProviderRecentWindowStats,
   getProviderUsageKey,
   type ProviderRecentUsageMap,
@@ -84,6 +85,9 @@ const getResourceRecentSuccess = (
 ): number => {
   if (isMultiProtocolSponsorBrand(resource.brand)) {
     return 0;
+  }
+  if (resource.brand === 'openCode') {
+    return getOpenCodeProviderRecentStatusData(usageByProvider).totalSuccess;
   }
   if (resource.brand === 'openaiCompatibility') {
     return getOpenAIProviderRecentWindowStats(resource.raw as OpenAIProviderConfig, usageByProvider)
@@ -271,8 +275,7 @@ export function ProvidersWorkbenchPage({ fixedBrand }: ProvidersWorkbenchPagePro
     [groups]
   );
   const quickStartResource = useMemo(
-    () =>
-      fixedBrand === 'apikeyFun' && activeGroup ? (activeGroup.resources[0] ?? null) : null,
+    () => (fixedBrand === 'apikeyFun' && activeGroup ? (activeGroup.resources[0] ?? null) : null),
     [activeGroup, fixedBrand]
   );
 

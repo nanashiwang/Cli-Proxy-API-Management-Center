@@ -81,6 +81,7 @@ export interface OpenCodeKeyConfig {
   /** Returned by the management API when the real credential is hidden. */
   apiKeyConfigured?: boolean;
   apiKeyPreview?: string;
+  apiKeyRevision?: string;
   sourceIndex?: number;
   priority?: number;
   weight?: number;
