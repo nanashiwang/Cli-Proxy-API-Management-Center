@@ -235,7 +235,7 @@ export function QuotaPage() {
           key: basis.key,
           auth_index: basis.authIndex,
           from: new Date(basis.fromMs).toISOString(),
-          to: new Date(Math.min(nowMs, basis.resetAtMs)).toISOString(),
+          to: new Date(Math.min(nowMs, basis.capturedAtMs, basis.resetAtMs)).toISOString(),
         }))
       )
       .then((response) => {

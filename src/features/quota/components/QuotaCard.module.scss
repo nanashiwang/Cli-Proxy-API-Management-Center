@@ -7,6 +7,7 @@
  * ============================================================ */
 
 .card {
+  container-type: inline-size;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -230,7 +231,7 @@
 
 .statsFooter {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr) 1px minmax(104px, auto);
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
   align-items: stretch;
   min-width: 0;
   overflow: hidden;
@@ -240,7 +241,11 @@
 }
 
 .statsFooterNoWeekly {
-  grid-template-columns: minmax(0, 1fr) 1px minmax(104px, auto);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.statsFooterActionsOnly > .actionBlock {
+  border-top: 0;
 }
 
 .statsFooterActionsOnly {
@@ -276,7 +281,8 @@
   }
 
   > span {
-    @include text-ellipsis;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 }
 
@@ -287,6 +293,7 @@
 
 .statValueRow {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   gap: 5px;
   min-width: 0;
@@ -300,11 +307,12 @@
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
   color: var(--text-primary);
-  @include text-ellipsis;
+  overflow-wrap: anywhere;
 }
 
 .statBadge {
-  flex-shrink: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-family: $font-mono;
   font-size: 9px;
   font-variant-numeric: tabular-nums;
@@ -313,6 +321,7 @@
 
 .statProgressRow {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 5px;
   min-width: 0;
@@ -336,6 +345,11 @@
   }
 }
 
+.statBlock > .statProgress {
+  flex: none;
+  width: 100%;
+}
+
 .statProgressLabel {
   flex-shrink: 0;
   font-family: $font-mono;
@@ -351,14 +365,22 @@
   background: color-mix(in srgb, var(--border-color) 80%, transparent);
 }
 
+.statsFooter > .statDivider:last-of-type,
+.statsFooterNoWeekly > .statDivider {
+  display: none;
+}
+
 .actionBlock {
+  grid-column: 1 / -1;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: stretch;
   justify-content: center;
   gap: 5px;
-  min-width: 104px;
-  padding: 9px 10px;
+  min-width: 0;
+  padding: 8px 10px;
+  border-top: 1px solid var(--border-color);
 }
 
 .refreshButton,
@@ -432,29 +454,13 @@
   }
 }
 
-@media (max-width: 560px) {
-  .statsFooter,
-  .statsFooterNoWeekly {
-    grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
-  }
-
-  .statsFooterNoWeekly {
+@container (max-width: 300px) {
+  .statsFooter {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .statsFooter > .statDivider:last-of-type,
-  .statsFooterNoWeekly > .statDivider {
+  .statDivider {
     display: none;
-  }
-
-  .actionBlock {
-    grid-column: 1 / -1;
-    flex-direction: row;
-    padding-top: 0;
-  }
-
-  .refreshButton {
-    flex: 1;
   }
 }
 
