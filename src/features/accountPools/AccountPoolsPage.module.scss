@@ -1,0 +1,253 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+.header,
+.sectionHeader,
+.cardHeading,
+.cardActions,
+.keyHeading,
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+.header p,
+.banner p {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+.sectionHeader {
+  margin-bottom: 14px;
+  h2 {
+    margin: 0;
+    font-size: 16px;
+  }
+  h2 span {
+    color: var(--text-tertiary);
+    font-size: 13px;
+  }
+  a {
+    font-size: 13px;
+    color: var(--primary-color);
+  }
+}
+.banner,
+.card,
+.keyCard {
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 18px;
+  background: var(--bg-primary);
+  min-width: 0;
+}
+.banner {
+  background: var(--bg-secondary);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 14px;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.page input:not([type='checkbox']),
+.page select,
+.field input,
+.search {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 10px;
+  min-width: 0;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  font: inherit;
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+}
+.groupName {
+  flex: 1;
+  width: 140px;
+  font-weight: 650 !important;
+}
+.description {
+  width: 100%;
+  font-size: 12px !important;
+}
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  strong {
+    font-size: 24px;
+    font-variant-numeric: tabular-nums;
+  }
+  span {
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+}
+.providers,
+.groupChoices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.providers {
+  min-height: 24px;
+}
+.badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--bg-tertiary);
+  font-size: 11px;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+.cardActions {
+  margin-top: auto;
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
+}
+.toggle,
+.choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  input {
+    accent-color: var(--primary-color);
+  }
+}
+.choice {
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+.keyList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.keyCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.keyHeading > div {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.keyHeading label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 12px;
+}
+.keyHeading code {
+  font-size: 12px;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+.muted {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0;
+}
+.warning,
+.pending {
+  color: var(--warning-color, #ad6800);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.error {
+  border: 1px solid var(--danger-color);
+  padding: 12px;
+  border-radius: 10px;
+  color: var(--danger-color);
+  overflow-wrap: anywhere;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.search {
+  width: 100%;
+  margin: 12px 0;
+}
+.accountList {
+  max-height: 380px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.accountRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  input {
+    accent-color: var(--primary-color);
+  }
+  span {
+    min-width: 0;
+  }
+  strong,
+  small {
+    display: block;
+    overflow-wrap: anywhere;
+  }
+  strong {
+    font-size: 12px;
+  }
+  small {
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+}
+@media (max-width: 600px) {
+  .header {
+    align-items: stretch;
+  }
+  .actions {
+    justify-content: flex-end;
+    width: 100%;
+  }
+  .keyHeading {
+    align-items: stretch;
+  }
+  .keyHeading > div,
+  .keyHeading > label {
+    width: 100%;
+  }
+}

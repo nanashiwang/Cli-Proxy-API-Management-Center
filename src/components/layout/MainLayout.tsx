@@ -628,6 +628,12 @@ export function MainLayout() {
           icon: sidebarIcons.authFiles,
         },
         {
+          path: '/account-pools',
+          labelKey: 'nav.account_pools',
+          metaKey: 'nav_meta.account_pools',
+          icon: sidebarIcons.authFiles,
+        },
+        {
           path: '/oauth',
           labelKey: 'nav.oauth',
           metaKey: 'nav_meta.oauth',
