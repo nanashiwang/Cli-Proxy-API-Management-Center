@@ -199,7 +199,10 @@ export function AccountPoolsPage() {
                 );
                 const keyCount = data.keys.filter((key) => {
                   const rule = ruleFor(draft, key['key-hash']);
-                  return rule.scope === 'all' || rule['group-ids'].includes(group.id);
+                  return (
+                    (rule['lease-instance'] ? group.lease === true : !group.lease) &&
+                    (rule.scope === 'all' || rule['group-ids'].includes(group.id))
+                  );
                 }).length;
                 const referenced = draft['key-rules'].some(
                   (rule) => rule.scope === 'selected' && rule['group-ids'].includes(group.id)
@@ -242,6 +245,40 @@ export function AccountPoolsPage() {
                         })
                       }
                     />
+                    {group.id !== DEFAULT_GROUP && (
+                      <label className={styles.toggle}>
+                        <input
+                          type="checkbox"
+                          checked={group.lease === true}
+                          disabled={busy}
+                          onChange={(e) =>
+                            setDraft({
+                              ...draft,
+                              groups: draft.groups.map((g) =>
+                                g.id === group.id ? { ...g, lease: e.target.checked } : g
+                              ),
+                            })
+                          }
+                        />
+                        {t('account_pools.lease_enabled')}
+                      </label>
+                    )}
+                    {group.lease && (
+                      <p className={styles.muted}>
+                        {data['lease-error']
+                          ? t('account_pools.lease_error')
+                          : data.leases?.find((l) => l['group-id'] === group.id)
+                            ? (() => {
+                                const lease = data.leases!.find((l) => l['group-id'] === group.id)!;
+                                return t('account_pools.lease_status', {
+                                  owner: lease.owner.slice(0, 10),
+                                  expires: new Date(lease['expires-at']).toLocaleString(),
+                                  active: lease.active,
+                                });
+                              })()
+                            : t('account_pools.lease_free')}
+                      </p>
+                    )}
                     <div className={styles.metrics}>
                       <div>
                         <strong>{accounts.length}</strong>
@@ -367,6 +404,20 @@ export function AccountPoolsPage() {
                         </select>
                       </label>
                     </div>
+                    <label>
+                      {t('account_pools.lease_instance')}
+                      <input
+                        aria-label={`${t('account_pools.lease_instance')} Key ${key.index}`}
+                        value={rule['lease-instance'] ?? ''}
+                        disabled={busy}
+                        maxLength={64}
+                        placeholder="newapi-main"
+                        onChange={(e) =>
+                          setDraft(setKeyRule(draft, { ...rule, 'lease-instance': e.target.value }))
+                        }
+                      />
+                    </label>
+                    <p className={styles.muted}>{t('account_pools.lease_hint')}</p>
                     <div className={styles.groupChoices}>
                       {draft.groups.map((group) => (
                         <label className={styles.choice} key={group.id}>

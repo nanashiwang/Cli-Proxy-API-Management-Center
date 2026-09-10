@@ -1896,6 +1896,12 @@
     "precomputed_meta": "已預先計算 · 資料更新於 {{seconds}} 秒前"
   },
   "account_pools": {
+    "lease_enabled": "啟用 1 小時獨占租約",
+    "lease_free": "空閒，可分配",
+    "lease_status": "使用者 {{owner}} · 到期 {{expires}} · 執行中 {{active}}",
+    "lease_error": "租約狀態不可用，請檢查儲存",
+    "lease_instance": "New API 執行個體識別碼（留空停用租約）",
+    "lease_hint": "填寫與 New API 通道相同的識別碼後，此 Key 僅使用租約池；一般 Key 不可使用租約池。固定一小時，不隨呼叫續期。",
     "title": "帳號分組",
     "subtitle": "自訂分組，為每個 API Key 指定可呼叫的帳號範圍。",
     "unsaved": "有未儲存修改",
@@ -1926,7 +1932,7 @@
     "delete_hint": "先移出帳號並解除 Key 的指定綁定後才能刪除",
     "key_permissions": "Key 呼叫範圍",
     "manage_keys": "管理 API Key",
-    "all_hint": "「全部分組」包含現在及之後新增的所有分組，也會呼叫名稱為「專用」的分組。",
+    "all_hint": "「全部分組」包括未來新增分組，但仍受租約限制：一般 Key 僅使用非租約池，綁定執行個體的 Key 僅使用租約池，不能搶占其他使用者的租約。",
     "no_keys": "暫無 API Key，請先至設定頁新增。",
     "key_name": "Key 備註名稱",
     "scope": "呼叫範圍",

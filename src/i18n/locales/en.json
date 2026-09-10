@@ -1870,6 +1870,12 @@
     "precomputed_meta": "Precomputed · Updated {{seconds}}s ago"
   },
   "account_pools": {
+    "lease_enabled": "Enable 1-hour exclusive lease",
+    "lease_free": "Free to allocate",
+    "lease_status": "User {{owner}} · Expires {{expires}} · In flight {{active}}",
+    "lease_error": "Lease state unavailable; check storage",
+    "lease_instance": "New API instance ID (blank disables leases)",
+    "lease_hint": "Use the same instance ID as the New API channel. This key then uses leased pools only; ordinary keys cannot use them. Leases last one hour without renewal on requests.",
     "title": "Account groups",
     "subtitle": "Organize accounts and choose which groups each API key can use.",
     "unsaved": "Unsaved changes",
@@ -1900,7 +1906,7 @@
     "delete_hint": "Move accounts out and remove explicit key bindings before deleting",
     "key_permissions": "Key access",
     "manage_keys": "Manage API keys",
-    "all_hint": "All groups includes current and future groups, including groups named “private”.",
+    "all_hint": "All groups includes future groups but respects leases: ordinary keys use non-lease pools, instance-bound keys use lease pools, and neither can take another user’s lease.",
     "no_keys": "No API keys. Add one on the configuration page first.",
     "key_name": "Key label",
     "scope": "Access scope",

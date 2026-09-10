@@ -63,7 +63,10 @@ export function effectiveCredentials(
   const groups = new Set(
     config.groups
       .filter(
-        (group) => !group.disabled && (rule.scope === 'all' || rule['group-ids'].includes(group.id))
+        (group) =>
+          !group.disabled &&
+          (rule['lease-instance'] ? group.lease === true : !group.lease) &&
+          (rule.scope === 'all' || rule['group-ids'].includes(group.id))
       )
       .map((group) => group.id)
   );

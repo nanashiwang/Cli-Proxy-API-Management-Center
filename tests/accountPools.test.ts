@@ -69,3 +69,12 @@ describe('account groups', () => {
     expect(effectiveCredentials(c, rule, accounts)).toHaveLength(0);
   });
 });
+
+test('lease keys only preview lease pools and ordinary all keys cannot use them', () => {
+ const c = config(); c.groups[1].lease = true;
+ const rule = {'key-hash': 'k', scope: 'all' as const, 'group-ids': []};
+ expect(effectiveCredentials(c, rule, accounts).map(a => a.id)).toEqual(['two', 'three']);
+ expect(effectiveCredentials(c, {...rule, 'lease-instance': 'newapi-main'}, accounts).map(a => a.id)).toEqual(['one']);
+ const moved = moveCredentials(c, ['two'], 'a');
+ expect(moved.groups[1].lease).toBe(true);
+});

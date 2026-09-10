@@ -1,6 +1,7 @@
 import { apiClient } from './client';
 
 export interface AccountPoolGroup {
+  lease?: boolean;
   id: string;
   name: string;
   description?: string;
@@ -8,6 +9,7 @@ export interface AccountPoolGroup {
   'credential-ids': string[];
 }
 export interface AccountPoolKeyRule {
+  'lease-instance'?: string;
   'key-hash': string;
   name?: string;
   scope: 'selected' | 'all';
@@ -31,6 +33,14 @@ export interface AccountPoolKey extends AccountPoolKeyRule {
   index: number;
 }
 export interface AccountPoolsResponse {
+  leases?: {
+    id: string;
+    'group-id': string;
+    owner: string;
+    'expires-at': string;
+    active: number;
+  }[];
+  'lease-error'?: string;
   config: AccountPoolsConfig;
   keys: AccountPoolKey[];
   credentials: AccountPoolCredential[];

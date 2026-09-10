@@ -1870,6 +1870,12 @@
     "precomputed_meta": "已预计算 · 数据更新于 {{seconds}} 秒前"
   },
   "account_pools": {
+    "lease_enabled": "启用 1 小时独占租约",
+    "lease_free": "空闲，可分配",
+    "lease_status": "用户 {{owner}} · 到期 {{expires}} · 在途 {{active}}",
+    "lease_error": "租约状态不可用，请检查存储",
+    "lease_instance": "New API 实例标识（留空关闭租约）",
+    "lease_hint": "填写与 New API 渠道相同的实例标识后，此 Key 只使用租约池；普通 Key 不可使用租约池。固定一小时，不随调用续期。",
     "title": "账号分组",
     "subtitle": "自定义分组，为每个 API Key 指定可调用的账号范围。",
     "unsaved": "有未保存修改",
@@ -1900,7 +1906,7 @@
     "delete_hint": "先移出账号并解除 Key 的指定绑定后才能删除",
     "key_permissions": "Key 调用范围",
     "manage_keys": "管理 API Key",
-    "all_hint": "“全部分组”包含现在和以后新建的所有分组，也会调用名称为“专用”的分组。",
+    "all_hint": "“全部分组”包括未来新增分组，但仍受租约限制：普通 Key 仅使用非租约池，绑定实例的 Key 仅使用租约池，不能抢占其他用户的租约。",
     "no_keys": "暂无 API Key，请先在配置页添加。",
     "key_name": "Key 备注名称",
     "scope": "调用范围",
