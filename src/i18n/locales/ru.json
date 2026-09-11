@@ -277,8 +277,8 @@
     "health_status_disabled": "Отключено",
     "download_button": "Скачать",
     "manual_refresh_button": "Обновить учётные данные OAuth",
-    "manual_refresh_requested": "Запрошено обновление учётных данных для \"{{name}}\"",
-    "manual_refresh_failed": "Не удалось запросить обновление учётных данных для \"{{name}}\": {{message}}",
+    "manual_refresh_requested": "Учётные данные OAuth для \"{{name}}\" обновлены",
+    "manual_refresh_failed": "Не удалось обновить учётные данные \"{{name}}\": {{message}}",
     "delete_button": "Удалить",
     "delete_confirm": "Удалить файл",
     "delete_all_confirm": "Удалить все файлы авторизации? Это действие нельзя отменить!",
@@ -399,7 +399,10 @@
     "quota_refresh_single": "Обновить квоту",
     "quota_refresh_hint": "Обновить квоту только для этих учётных данных",
     "quota_refresh_success": "Квота для \"{{name}}\" обновлена",
-    "quota_refresh_failed": "Не удалось обновить квоту для \"{{name}}\": {{message}}"
+    "quota_refresh_failed": "Не удалось обновить квоту для \"{{name}}\": {{message}}",
+    "refresh_all_credentials": "Обновить все учётные данные",
+    "refresh_all_result": "Обновление завершено: успешно {{success}}, ошибок {{failed}}",
+    "refresh_all_failed": "Не удалось обновить учётные данные: {{message}}"
   },
   "antigravity_subscription": {
     "plan_unknown": "Неизвестно",

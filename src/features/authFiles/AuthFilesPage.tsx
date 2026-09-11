@@ -1,3 +1,5 @@
+import { authFilesApi } from '@/services/api';
+import { notifyAuthFilesChanged } from '@/features/authFiles/authFilesEvents';
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -86,6 +88,8 @@ export function AuthFilesPage() {
   const navigate = useNavigate();
   const pools = useAuthFilePools(isCurrentLayer && connectionStatus === 'connected');
   const { refresh: refreshPools, resolve: resolvePoolCredential } = pools;
+  const [refreshingAll, setRefreshingAll] = useState(false);
+  const refreshAllPending = useRef(false);
   const [poolFilter, setPoolFilter] = useState('');
   const [poolDialog, setPoolDialog] = useState<{
     file: import('@/types').AuthFileItem;
@@ -379,6 +383,34 @@ export function AuthFilesPage() {
     ]);
   }, [loadFiles, loadExcluded, loadModelAlias, refreshPools]);
 
+  const handleRefreshAll = async () => {
+    if (refreshAllPending.current || Object.keys(manualRefreshing).length > 0) return;
+    refreshAllPending.current = true;
+    setRefreshingAll(true);
+    try {
+      const response = await authFilesApi.refreshAll();
+      const results = response.results ?? [];
+      const failed = results.filter((result) => !result.success).length;
+      showNotification(
+        t('auth_files.refresh_all_result', { success: results.length - failed, failed }),
+        failed ? 'warning' : 'success'
+      );
+      notifyAuthFilesChanged();
+      invalidateAuthFileDerivedCaches(invalidateModels);
+      await handleHeaderRefresh();
+    } catch (err) {
+      showNotification(
+        t('auth_files.refresh_all_failed', {
+          message: err instanceof Error ? err.message : String(err),
+        }),
+        'error'
+      );
+    } finally {
+      refreshAllPending.current = false;
+      setRefreshingAll(false);
+    }
+  };
+
   useHeaderRefresh(handleHeaderRefresh);
 
   useEffect(() => {
@@ -612,7 +644,10 @@ export function AuthFilesPage() {
         loading={loading}
         refreshing={refreshing}
         uploading={uploading}
-        disableControls={disableControls}
+        disableControls={disableControls || refreshingAll}
+        onRefreshAll={() => void handleRefreshAll()}
+        refreshingAll={refreshingAll}
+        refreshAllDisabled={files.length === 0 || Object.keys(manualRefreshing).length > 0}
         onUpload={handleUploadClick}
         onRefresh={() => void handleHeaderRefresh()}
       />
@@ -783,7 +818,7 @@ export function AuthFilesPage() {
                 compact={compactMode}
                 selected={selectedFiles.has(file.name)}
                 resolvedTheme={resolvedTheme}
-                disableControls={disableControls}
+                disableControls={disableControls || refreshingAll}
                 deleting={deleting}
                 statusUpdating={statusUpdating}
                 manualRefreshing={manualRefreshing}
@@ -833,7 +868,7 @@ export function AuthFilesPage() {
 
       <div className={styles.configGrid} ref={oauthSectionRef}>
         <OAuthExcludedCard
-          disableControls={disableControls}
+          disableControls={disableControls || refreshingAll}
           excludedError={excludedError}
           excluded={excluded}
           onRetry={loadExcluded}
@@ -843,7 +878,7 @@ export function AuthFilesPage() {
         />
 
         <OAuthModelAliasCard
-          disableControls={disableControls}
+          disableControls={disableControls || refreshingAll}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           onRetry={loadModelAlias}
@@ -874,7 +909,7 @@ export function AuthFilesPage() {
       />
 
       <AuthFileDetailsSheet
-        disableControls={disableControls}
+        disableControls={disableControls || refreshingAll}
         editor={prefixProxyEditor}
         updatedText={prefixProxyUpdatedText}
         dirty={prefixProxyDirty}
@@ -898,7 +933,7 @@ export function AuthFilesPage() {
         selectionCount={selectionCount}
         selectablePageCount={selectablePageItems.length}
         selectableFilteredCount={selectableFilteredItems.length}
-        disableControls={disableControls}
+        disableControls={disableControls || refreshingAll}
         batchStatusDisabled={batchStatusButtonsDisabled}
         onSelectPage={() => selectAllVisible(pageItems)}
         onSelectFiltered={() => selectAllVisible(sorted)}

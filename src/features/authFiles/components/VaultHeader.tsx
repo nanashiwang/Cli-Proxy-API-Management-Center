@@ -14,6 +14,9 @@ export type VaultHeaderProps = {
   disableControls: boolean;
   onUpload: () => void;
   onRefresh: () => void;
+  onRefreshAll: () => void;
+  refreshingAll: boolean;
+  refreshAllDisabled: boolean;
 };
 
 /**
@@ -31,6 +34,9 @@ export function VaultHeader(props: VaultHeaderProps) {
     disableControls,
     onUpload,
     onRefresh,
+    onRefreshAll,
+    refreshingAll,
+    refreshAllDisabled,
   } = props;
   const { t } = useTranslation();
   const revealRef = useRevealGroup<HTMLElement>();
@@ -64,6 +70,15 @@ export function VaultHeader(props: VaultHeaderProps) {
         </p>
       </div>
       <div className={styles.actions} data-reveal>
+        <button
+          type="button"
+          className={styles.ghostAction}
+          onClick={onRefreshAll}
+          disabled={disableControls || refreshAllDisabled || refreshingAll || loading}
+        >
+          {refreshingAll ? <LoadingSpinner size={14} /> : <IconRefreshCw size={14} />}
+          {t('auth_files.refresh_all_credentials')}
+        </button>
         <button
           type="button"
           className={styles.ghostAction}

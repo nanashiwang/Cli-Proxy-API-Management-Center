@@ -278,8 +278,8 @@
     "health_status_disabled": "已停用",
     "download_button": "下载",
     "manual_refresh_button": "刷新 OAuth 凭证",
-    "manual_refresh_requested": "已提交 \"{{name}}\" 的凭证刷新请求",
-    "manual_refresh_failed": "提交 \"{{name}}\" 的凭证刷新请求失败：{{message}}",
+    "manual_refresh_requested": "已刷新 \"{{name}}\" 的 OAuth 凭证",
+    "manual_refresh_failed": "刷新 \"{{name}}\" 的凭证失败：{{message}}",
     "delete_button": "删除",
     "delete_confirm": "确定要删除文件",
     "delete_all_confirm": "确定要删除所有认证文件吗？此操作不可恢复！",
@@ -406,7 +406,10 @@
     "quota_refresh_single": "刷新额度",
     "quota_refresh_hint": "仅刷新该认证文件的额度",
     "quota_refresh_success": "已刷新 \"{{name}}\" 的额度",
-    "quota_refresh_failed": "刷新 \"{{name}}\" 的额度失败：{{message}}"
+    "quota_refresh_failed": "刷新 \"{{name}}\" 的额度失败：{{message}}",
+    "refresh_all_credentials": "刷新全部凭证",
+    "refresh_all_result": "凭证刷新完成：成功 {{success}}，失败 {{failed}}",
+    "refresh_all_failed": "凭证刷新失败：{{message}}"
   },
   "antigravity_subscription": {
     "plan_unknown": "未知",

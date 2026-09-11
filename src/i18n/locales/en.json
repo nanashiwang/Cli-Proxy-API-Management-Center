@@ -278,8 +278,8 @@
     "health_status_disabled": "Disabled",
     "download_button": "Download",
     "manual_refresh_button": "Refresh OAuth credential",
-    "manual_refresh_requested": "Credential refresh requested for \"{{name}}\"",
-    "manual_refresh_failed": "Failed to request credential refresh for \"{{name}}\": {{message}}",
+    "manual_refresh_requested": "Refreshed OAuth credentials for \"{{name}}\"",
+    "manual_refresh_failed": "Failed to refresh credentials for \"{{name}}\": {{message}}",
     "delete_button": "Delete",
     "delete_confirm": "Are you sure you want to delete file",
     "delete_all_confirm": "Are you sure you want to delete all auth files? This operation cannot be undone!",
@@ -406,7 +406,10 @@
     "quota_refresh_single": "Refresh quota",
     "quota_refresh_hint": "Refresh quota only for this credential",
     "quota_refresh_success": "Quota refreshed for \"{{name}}\"",
-    "quota_refresh_failed": "Failed to refresh quota for \"{{name}}\": {{message}}"
+    "quota_refresh_failed": "Failed to refresh quota for \"{{name}}\": {{message}}",
+    "refresh_all_credentials": "Refresh all credentials",
+    "refresh_all_result": "Credential refresh complete: {{success}} succeeded, {{failed}} failed",
+    "refresh_all_failed": "Credential refresh failed: {{message}}"
   },
   "antigravity_subscription": {
     "plan_unknown": "Unknown",
