@@ -52,6 +52,9 @@ import {
 } from '@/features/authFiles/uiState';
 import { useAuthStore, useNotificationStore, useThemeStore } from '@/stores';
 import styles from './AuthFilesPage.module.scss';
+import { useAuthFilePools } from './hooks/useAuthFilePools';
+import { AuthFilePoolInfo, AuthFilePoolDialog } from './components/AuthFilePoolInfo';
+import poolStyles from './components/AuthFilePoolInfo.module.scss';
 
 const DEFAULT_REGULAR_PAGE_SIZE = 9;
 const DEFAULT_COMPACT_PAGE_SIZE = 12;
@@ -81,6 +84,21 @@ export function AuthFilesPage() {
   const pageTransitionLayer = usePageTransitionLayer();
   const isCurrentLayer = pageTransitionLayer ? pageTransitionLayer.status === 'current' : true;
   const navigate = useNavigate();
+  const pools = useAuthFilePools(isCurrentLayer && connectionStatus === 'connected');
+  const { refresh: refreshPools, resolve: resolvePoolCredential } = pools;
+  const [poolFilter, setPoolFilter] = useState('');
+  const [poolDialog, setPoolDialog] = useState<{
+    file: import('@/types').AuthFileItem;
+    server: string;
+  } | null>(null);
+  const [poolNow, setPoolNow] = useState(Date.now);
+  useInterval(() => setPoolNow(Date.now()), isCurrentLayer ? 30_000 : null);
+  useInterval(
+    () => {
+      void refreshPools();
+    },
+    isCurrentLayer && connectionStatus === 'connected' ? 60_000 : null
+  );
 
   const [filter, setFilter] = useState<'all' | string>('all');
   const [statusFilterMode, setStatusFilterMode] = useState<AuthFilesStatusFilterMode>('all');
@@ -353,8 +371,13 @@ export function AuthFilesPage() {
   const initialLoadDoneRef = useRef(false);
 
   const handleHeaderRefresh = useCallback(async () => {
-    await Promise.all([loadFiles({ background: true }), loadExcluded(), loadModelAlias()]);
-  }, [loadFiles, loadExcluded, loadModelAlias]);
+    await Promise.all([
+      loadFiles({ background: true }),
+      loadExcluded(),
+      loadModelAlias(),
+      refreshPools(),
+    ]);
+  }, [loadFiles, loadExcluded, loadModelAlias, refreshPools]);
 
   useHeaderRefresh(handleHeaderRefresh);
 
@@ -387,12 +410,13 @@ export function AuthFilesPage() {
   const filesMatchingStatusFilters = useMemo(
     () =>
       files.filter((file) => {
+        if (poolFilter && resolvePoolCredential(file)?.['group-id'] !== poolFilter) return false;
         if (enabledOnly && file.disabled === true) return false;
         if (disabledOnly && file.disabled !== true) return false;
         if (problemOnly && !isProblemAuthFile(file)) return false;
         return true;
       }),
-    [disabledOnly, enabledOnly, files, problemOnly]
+    [disabledOnly, enabledOnly, files, problemOnly, poolFilter, resolvePoolCredential]
   );
 
   const statusFilterOptions = useMemo(
@@ -433,9 +457,20 @@ export function AuthFilesPage() {
       filesMatchingStatusFilters.filter((item) => {
         const type = normalizeProviderKey(String(item.type ?? item.provider ?? ''));
         const matchType = normalizedFilter === 'all' || type === normalizedFilter;
-        return matchType && matchesAuthFileSearch(item, normalizedSearch, wildcardSearch);
+        return (
+          matchType &&
+          (!poolFilter || resolvePoolCredential(item)?.['group-id'] === poolFilter) &&
+          matchesAuthFileSearch(item, normalizedSearch, wildcardSearch)
+        );
       }),
-    [filesMatchingStatusFilters, normalizedFilter, normalizedSearch, wildcardSearch]
+    [
+      filesMatchingStatusFilters,
+      normalizedFilter,
+      normalizedSearch,
+      wildcardSearch,
+      poolFilter,
+      resolvePoolCredential,
+    ]
   );
 
   const sorted = useMemo(() => sortAuthFiles(filtered, sortMode), [filtered, sortMode]);
@@ -533,13 +568,14 @@ export function AuthFilesPage() {
 
   const clearFilters = useCallback(() => {
     setFilter('all');
+    setPoolFilter('');
     setStatusFilterMode('all');
     setSearch('');
     setPage(1);
   }, []);
 
   const deleteAllButtonLabel = (() => {
-    if (enabledOnly || disabledOnly) {
+    if (enabledOnly || disabledOnly || poolFilter) {
       return t('auth_files.delete_filtered_result_button');
     }
     if (problemOnly) {
@@ -603,6 +639,45 @@ export function AuthFilesPage() {
           }}
         />
 
+        <div className={poolStyles.filter}>
+          <label>
+            {t('auth_pool.filter')}{' '}
+            <select
+              className={poolStyles.select}
+              value={poolFilter}
+              disabled={pools.loading || !pools.data}
+              onChange={(e) => {
+                setPoolFilter(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">{t('auth_pool.all')}</option>
+              {poolFilter && !pools.data?.config.groups.some((g) => g.id === poolFilter) && (
+                <option value={poolFilter}>{t('auth_pool.unknown')}</option>
+              )}
+              {pools.data?.config.groups.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => void refreshPools()}
+            disabled={pools.loading}
+          >
+            {t('auth_pool.refresh')}
+          </Button>
+          {pools.error && <span role="alert">{t('auth_pool.load_error')}</span>}
+          {pools.data && !pools.data.config.enabled && (
+            <span role="status" className={poolStyles.warning}>
+              {t('auth_pool.off_hint')}
+            </span>
+          )}
+        </div>
+
         <AuthFilesToolbar
           search={search}
           onSearchChange={(value) => {
@@ -621,11 +696,18 @@ export function AuthFilesPage() {
           compactMode={compactMode}
           onCompactModeChange={setCompactMode}
           deleteLabel={deleteAllButtonLabel}
-          deleteDisabled={disableControls || loading || deletingAll || files.length === 0}
+          deleteDisabled={
+            disableControls ||
+            loading ||
+            deletingAll ||
+            files.length === 0 ||
+            (!!poolFilter && sorted.length === 0)
+          }
           deleteLoading={deletingAll}
           onDelete={() =>
             handleDeleteAll({
               filter,
+              visibleNames: poolFilter ? sorted.map((f) => f.name) : undefined,
               problemOnly,
               disabledOnly,
               enabledOnly,
@@ -684,6 +766,20 @@ export function AuthFilesPage() {
               <AuthFileCard
                 key={file.name}
                 file={file}
+                poolInfo={
+                  <AuthFilePoolInfo
+                    file={file}
+                    data={pools.data}
+                    credential={resolvePoolCredential(file)}
+                    loading={pools.loading}
+                    now={poolNow}
+                    onInspect={(item) => {
+                      void refreshPools().then((result) => {
+                        if (result) setPoolDialog({ file: item, server: pools.apiBase });
+                      });
+                    }}
+                  />
+                }
                 compact={compactMode}
                 selected={selectedFiles.has(file.name)}
                 resolvedTheme={resolvedTheme}
@@ -788,6 +884,16 @@ export function AuthFilesPage() {
         onChange={handlePrefixProxyChange}
       />
 
+      {poolDialog && poolDialog.server === pools.apiBase && (
+        <AuthFilePoolDialog
+          key={poolDialog.server + poolDialog.file.name}
+          file={files.find((f) => f.name === poolDialog.file.name) ?? poolDialog.file}
+          data={pools.data}
+          refresh={refreshPools}
+          onClose={() => setPoolDialog(null)}
+          disabled={disableControls || pools.loading}
+        />
+      )}
       <BatchActionBar
         selectionCount={selectionCount}
         selectablePageCount={selectablePageItems.length}

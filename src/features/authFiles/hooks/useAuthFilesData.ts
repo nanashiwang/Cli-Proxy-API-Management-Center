@@ -16,6 +16,7 @@ import {
 } from '@/features/authFiles/constants';
 
 type DeleteAllOptions = {
+  visibleNames?: string[];
   filter: string;
   problemOnly: boolean;
   disabledOnly: boolean;
@@ -147,28 +148,31 @@ export function useAuthFilesData(options?: UseAuthFilesDataOptions): UseAuthFile
     setSelectedFiles(new Set());
   }, []);
 
-  const applyDeletedFiles = useCallback((names: string[]) => {
-    const deletedNames = Array.from(new Set(names.map((name) => name.trim()).filter(Boolean)));
-    if (deletedNames.length === 0) return;
+  const applyDeletedFiles = useCallback(
+    (names: string[]) => {
+      const deletedNames = Array.from(new Set(names.map((name) => name.trim()).filter(Boolean)));
+      if (deletedNames.length === 0) return;
 
-    invalidateInFlightLoads();
-    onFilesMutatedRef.current?.(deletedNames);
-    const deletedSet = new Set(deletedNames);
-    setFiles((prev) => prev.filter((file) => !deletedSet.has(file.name)));
-    setSelectedFiles((prev) => {
-      if (prev.size === 0) return prev;
-      let changed = false;
-      const next = new Set<string>();
-      prev.forEach((name) => {
-        if (deletedSet.has(name)) {
-          changed = true;
-        } else {
-          next.add(name);
-        }
+      invalidateInFlightLoads();
+      onFilesMutatedRef.current?.(deletedNames);
+      const deletedSet = new Set(deletedNames);
+      setFiles((prev) => prev.filter((file) => !deletedSet.has(file.name)));
+      setSelectedFiles((prev) => {
+        if (prev.size === 0) return prev;
+        let changed = false;
+        const next = new Set<string>();
+        prev.forEach((name) => {
+          if (deletedSet.has(name)) {
+            changed = true;
+          } else {
+            next.add(name);
+          }
+        });
+        return changed ? next : prev;
       });
-      return changed ? next : prev;
-    });
-  }, [invalidateInFlightLoads]);
+    },
+    [invalidateInFlightLoads]
+  );
 
   useEffect(() => {
     if (selectedFiles.size === 0) return;
@@ -335,13 +339,16 @@ export function useAuthFilesData(options?: UseAuthFilesDataOptions): UseAuthFile
         onResetDisabledOnly,
         onResetEnabledOnly,
       } = deleteAllOptions;
+      const scopedNames = deleteAllOptions.visibleNames
+        ? new Set(deleteAllOptions.visibleNames)
+        : null;
       const isFiltered = filter !== 'all';
       const isProblemOnly = problemOnly === true;
       const isDisabledOnly = disabledOnly === true;
       const isEnabledOnly = enabledOnly === true;
       const typeLabel = isFiltered ? getTypeLabel(t, filter) : t('auth_files.filter_all');
       let confirmMessage = t('auth_files.delete_all_confirm');
-      if (isDisabledOnly || isEnabledOnly) {
+      if (isDisabledOnly || isEnabledOnly || scopedNames) {
         confirmMessage = t('auth_files.delete_filtered_result_confirm');
       } else if (isProblemOnly) {
         confirmMessage = isFiltered
@@ -359,7 +366,13 @@ export function useAuthFilesData(options?: UseAuthFilesDataOptions): UseAuthFile
         onConfirm: async () => {
           setDeletingAll(true);
           try {
-            if (!isFiltered && !isProblemOnly && !isDisabledOnly && !isEnabledOnly) {
+            if (
+              !scopedNames &&
+              !isFiltered &&
+              !isProblemOnly &&
+              !isDisabledOnly &&
+              !isEnabledOnly
+            ) {
               await authFilesApi.deleteAll();
               showNotification(t('auth_files.delete_all_success'), 'success');
               invalidateInFlightLoads();
@@ -369,6 +382,7 @@ export function useAuthFilesData(options?: UseAuthFilesDataOptions): UseAuthFile
               notifyAuthFilesChanged();
             } else {
               const filesToDelete = files.filter((file) => {
+                if (scopedNames && !scopedNames.has(file.name)) return false;
                 if (isRuntimeOnlyAuthFile(file)) return false;
                 if (
                   isFiltered &&
@@ -468,7 +482,15 @@ export function useAuthFilesData(options?: UseAuthFilesDataOptions): UseAuthFile
         },
       });
     },
-    [applyDeletedFiles, deselectAll, files, invalidateInFlightLoads, showConfirmation, showNotification, t]
+    [
+      applyDeletedFiles,
+      deselectAll,
+      files,
+      invalidateInFlightLoads,
+      showConfirmation,
+      showNotification,
+      t,
+    ]
   );
 
   const handleDownload = useCallback(

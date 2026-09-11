@@ -39,6 +39,7 @@ import { AuthFileQuotaSection } from '@/features/authFiles/components/AuthFileQu
 import styles from './AuthFileCard.module.scss';
 
 export type AuthFileCardProps = {
+  poolInfo?: import('react').ReactNode;
   file: AuthFileItem;
   compact: boolean;
   selected: boolean;
@@ -220,6 +221,8 @@ export function AuthFileCard(props: AuthFileCardProps) {
           {identity.secondary}
         </p>
       )}
+
+      {props.poolInfo}
 
       {!compact && noteValue && (
         <p className={styles.note} title={noteValue}>
