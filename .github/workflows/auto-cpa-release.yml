@@ -1,10 +1,10 @@
 name: auto-cpa-release
 
 on:
-  # Publish a personal release for every branch push; [skip release] remains the opt-out.
+  # Publish only verified mainline changes.
   push:
     branches:
-      - '**'
+      - main
 
 permissions:
   actions: write
@@ -18,6 +18,7 @@ jobs:
   tag-and-release:
     if: >-
       github.repository == 'nanashiwang/Cli-Proxy-API-Management-Center' &&
+      github.ref == 'refs/heads/main' &&
       !contains(github.event.head_commit.message, '[skip release]')
     runs-on: ubuntu-latest
     steps:
@@ -27,6 +28,16 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.14'
+      - name: Verify before tagging
+        run: |
+          bun install --frozen-lockfile
+          bun run verify
       - name: Create next CPA tag and dispatch release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
