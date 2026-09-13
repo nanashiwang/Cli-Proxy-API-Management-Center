@@ -1,5 +1,7 @@
 {
   "auth_pool": {
+    "temporary_details": "請求結束後釋放 · 處理中 {{count}}",
+    "state_temporary": "暫時占用",
     "group": "所屬分組",
     "loading": "讀取中",
     "unknown": "分組未知",
@@ -1952,6 +1954,7 @@
     "precomputed_meta": "已預先計算 · 資料更新於 {{seconds}} 秒前"
   },
   "account_pools": {
+    "temporary_status": "使用者 {{owner}} · 暫時占用，請求結束後釋放 · 處理中 {{active}}",
     "account_lease_upgrade": "目前後端仍按整組鎖定；升級至帳號租約版本後，才會為每位使用者分配一個帳號。",
     "legacy_group_lease": "舊整組租約：等待安全縮小範圍或到期",
     "account_lease_summary": "帳號租約 {{count}} 條 · 組內 {{total}} 個帳號",

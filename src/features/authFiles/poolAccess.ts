@@ -45,7 +45,7 @@ export function poolLeaseState(
   groupId: string,
   now: number,
   credentialId?: string
-): 'ordinary' | 'off' | 'free' | 'occupied' | 'draining' | 'unknown' {
+): 'ordinary' | 'off' | 'free' | 'occupied' | 'temporary' | 'draining' | 'unknown' {
   const group = data.config.groups.find((g) => g.id === groupId);
   if (!group || data['lease-error']) return 'unknown';
   if (!data.config.enabled) return 'off';
@@ -57,6 +57,7 @@ export function poolLeaseState(
     return 'unknown';
   if (data.leases === undefined) return 'unknown';
   if (!lease) return 'free';
+  if (lease.temporary) return lease.active > 0 ? 'temporary' : 'unknown';
   const expires = Date.parse(lease['expires-at']);
   if (!Number.isFinite(expires)) return 'unknown';
   // Do not infer that an expired lease is free from a stale browser snapshot.

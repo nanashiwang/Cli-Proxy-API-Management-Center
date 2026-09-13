@@ -39,6 +39,7 @@ export interface AccountPoolsResponse {
     'group-id': string;
     'credential-id'?: string;
     'legacy-group'?: boolean;
+    temporary?: boolean;
     owner: string;
     'expires-at': string;
     active: number;

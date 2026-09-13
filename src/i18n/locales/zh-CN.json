@@ -1,5 +1,7 @@
 {
   "auth_pool": {
+    "temporary_details": "请求结束后释放 · 在途 {{count}}",
+    "state_temporary": "临时占用",
     "group": "所属分组",
     "loading": "读取中",
     "unknown": "分组未知",
@@ -1926,6 +1928,7 @@
     "precomputed_meta": "已预计算 · 数据更新于 {{seconds}} 秒前"
   },
   "account_pools": {
+    "temporary_status": "用户 {{owner}} · 临时占用，请求结束后释放 · 在途 {{active}}",
     "account_lease_upgrade": "当前后端仍按整组锁定；升级到账号租约版本后，才会为每位用户分配一个账号。",
     "legacy_group_lease": "旧整组租约：等待安全收窄或到期",
     "account_lease_summary": "账号租约 {{count}} 条 · 组内 {{total}} 个账号",

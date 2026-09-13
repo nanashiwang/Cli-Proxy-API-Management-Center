@@ -140,3 +140,24 @@ test('only the reserved account is shown as occupied within the same group', () 
   expect(poolLeaseState(d, 'private', 3000, 'two')).toBe('free');
   expect(poolLeaseState(d, 'private', 1000)).toBe('unknown');
 });
+
+test('temporary account reservations do not look like expired hour leases', () => {
+  const d = data();
+  d.leases = [
+    {
+      id: 'test',
+      owner: 'admin',
+      'group-id': 'private',
+      'credential-id': 'one',
+      'expires-at': new Date(0).toISOString(),
+      active: 1,
+      temporary: true,
+    },
+  ];
+  expect(poolLeaseState(d, 'private', Date.now(), 'one')).toBe('temporary');
+  expect(poolLeaseState(d, 'private', Date.now(), 'two')).toBe('free');
+  d.leases[0].active = 0;
+  expect(poolLeaseState(d, 'private', Date.now(), 'one')).toBe('unknown');
+  d.leases = [];
+  expect(poolLeaseState(d, 'private', Date.now(), 'one')).toBe('free');
+});

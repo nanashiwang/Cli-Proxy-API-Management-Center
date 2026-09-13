@@ -51,7 +51,7 @@ export function AuthFilePoolInfo({
       {group?.disabled && <span className={styles.warning}>{t('auth_pool.group_disabled')}</span>}
       {lease && (
         <span className={styles.muted}>
-          {t('auth_pool.expires', {
+          {t(lease.temporary ? 'auth_pool.temporary_details' : 'auth_pool.expires', {
             time: new Date(lease['expires-at']).toLocaleString(),
             count: lease.active,
           })}
