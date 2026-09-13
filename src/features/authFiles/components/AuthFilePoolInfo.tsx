@@ -31,8 +31,14 @@ export function AuthFilePoolInfo({
 }) {
   const { t } = useTranslation();
   const group = data?.config.groups.find((g) => g.id === credential?.['group-id']);
-  const state = data && credential ? poolLeaseState(data, credential['group-id'], now) : 'unknown';
-  const lease = data?.leases?.find((l) => l['group-id'] === group?.id);
+  const state =
+    data && credential
+      ? poolLeaseState(data, credential['group-id'], now, credential.id)
+      : 'unknown';
+  const lease = data?.leases?.find(
+    (l) =>
+      l['group-id'] === group?.id && (!l['credential-id'] || l['credential-id'] === credential?.id)
+  );
   return (
     <div className={styles.block}>
       <div className={styles.row}>

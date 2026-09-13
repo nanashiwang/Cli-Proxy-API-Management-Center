@@ -43,13 +43,18 @@ export function poolKeyAccess(
 export function poolLeaseState(
   data: AccountPoolsResponse,
   groupId: string,
-  now: number
+  now: number,
+  credentialId?: string
 ): 'ordinary' | 'off' | 'free' | 'occupied' | 'draining' | 'unknown' {
   const group = data.config.groups.find((g) => g.id === groupId);
   if (!group || data['lease-error']) return 'unknown';
   if (!data.config.enabled) return 'off';
   if (!group.lease) return 'ordinary';
-  const lease = data.leases?.find((l) => l['group-id'] === groupId);
+  const lease = data.leases?.find(
+    (l) => l['group-id'] === groupId && (!l['credential-id'] || l['credential-id'] === credentialId)
+  );
+  if (!credentialId && data.leases?.some((l) => l['group-id'] === groupId && l['credential-id']))
+    return 'unknown';
   if (data.leases === undefined) return 'unknown';
   if (!lease) return 'free';
   const expires = Date.parse(lease['expires-at']);

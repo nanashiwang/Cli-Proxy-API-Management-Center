@@ -260,25 +260,47 @@ export function AccountPoolsPage() {
                             })
                           }
                         />
-                        {t('account_pools.lease_enabled')}
+                        {t(
+                          data['lease-unit'] === 'account'
+                            ? 'account_pools.lease_enabled'
+                            : 'account_pools.legacy_group_lease'
+                        )}
                       </label>
                     )}
-                    {group.lease && (
-                      <p className={styles.muted}>
-                        {data['lease-error']
-                          ? t('account_pools.lease_error')
-                          : data.leases?.find((l) => l['group-id'] === group.id)
-                            ? (() => {
-                                const lease = data.leases!.find((l) => l['group-id'] === group.id)!;
-                                return t('account_pools.lease_status', {
+                    {group.lease &&
+                      (() => {
+                        if (data['lease-error'] || !data.leases)
+                          return <p className={styles.muted}>{t('account_pools.lease_error')}</p>;
+                        const leases = data.leases.filter((l) => l['group-id'] === group.id);
+                        if (!leases.length)
+                          return <p className={styles.muted}>{t('account_pools.lease_free')}</p>;
+                        return (
+                          <details className={styles.muted}>
+                            <summary>
+                              {t('account_pools.account_lease_summary', {
+                                count: leases.length,
+                                total: accounts.length,
+                              })}
+                            </summary>
+                            {leases.map((lease) => (
+                              <p key={lease.id}>
+                                <strong>
+                                  {lease['credential-id']
+                                    ? (accounts.find((a) => a.id === lease['credential-id'])
+                                        ?.name ?? lease['credential-id'])
+                                    : t('account_pools.legacy_group_lease')}
+                                </strong>
+                                <br />
+                                {t('account_pools.lease_status', {
                                   owner: lease.owner.slice(0, 10),
                                   expires: new Date(lease['expires-at']).toLocaleString(),
                                   active: lease.active,
-                                });
-                              })()
-                            : t('account_pools.lease_free')}
-                      </p>
-                    )}
+                                })}
+                              </p>
+                            ))}
+                          </details>
+                        );
+                      })()}
                     <div className={styles.metrics}>
                       <div>
                         <strong>{accounts.length}</strong>
@@ -363,6 +385,11 @@ export function AccountPoolsPage() {
               <Link to="/config">{t('account_pools.manage_keys')}</Link>
             </div>
             <p className={styles.muted}>{t('account_pools.all_hint')}</p>
+            {data['lease-unit'] !== 'account' && (
+              <p role="status" className={styles.muted}>
+                {t('account_pools.account_lease_upgrade')}
+              </p>
+            )}
             {data.keys.length === 0 && <p>{t('account_pools.no_keys')}</p>}
             <div className={styles.keyList}>
               {data.keys.map((key) => {
