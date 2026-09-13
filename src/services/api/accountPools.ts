@@ -33,9 +33,12 @@ export interface AccountPoolKey extends AccountPoolKeyRule {
   index: number;
 }
 export interface AccountPoolsResponse {
+  'lease-unit'?: 'account';
   leases?: {
     id: string;
     'group-id': string;
+    'credential-id'?: string;
+    'legacy-group'?: boolean;
     owner: string;
     'expires-at': string;
     active: number;

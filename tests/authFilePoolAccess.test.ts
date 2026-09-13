@@ -121,3 +121,22 @@ describe('auth file group access', () => {
     expect(poolKeyAccess(d, d.credentials[0], { name: 'account.json' }, d.keys[1])).toBe('unknown');
   });
 });
+
+test('only the reserved account is shown as occupied within the same group', () => {
+  const d = data();
+  d.leases = [
+    {
+      id: 'lease',
+      owner: 'owner',
+      'group-id': 'private',
+      'credential-id': 'one',
+      'expires-at': new Date(2000).toISOString(),
+      active: 1,
+    },
+  ];
+  expect(poolLeaseState(d, 'private', 1000, 'one')).toBe('occupied');
+  expect(poolLeaseState(d, 'private', 1000, 'two')).toBe('free');
+  expect(poolLeaseState(d, 'private', 3000, 'one')).toBe('draining');
+  expect(poolLeaseState(d, 'private', 3000, 'two')).toBe('free');
+  expect(poolLeaseState(d, 'private', 1000)).toBe('unknown');
+});
