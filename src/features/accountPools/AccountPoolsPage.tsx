@@ -291,11 +291,16 @@ export function AccountPoolsPage() {
                                     : t('account_pools.legacy_group_lease')}
                                 </strong>
                                 <br />
-                                {t('account_pools.lease_status', {
-                                  owner: lease.owner.slice(0, 10),
-                                  expires: new Date(lease['expires-at']).toLocaleString(),
-                                  active: lease.active,
-                                })}
+                                {t(
+                                  lease.temporary
+                                    ? 'account_pools.temporary_status'
+                                    : 'account_pools.lease_status',
+                                  {
+                                    owner: lease.owner.slice(0, 10),
+                                    expires: new Date(lease['expires-at']).toLocaleString(),
+                                    active: lease.active,
+                                  }
+                                )}
                               </p>
                             ))}
                           </details>

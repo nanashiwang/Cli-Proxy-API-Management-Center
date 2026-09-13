@@ -1,5 +1,7 @@
 {
   "auth_pool": {
+    "temporary_details": "Released after request completion · In flight {{count}}",
+    "state_temporary": "Temporarily occupied",
     "group": "Account group",
     "loading": "Loading",
     "unknown": "Unknown group",
@@ -1926,6 +1928,7 @@
     "precomputed_meta": "Precomputed · Updated {{seconds}}s ago"
   },
   "account_pools": {
+    "temporary_status": "User {{owner}} · Temporary, released after request completion · In flight {{active}}",
     "account_lease_upgrade": "This backend still reserves whole groups. Upgrade the backend to allocate one account per user.",
     "legacy_group_lease": "Legacy group lease: awaiting safe narrowing or expiry",
     "account_lease_summary": "{{count}} account leases · {{total}} accounts in group",
