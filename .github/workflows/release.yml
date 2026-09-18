@@ -56,6 +56,7 @@ jobs:
         run: |
           cd dist
           mv index.html management.html
+          cp ../LICENSE ../LICENSE.codex-proxy-rs ../NOTICE.codex-proxy-rs .
           ls -lh management.html
 
       - name: Generate release notes
@@ -83,7 +84,11 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/management.html
+          files: |
+            dist/management.html
+            dist/LICENSE
+            dist/LICENSE.codex-proxy-rs
+            dist/NOTICE.codex-proxy-rs
           body_path: release-notes.md
           draft: false
           prerelease: false

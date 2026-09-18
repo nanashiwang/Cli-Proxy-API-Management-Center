@@ -1,0 +1,23 @@
+Third-party source attribution: codex-proxy-rs
+
+Project: https://github.com/zyycn/codex-proxy-rs
+Reference revision: 7f320797a06226d01ca77d1ff73980a843ee3efb
+Upstream license: Apache License, Version 2.0
+License text: LICENSE.codex-proxy-rs (copied without modification)
+
+The usage management interface references the behavior and information
+organization of frontend/src/views/usage/ and frontend/src/api/modules/usage.ts
+in the source project, including overview/insight cards, usage record queries,
+request details, and diagnostic exports. The local implementation adapts this
+work to React, CPA management API contracts, CPA localization, and CPA token
+accounting. Upstream fields that CPA does not collect are not synthesized.
+
+The adaptation scope and per-feature validation status are maintained in the
+paired backend repository nanashiwang/CLIProxyAPI:
+  docs/CODEX_PROXY_USAGE_SYNC_CN.md
+  .github/upstream/codex-proxy-usage.json
+
+No separate upstream NOTICE file was present in the referenced source snapshot.
+This attribution was written by CPA maintainers and is not an upstream NOTICE.
+The original management center MIT license remains in LICENSE. This attribution
+does not relicense the upstream work or remove terms applicable to adaptations.

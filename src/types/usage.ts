@@ -192,3 +192,142 @@ export interface ModelPricingSummary {
   cache_write_usd_per_million_tokens: number;
   custom_override: boolean;
 }
+
+/** Server-side analytics contract. Rates are fractions in [0, 1]. */
+export interface UsageFilters {
+  range?: UsageRange;
+  from?: string;
+  to?: string;
+  provider?: string;
+  model?: string;
+  account?: string;
+  api_key?: string;
+  pool?: string;
+  status?: 'success' | 'failed';
+  status_code?: number;
+  search?: string;
+  include_warmup?: boolean;
+}
+export type UsageSort = 'timestamp' | 'latency' | 'ttft' | 'tokens' | 'cost';
+export interface UsageRecordsQuery extends UsageFilters {
+  page: number;
+  page_size: number;
+  sort?: UsageSort;
+  order?: 'asc' | 'desc';
+}
+export interface UsageRecord extends UsageRequestDetail {
+  id: string;
+  model: string;
+  api: string;
+  account: string;
+  token_breakdown?: {
+    quality: 'complete' | 'inconsistent' | 'unclassified';
+    schema_version: number;
+    total_tokens: number;
+    unclassified_tokens: number;
+    input: {
+      total_tokens: number;
+      uncached_tokens: number;
+      cache_read_tokens: number;
+      cache_write_tokens: number;
+    };
+    output: { total_tokens: number; non_reasoning_tokens: number; reasoning_tokens: number };
+  };
+}
+export interface UsageRecordsResponse {
+  items: UsageRecord[];
+  page: number;
+  page_size: number;
+  total: number;
+  total_pages: number;
+}
+export interface UsageSummary extends UsageDimensionSnapshot {
+  avg_latency_ms: number | null;
+  avg_ttft_ms: number | null;
+  estimated: boolean;
+  cache_write_unreported: boolean;
+  token_quality: {
+    complete: number;
+    inconsistent: number;
+    unclassified: number;
+    unavailable: number;
+  };
+}
+export interface UsagePerformance {
+  latency_p50_ms: number | null;
+  latency_p95_ms: number | null;
+  latency_p99_ms: number | null;
+  ttft_p50_ms: number | null;
+  ttft_p95_ms: number | null;
+  ttft_p99_ms: number | null;
+  latency_samples: number;
+  ttft_samples: number;
+  latency_coverage: number;
+  ttft_coverage: number;
+  output_tokens_per_second: number | null;
+  throughput_samples: number;
+}
+export interface UsageHealth {
+  success_rate: number;
+  status_codes: Record<string, number>;
+  client_error_count: number;
+  server_error_count: number;
+  rate_limited_count: number;
+}
+export interface UsageCost {
+  total_cost_usd: number | null;
+  avg_cost_usd: number | null;
+  pricing_coverage: number;
+  cache_read_ratio: number;
+  cache_hit_request_ratio: number;
+  priced_requests: number;
+  unpriced_requests: number;
+  breakdown: {
+    input_usd: number;
+    output_usd: number;
+    cache_read_usd: number;
+    cache_write_usd: number;
+  };
+}
+export interface UsageTrend extends UsageDimensionSnapshot {
+  known_cost_usd: number | null;
+  latency_p50_ms: number | null;
+  latency_p95_ms: number | null;
+  latency_p99_ms: number | null;
+  ttft_p50_ms: number | null;
+  ttft_p95_ms: number | null;
+  ttft_p99_ms: number | null;
+  timestamp: string;
+  avg_latency_ms: number | null;
+  avg_ttft_ms: number | null;
+}
+export interface UsageDimension extends UsageDimensionSnapshot {
+  key: string;
+  label: string;
+  avg_latency_ms: number | null;
+  avg_ttft_ms: number | null;
+  error_rate: number;
+}
+export interface UsageOption {
+  value: string;
+  label: string;
+}
+export interface UsageDashboard {
+  summary: UsageSummary;
+  performance: UsagePerformance;
+  health: UsageHealth;
+  cost: UsageCost;
+  trend: UsageTrend[];
+  dimensions: { models: UsageDimension[]; providers: UsageDimension[]; accounts: UsageDimension[] };
+  filters: {
+    providers: UsageOption[];
+    models: UsageOption[];
+    accounts: UsageOption[];
+    api_keys: UsageOption[];
+    pools: UsageOption[];
+  };
+  storage: UsageStorageStatus;
+  granularity: 'hour' | 'day';
+  from: string;
+  to: string;
+}
