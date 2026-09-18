@@ -1,251 +1,234 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Select } from '@/components/ui/Select';
-import { useHeaderRefresh } from '@/hooks/useHeaderRefresh';
-import { usageApi, type PricingOverrideInput } from '@/services/api/usage';
-import { useNotificationStore } from '@/stores/useNotificationStore';
-import type {
-  ModelPricingStatus,
-  ModelPricingSummary,
-  UsageRequestDetail,
-  UsageResponse,
-} from '@/types/usage';
+import { Modal } from '@/components/ui/Modal';
 import {
-  buildUsageTrendFromSnapshot,
-  flattenUsageDetails,
-  formatTokens,
-  formatUSD,
-  sortedDimensions,
-} from './utils';
-import type { UsageRange } from '@/types/usage';
+  IconFileText,
+  IconTimer,
+  IconRefreshCw,
+  IconSettings,
+  IconSearch,
+  IconSidebarUsage,
+  IconInbox,
+  IconEye,
+  IconChevronLeft,
+} from '@/components/ui/icons';
+import { useHeaderRefresh } from '@/hooks/useHeaderRefresh';
+import { usageApi } from '@/services/api/usage';
+import type {
+  UsageDashboard,
+  UsageFilters,
+  UsageOption,
+  UsageRange,
+  UsageRecord,
+  UsageRecordsResponse,
+  UsageSort,
+} from '@/types/usage';
+import { formatTokens, formatUSD } from './utils';
+import {
+  customRangeFilters,
+  formatDuration,
+  formatRate,
+  usageTimeFilters,
+  usageEndpointUnavailable,
+  usageRecordAccount,
+} from './analytics';
+import { Segments, UsageInsights } from './UsageInsights';
+import { UsageManagement } from './UsageManagement';
+import { UsageRecordModal } from './UsageRecordModal';
 import styles from './UsagePage.module.scss';
 
-type PricingDraft = {
-  model: string;
-  provider: string;
-  input: string;
-  output: string;
-  cacheRead: string;
-  cacheWrite: string;
+type DimensionFilters = Pick<
+  UsageFilters,
+  'provider' | 'model' | 'account' | 'api_key' | 'pool' | 'status' | 'include_warmup'
+>;
+const emptyRecords: UsageRecordsResponse = {
+  items: [],
+  page: 1,
+  page_size: 25,
+  total: 0,
+  total_pages: 0,
 };
-
-const EMPTY_DRAFT: PricingDraft = {
-  model: '',
-  provider: '',
-  input: '',
-  output: '',
-  cacheRead: '',
-  cacheWrite: '',
-};
-
-const errorMessage = (error: unknown) =>
-  error instanceof Error ? error.message : typeof error === 'string' ? error : 'Unknown error';
-
-const fileSize = (value: number) => {
-  if (value >= 1024 * 1024) return `${(value / 1024 / 1024).toFixed(1)} MB`;
-  if (value >= 1024) return `${(value / 1024).toFixed(1)} KB`;
-  return `${value || 0} B`;
-};
-
-const detailAccount = (detail: UsageRequestDetail) =>
-  detail.auth_id ||
-  detail.source ||
-  (detail.auth_index ? `${detail.provider}:${detail.auth_index}` : detail.provider);
-
-const hasUnreportedCodexCacheWrite = (detail: UsageRequestDetail) => {
-  const model = (detail.alias || detail.billing?.pricing?.matched_model || '').toLowerCase();
-  return (
-    detail.billing?.reason === 'cache_write_tokens_unreported' ||
-    (detail.provider.toLowerCase() === 'codex' &&
-      detail.auth_type.toLowerCase() === 'oauth' &&
-      model.startsWith('gpt-5.6') &&
-      detail.tokens.input_tokens + detail.tokens.cache_read_tokens > 0 &&
-      detail.tokens.cache_write_tokens === 0)
-  );
-};
+const errorText = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
 export function UsagePage() {
-  const { t } = useTranslation();
-  const { showNotification, showConfirmation } = useNotificationStore();
-  const [range, setRange] = useState<UsageRange>('7d');
-  const [response, setResponse] = useState<UsageResponse | null>(null);
-  const [pricingStatus, setPricingStatus] = useState<ModelPricingStatus | null>(null);
-  const [pricingModels, setPricingModels] = useState<ModelPricingSummary[]>([]);
-  const [pricingQuery, setPricingQuery] = useState('');
-  const [pricingDraft, setPricingDraft] = useState<PricingDraft>(EMPTY_DRAFT);
+  const { t, i18n } = useTranslation();
+  const [range, setRange] = useState<UsageRange | 'custom'>('7d');
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
+  const [filters, setFilters] = useState<DimensionFilters>({});
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [sort, setSort] = useState<UsageSort>('timestamp');
+  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
+  const [snapshotAt, setSnapshotAt] = useState(() => new Date());
+  const [data, setData] = useState<UsageDashboard | null>(null);
+  const [records, setRecords] = useState<UsageRecordsResponse>(emptyRecords);
   const [loading, setLoading] = useState(true);
-  const [pricingLoading, setPricingLoading] = useState(false);
-  const [savingPricing, setSavingPricing] = useState(false);
-  const importInputRef = useRef<HTMLInputElement | null>(null);
-
-  const loadUsage = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [usage, status] = await Promise.all([
-        usageApi.getUsage(undefined, undefined, range),
-        usageApi.getPricingStatus().catch(() => null),
-      ]);
-      setResponse(usage);
-      setPricingStatus(status);
-    } catch (error) {
-      showNotification(`${t('usage_stats.load_failed')}: ${errorMessage(error)}`, 'error');
-    } finally {
-      setLoading(false);
-    }
-  }, [range, showNotification, t]);
-
-  const loadPricing = useCallback(async () => {
-    setPricingLoading(true);
-    try {
-      const result = await usageApi.listPricing(pricingQuery, 100);
-      setPricingModels(result.models ?? []);
-    } catch (error) {
-      showNotification(`${t('usage_stats.pricing_load_failed')}: ${errorMessage(error)}`, 'error');
-    } finally {
-      setPricingLoading(false);
-    }
-  }, [pricingQuery, showNotification, t]);
+  const [recordsLoading, setRecordsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [recordsError, setRecordsError] = useState('');
+  const [unsupported, setUnsupported] = useState(false);
+  const [loadedRecordsQuery, setLoadedRecordsQuery] = useState('');
+  const [managementOpen, setManagementOpen] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState<UsageRecord | null>(null);
+  const activeQuery = useRef('');
+  const [loadedQuery, setLoadedQuery] = useState('');
 
   useEffect(() => {
-    void loadUsage();
-  }, [loadUsage]);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => void loadPricing(), 250);
+    const timer = window.setTimeout(() => {
+      setSearch(searchInput.trim());
+      setPage(1);
+    }, 300);
     return () => window.clearTimeout(timer);
-  }, [loadPricing]);
+  }, [searchInput]);
 
-  useHeaderRefresh(loadUsage);
+  const customTime = useMemo(
+    () => customRangeFilters(customFrom, customTo),
+    [customFrom, customTo]
+  );
+  const query = useMemo<UsageFilters | null>(() => {
+    const time = usageTimeFilters(range, snapshotAt, customTime);
+    return time ? { ...filters, search: search || undefined, ...time } : null;
+  }, [range, customTime, snapshotAt, filters, search]);
+  const queryKey = JSON.stringify(query);
+  const refreshing = loading || recordsLoading;
+  const recordsQueryKey = JSON.stringify({ query, page, pageSize, sort, order });
 
-  const usage = response?.usage;
-  const storage = response?.storage;
-  const details = useMemo(() => flattenUsageDetails(usage), [usage]);
-  const recentDetails = details.slice(0, 30);
-  const cacheWriteUnreported =
-    Boolean(usage?.cache_write_unreported) || details.some(hasUnreportedCodexCacheWrite);
-  const hasEstimatedCost =
-    Boolean(usage?.estimated) ||
-    cacheWriteUnreported ||
-    details.some((detail) => detail.billing?.pricing?.estimated);
-  const accounts = useMemo(() => sortedDimensions(usage?.accounts).slice(0, 12), [usage]);
-  const models = useMemo(() => sortedDimensions(usage?.models).slice(0, 12), [usage]);
-  const trend = useMemo(() => buildUsageTrendFromSnapshot(usage, range), [usage, range]);
-  const maxTrendCost = Math.max(0, ...trend.map((point) => point.cost));
-  const successRate = usage?.total_requests
-    ? (usage.success_count / usage.total_requests) * 100
-    : 0;
+  useEffect(() => {
+    if (!query) return;
+    const controller = new AbortController();
+    activeQuery.current = queryKey;
+    setLoading(true);
+    setError('');
+    setUnsupported(false);
+    void usageApi
+      .getDashboard(query, controller.signal)
+      .then((result) => {
+        if (controller.signal.aborted) return;
+        setData(result);
+        setLoadedQuery(queryKey);
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted) {
+          setError(errorText(err));
+          if (usageEndpointUnavailable(err)) setUnsupported(true);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
+  }, [query, queryKey]);
 
-  const handleExport = async () => {
-    try {
-      const payload = await usageApi.exportUsage();
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = `cpa-usage-${new Date().toISOString().slice(0, 10)}.json`;
-      anchor.click();
-      URL.revokeObjectURL(url);
-      showNotification(t('usage_stats.export_success'), 'success');
-    } catch (error) {
-      showNotification(`${t('usage_stats.export_failed')}: ${errorMessage(error)}`, 'error');
-    }
+  useEffect(() => {
+    if (!query) return;
+    const controller = new AbortController();
+    setRecordsLoading(true);
+    setRecordsError('');
+    void usageApi
+      .getRecords({ ...query, page, page_size: pageSize, sort, order }, controller.signal)
+      .then((result) => {
+        if (controller.signal.aborted) return;
+        if (page > Math.max(1, result.total_pages)) {
+          setRecords(result);
+          setPage(Math.max(1, result.total_pages));
+          return;
+        }
+        setRecords(result);
+        setLoadedRecordsQuery(recordsQueryKey);
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted) {
+          setRecordsError(errorText(err));
+          if (usageEndpointUnavailable(err)) setUnsupported(true);
+          setRecords(emptyRecords);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setRecordsLoading(false);
+      });
+    return () => controller.abort();
+  }, [query, page, pageSize, sort, order, recordsQueryKey]);
+
+  const refresh = useCallback(async () => {
+    setSnapshotAt(new Date());
+  }, []);
+  useHeaderRefresh(refresh);
+  const changeFilter = (key: keyof DimensionFilters, value: string | boolean) => {
+    setFilters((current) => ({ ...current, [key]: value || undefined }));
+    setPage(1);
   };
-
-  const handleImport = async (file?: File) => {
-    if (!file) return;
-    try {
-      const payload = JSON.parse(await file.text()) as unknown;
-      await usageApi.importUsage(payload);
-      showNotification(t('usage_stats.import_success'), 'success');
-      await loadUsage();
-    } catch (error) {
-      showNotification(`${t('usage_stats.import_failed')}: ${errorMessage(error)}`, 'error');
-    } finally {
-      if (importInputRef.current) importInputRef.current.value = '';
-    }
+  const resetFilters = () => {
+    setFilters({});
+    setSearchInput('');
+    setSearch('');
+    setPage(1);
   };
-
-  const handleClear = () => {
-    showConfirmation({
-      title: t('usage_stats.clear_title'),
-      message: t('usage_stats.clear_confirm'),
-      confirmText: t('common.confirm'),
-      cancelText: t('common.cancel'),
-      variant: 'danger',
-      onConfirm: async () => {
-        await usageApi.clearUsage();
-        showNotification(t('usage_stats.clear_success'), 'success');
-        await loadUsage();
-      },
+  const filterCount = Object.values(filters).filter(Boolean).length + (search ? 1 : 0);
+  const options = (values: UsageOption[] | undefined, key: string): UsageOption[] => [
+    { value: '', label: t(`usage_stats.all_${key}`) },
+    ...(values ?? []),
+  ];
+  const formatCount = (value: number) => value.toLocaleString(i18n.language);
+  const currentData = data && loadedQuery === queryKey ? data : null;
+  const summary = currentData?.summary;
+  const metric = (value: number | undefined) => (value == null ? '—' : formatCount(value));
+  const activeFilterLabels = Object.entries(filters)
+    .filter(([, value]) => value && value !== true)
+    .map(([key, value]) => {
+      const optionKey =
+        key === 'provider'
+          ? 'providers'
+          : key === 'model'
+            ? 'models'
+            : key === 'account'
+              ? 'accounts'
+              : key === 'api_key'
+                ? 'api_keys'
+                : key === 'pool'
+                  ? 'pools'
+                  : null;
+      return {
+        key,
+        label:
+          key === 'status'
+            ? t(`usage_stats.${value === 'failed' ? 'failed' : 'succeeded'}`)
+            : (optionKey
+                ? data?.filters[optionKey].find((option) => option.value === value)?.label
+                : null) || String(value),
+      };
     });
-  };
-
-  const handleRefreshPricing = async () => {
-    setPricingLoading(true);
-    try {
-      const result = await usageApi.refreshPricing();
-      setPricingStatus(result.status);
-      await loadPricing();
-      showNotification(t('usage_stats.pricing_refresh_success'), 'success');
-    } catch (error) {
-      showNotification(
-        `${t('usage_stats.pricing_refresh_failed')}: ${errorMessage(error)}`,
-        'error'
-      );
-    } finally {
-      setPricingLoading(false);
+  const canShowRecords =
+    !!query && !recordsLoading && !recordsError && loadedRecordsQuery === recordsQueryKey;
+  const sortBy = (next: UsageSort) => {
+    if (sort === next) setOrder((value) => (value === 'desc' ? 'asc' : 'desc'));
+    else {
+      setSort(next);
+      setOrder('desc');
     }
+    setPage(1);
   };
-
-  const editPricing = (model: ModelPricingSummary) => {
-    setPricingDraft({
-      model: model.model,
-      provider: model.provider ?? '',
-      input: String(model.input_usd_per_million_tokens),
-      output: String(model.output_usd_per_million_tokens),
-      cacheRead: String(model.cache_read_usd_per_million_tokens),
-      cacheWrite: String(model.cache_write_usd_per_million_tokens),
-    });
-  };
-
-  const handleSavePricing = async () => {
-    if (!pricingDraft.model) return;
-    const parseValue = (value: string) => {
-      const parsed = Number(value);
-      return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
-    };
-    const payload: PricingOverrideInput = {
-      provider: pricingDraft.provider.trim() || undefined,
-      input: parseValue(pricingDraft.input),
-      output: parseValue(pricingDraft.output),
-      'cache-read': parseValue(pricingDraft.cacheRead),
-      'cache-write': parseValue(pricingDraft.cacheWrite),
-    };
-    setSavingPricing(true);
+  const sortHeader = (value: UsageSort, label: string) => (
+    <button className={styles.sortButton} onClick={() => sortBy(value)}>
+      {label}
+      <span aria-hidden="true">{sort === value ? (order === 'desc' ? '↓' : '↑') : '↕'}</span>
+    </button>
+  );
+  const showRecord = async (row: UsageRecord) => {
+    setSelectedRecord(row);
+    const currentKey = activeQuery.current;
     try {
-      await usageApi.putCustomPricing(pricingDraft.model, payload);
-      showNotification(t('usage_stats.pricing_save_success'), 'success');
-      setPricingDraft(EMPTY_DRAFT);
-      await Promise.all([loadPricing(), loadUsage()]);
-    } catch (error) {
-      showNotification(`${t('usage_stats.pricing_save_failed')}: ${errorMessage(error)}`, 'error');
-    } finally {
-      setSavingPricing(false);
-    }
-  };
-
-  const handleDeletePricing = async (model: string) => {
-    try {
-      await usageApi.deleteCustomPricing(model);
-      showNotification(t('usage_stats.pricing_delete_success'), 'success');
-      await Promise.all([loadPricing(), loadUsage()]);
-    } catch (error) {
-      showNotification(
-        `${t('usage_stats.pricing_delete_failed')}: ${errorMessage(error)}`,
-        'error'
-      );
+      const detail = await usageApi.getRecord(row.id);
+      if (activeQuery.current === currentKey)
+        setSelectedRecord((current) => (current?.id === row.id ? detail : current));
+    } catch {
+      /* The selected page already contains the persisted record. */
     }
   };
 
@@ -253,408 +236,470 @@ export function UsagePage() {
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <div className={styles.eyebrow}>{t('usage_stats.eyebrow')}</div>
           <h1>{t('usage_stats.title')}</h1>
-          <p>{t('usage_stats.subtitle')}</p>
+          <p>{t('usage_stats.dashboard_subtitle')}</p>
         </div>
         <div className={styles.headerActions}>
           <Select
             value={range}
-            onChange={(value) => setRange(value as UsageRange)}
+            onChange={(value) => {
+              setRange(value as UsageRange | 'custom');
+              setPage(1);
+              setSnapshotAt(new Date());
+            }}
             ariaLabel={t('usage_stats.range_label')}
-            options={[
-              { value: '24h', label: t('usage_stats.range_24h') },
-              { value: '7d', label: t('usage_stats.range_7d') },
-              { value: '30d', label: t('usage_stats.range_30d') },
-              { value: 'all', label: t('usage_stats.range_all') },
-            ]}
+            options={['24h', '7d', '30d', 'all', 'custom'].map((value) => ({
+              value,
+              label: t(`usage_stats.range_${value}`),
+            }))}
           />
-          <Button variant="secondary" onClick={() => void loadUsage()} loading={loading}>
-            {t('common.refresh')}
+          <Button
+            variant="secondary"
+            onClick={() => void refresh()}
+            disabled={!query}
+            loading={refreshing && !!query}
+            aria-label={t('common.refresh')}
+          >
+            <IconRefreshCw size={16} />
+          </Button>
+          <Button variant="secondary" onClick={() => setManagementOpen(true)}>
+            <IconSettings size={16} />
+            {t('usage_stats.manage')}
           </Button>
         </div>
       </header>
-
-      {storage?.last_error ? <div className={styles.errorBanner}>{storage.last_error}</div> : null}
-      {response?.cache?.precomputed ? (
-        <div className={styles.cacheMeta}>
-          {t('usage_stats.precomputed_meta', { seconds: response.cache.age_seconds })}
+      <section className={styles.filterPanel} aria-label={t('usage_stats.filters')}>
+        {range === 'custom' && (
+          <div className={styles.customRange}>
+            <label>
+              {t('usage_stats.from')}
+              <input
+                type="datetime-local"
+                value={customFrom}
+                onChange={(event) => {
+                  setCustomFrom(event.target.value);
+                  setPage(1);
+                }}
+              />
+            </label>
+            <label>
+              {t('usage_stats.to')}
+              <input
+                type="datetime-local"
+                value={customTo}
+                onChange={(event) => {
+                  setCustomTo(event.target.value);
+                  setPage(1);
+                }}
+              />
+            </label>
+            {!customTime && <span role="status">{t('usage_stats.invalid_range')}</span>}
+          </div>
+        )}
+        <div className={styles.filters}>
+          {(['provider', 'model', 'account', 'api_key', 'pool'] as const).map((key) => (
+            <Select
+              key={key}
+              value={filters[key] || ''}
+              ariaLabel={t(`usage_stats.filter_${key}`)}
+              options={options(
+                data?.filters[
+                  key === 'provider'
+                    ? 'providers'
+                    : key === 'model'
+                      ? 'models'
+                      : key === 'account'
+                        ? 'accounts'
+                        : key === 'api_key'
+                          ? 'api_keys'
+                          : 'pools'
+                ],
+                key
+              )}
+              onChange={(value) => changeFilter(key, value)}
+              size="sm"
+            />
+          ))}
+          <label className={styles.warmupToggle}>
+            <input
+              type="checkbox"
+              checked={!!filters.include_warmup}
+              onChange={(event) => changeFilter('include_warmup', event.target.checked)}
+            />
+            {t('usage_stats.include_warmup')}
+          </label>
+          {filterCount > 0 && (
+            <Button variant="ghost" size="sm" onClick={resetFilters}>
+              {t('usage_stats.reset_filters')}
+            </Button>
+          )}
         </div>
-      ) : null}
-      {cacheWriteUnreported ? (
-        <div className={styles.warningBanner}>{t('usage_stats.cache_write_unreported')}</div>
-      ) : null}
-
-      <section className={styles.metrics} aria-busy={loading}>
-        <MetricCard
-          label={t('usage_stats.total_cost')}
-          value={`${hasEstimatedCost ? '≈ ' : ''}${formatUSD(usage?.total_cost_usd ?? 0)}`}
-          accent="cost"
-        />
+        {activeFilterLabels.length > 0 && (
+          <div className={styles.filterChips}>
+            {activeFilterLabels.map((item) => (
+              <button
+                key={item.key}
+                onClick={() => changeFilter(item.key as keyof DimensionFilters, '')}
+              >
+                {item.label}
+                <span aria-hidden="true">×</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
+      {unsupported && (
+        <div className={styles.errorBanner} role="alert">
+          <strong>{t('usage_stats.backend_upgrade_required')}</strong>
+          <Link to="/system">{t('usage_stats.open_system')}</Link>
+        </div>
+      )}
+      {error && !unsupported && (
+        <div className={styles.errorBanner} role="alert">
+          <strong>{t('usage_stats.load_failed')}</strong>
+          <span>{error}</span>
+          <Button size="sm" variant="secondary" onClick={() => void refresh()}>
+            {t('common.refresh')}
+          </Button>
+        </div>
+      )}
+      {data?.storage.last_error && (
+        <div className={styles.errorBanner} role="alert">
+          {data.storage.last_error}
+        </div>
+      )}
+      <section className={styles.metrics} aria-busy={loading && !!query}>
         <MetricCard
           label={t('usage_stats.total_requests')}
-          value={(usage?.total_requests ?? 0).toLocaleString()}
+          value={metric(summary?.total_requests)}
+          detail={
+            summary
+              ? t('usage_stats.success_failure_count', {
+                  success: formatCount(summary.success_count),
+                  failed: formatCount(summary.failure_count),
+                })
+              : t('usage_stats.filtered_range')
+          }
+          tone="blue"
+          icon={<IconSidebarUsage size={19} />}
         />
         <MetricCard
           label={t('usage_stats.total_tokens')}
-          value={formatTokens(usage?.total_tokens ?? 0)}
+          value={summary ? formatTokens(summary.total_tokens) : '—'}
+          detail={
+            summary
+              ? t('usage_stats.input_output', {
+                  input: formatTokens(
+                    summary.tokens.input_tokens +
+                      summary.tokens.cache_read_tokens +
+                      summary.tokens.cache_write_tokens
+                  ),
+                  output: formatTokens(
+                    summary.tokens.output_tokens + summary.tokens.reasoning_tokens
+                  ),
+                })
+              : t('usage_stats.filtered_range')
+          }
+          tone="green"
+          icon={<IconFileText size={19} />}
         />
         <MetricCard
-          label={t('usage_stats.success_rate')}
-          value={`${successRate.toFixed(1)}%`}
-          accent="success"
+          label={t('usage_stats.cached_tokens')}
+          value={summary ? formatTokens(summary.tokens.cache_read_tokens) : '—'}
+          detail={
+            currentData
+              ? `${t('usage_stats.cache_read_ratio')} ${formatRate(currentData.cost.cache_read_ratio)}`
+              : t('usage_stats.cache_read_tokens')
+          }
+          tone="orange"
+          icon={<IconInbox size={19} />}
         />
         <MetricCard
-          label={t('usage_stats.unpriced_requests')}
-          value={(usage?.unpriced_requests ?? 0).toLocaleString()}
-          accent={usage?.unpriced_requests ? 'warning' : undefined}
+          label={t('usage_stats.avg_latency')}
+          value={formatDuration(summary?.avg_latency_ms)}
+          detail={`${t('usage_stats.ttft')} ${formatDuration(summary?.avg_ttft_ms)}`}
+          tone="cyan"
+          icon={<IconTimer size={19} />}
         />
       </section>
-
-      {loading && !response ? (
+      {summary?.cache_write_unreported && (
+        <div className={styles.warningBanner}>{t('usage_stats.cache_write_unreported')}</div>
+      )}
+      {query && !currentData && !error ? (
         <div className={styles.loading}>
           <LoadingSpinner size={28} />
+          <span>{t('usage_stats.loading_analytics')}</span>
         </div>
-      ) : (
-        <>
-          <section className={styles.gridTwo}>
-            <article className={styles.panel}>
-              <PanelHeader
-                title={t('usage_stats.cost_trend')}
-                meta={t('usage_stats.request_count', { count: usage?.total_requests ?? 0 })}
-              />
-              <div className={styles.trend}>
-                {trend.map((point) => (
-                  <div
-                    className={styles.trendColumn}
-                    key={point.key}
-                    title={`${point.label}: ${formatUSD(point.cost)} / ${point.requests}`}
-                  >
-                    <div className={styles.trendValue}>
-                      {point.cost > 0 ? formatUSD(point.cost) : ''}
-                    </div>
-                    <div className={styles.trendTrack}>
-                      <div
-                        className={styles.trendBar}
-                        style={{
-                          height: `${maxTrendCost ? Math.max(4, (point.cost / maxTrendCost) * 100) : 0}%`,
-                        }}
-                      />
-                    </div>
-                    <span>{point.label}</span>
-                  </div>
-                ))}
-              </div>
-            </article>
-
-            <article className={styles.panel}>
-              <PanelHeader title={t('usage_stats.token_breakdown')} />
-              <div className={styles.tokenGrid}>
-                <TokenItem
-                  label={t('usage_stats.input_tokens')}
-                  value={usage?.tokens.input_tokens ?? 0}
-                />
-                <TokenItem
-                  label={t('usage_stats.output_tokens')}
-                  value={usage?.tokens.output_tokens ?? 0}
-                />
-                <TokenItem
-                  label={t('usage_stats.cache_read_tokens')}
-                  value={usage?.tokens.cache_read_tokens ?? 0}
-                />
-                <TokenItem
-                  label={t('usage_stats.cache_write_tokens')}
-                  value={usage?.tokens.cache_write_tokens ?? 0}
-                />
-                <TokenItem
-                  label={t('usage_stats.reasoning_tokens')}
-                  value={usage?.tokens.reasoning_tokens ?? 0}
-                />
-              </div>
-              <div className={styles.storageMeta}>
-                <span>
-                  {storage?.enabled
-                    ? t('usage_stats.storage_enabled')
-                    : t('usage_stats.storage_disabled')}
-                </span>
-                <span>
-                  {storage
-                    ? `${storage.record_count.toLocaleString()} / ${storage.max_records.toLocaleString()}`
-                    : '—'}
-                </span>
-                <span>
-                  {storage
-                    ? `${storage.retention_days}d · ${fileSize(storage.file_size_bytes)}`
-                    : '—'}
-                </span>
-              </div>
-            </article>
-          </section>
-
-          <section className={styles.gridTwo}>
-            <RankingPanel title={t('usage_stats.accounts')} rows={accounts} />
-            <RankingPanel title={t('usage_stats.models')} rows={models} />
-          </section>
-
-          <article className={styles.panel}>
-            <PanelHeader
-              title={t('usage_stats.recent_requests')}
-              meta={t('usage_stats.latest_count', { count: recentDetails.length })}
+      ) : currentData ? (
+        <UsageInsights data={currentData} onDimension={(key, value) => changeFilter(key, value)} />
+      ) : null}
+      <article className={styles.recordsPanel}>
+        <div className={styles.panelHeader}>
+          <div>
+            <h2>{t('usage_stats.records_title')}</h2>
+            <p>{t('usage_stats.records_description')}</p>
+          </div>
+          <Segments
+            value={filters.status || 'all'}
+            label={t('usage_stats.record_status')}
+            onChange={(value) => changeFilter('status', value === 'all' ? '' : value)}
+            options={[
+              { value: 'all', label: t('usage_stats.all_records') },
+              { value: 'success', label: t('usage_stats.success_records') },
+              { value: 'failed', label: t('usage_stats.failed_records') },
+            ]}
+          />
+        </div>
+        <div className={styles.recordsToolbar}>
+          <label className={styles.search}>
+            <IconSearch size={17} />
+            <input
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder={t('usage_stats.search_placeholder')}
+              aria-label={t('usage_stats.search_placeholder')}
             />
-            <div className={styles.tableWrap}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>{t('usage_stats.time')}</th>
-                    <th>{t('usage_stats.account')}</th>
-                    <th>{t('usage_stats.model')}</th>
-                    <th>{t('usage_stats.tokens')}</th>
-                    <th>{t('usage_stats.cost')}</th>
-                    <th>{t('usage_stats.latency')}</th>
-                    <th>{t('usage_stats.status')}</th>
+          </label>
+          <span>
+            {t('usage_stats.matching_records', { count: canShowRecords ? records.total : 0 })}
+          </span>
+        </div>
+        {recordsError && !unsupported && (
+          <div role="alert" className={styles.errorBanner}>
+            {recordsError}
+          </div>
+        )}
+        <div className={styles.tableWrap} aria-busy={recordsLoading && !!query}>
+          <table className={styles.recordsTable}>
+            <thead>
+              <tr>
+                <th
+                  aria-sort={
+                    sort === 'timestamp' ? (order === 'desc' ? 'descending' : 'ascending') : 'none'
+                  }
+                >
+                  {sortHeader('timestamp', t('usage_stats.time'))}
+                </th>
+                <th>{t('usage_stats.account')}</th>
+                <th>{t('usage_stats.model')}</th>
+                <th>{t('usage_stats.status')}</th>
+                <th
+                  aria-sort={
+                    sort === 'tokens' ? (order === 'desc' ? 'descending' : 'ascending') : 'none'
+                  }
+                >
+                  {sortHeader('tokens', t('usage_stats.tokens'))}
+                </th>
+                <th
+                  aria-sort={
+                    sort === 'cost' ? (order === 'desc' ? 'descending' : 'ascending') : 'none'
+                  }
+                >
+                  {sortHeader('cost', t('usage_stats.cost'))}
+                </th>
+                <th
+                  aria-sort={
+                    sort === 'latency' ? (order === 'desc' ? 'descending' : 'ascending') : 'none'
+                  }
+                >
+                  {sortHeader('latency', t('usage_stats.latency'))}
+                </th>
+                <th
+                  aria-sort={
+                    sort === 'ttft' ? (order === 'desc' ? 'descending' : 'ascending') : 'none'
+                  }
+                >
+                  {sortHeader('ttft', t('usage_stats.ttft'))}
+                </th>
+                <th>
+                  <span className={styles.srOnly}>{t('usage_stats.view_detail')}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {recordsLoading && query ? (
+                <tr>
+                  <td colSpan={9} className={styles.empty}>
+                    <LoadingSpinner size={24} />
+                  </td>
+                </tr>
+              ) : !canShowRecords || !records.items.length ? (
+                <tr>
+                  <td colSpan={9} className={styles.empty}>
+                    <IconInbox size={32} />
+                    <strong>
+                      {t(
+                        unsupported
+                          ? 'usage_stats.backend_upgrade_required'
+                          : recordsError
+                            ? 'usage_stats.load_failed'
+                            : 'usage_stats.no_matching_records'
+                      )}
+                    </strong>
+                    {!unsupported && !recordsError && (
+                      <span>{t('usage_stats.no_matching_hint')}</span>
+                    )}
+                    {filterCount > 0 && (
+                      <Button variant="ghost" size="sm" onClick={resetFilters}>
+                        {t('usage_stats.reset_filters')}
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              ) : (
+                records.items.map((row) => (
+                  <tr key={row.id}>
+                    <td className={styles.timeCell}>
+                      <strong>
+                        {new Date(row.timestamp).toLocaleTimeString(i18n.language, {
+                          hour12: false,
+                        })}
+                      </strong>
+                      <small>{new Date(row.timestamp).toLocaleDateString(i18n.language)}</small>
+                    </td>
+                    <td className={styles.accountCell}>
+                      <strong title={row.account}>{usageRecordAccount(row)}</strong>
+                      <small>
+                        {row.provider} · {row.auth_type || '—'}
+                      </small>
+                    </td>
+                    <td className={styles.modelCell}>
+                      <strong>{row.model || row.alias || '—'}</strong>
+                      <small title={row.endpoint}>
+                        {row.endpoint || row.service_tier || '—'}
+                        {!row.generate ? ` · ${t('usage_stats.warmup')}` : ''}
+                      </small>
+                    </td>
+                    <td>
+                      <span className={row.failed ? styles.failed : styles.success}>
+                        {row.status_code ||
+                          t(row.failed ? 'usage_stats.failed' : 'usage_stats.succeeded')}
+                      </span>
+                    </td>
+                    <td>
+                      <strong>{formatTokens(row.tokens.total_tokens)}</strong>
+                      <small>
+                        {t('usage_stats.token_short', {
+                          input: formatTokens(row.tokens.input_tokens),
+                          output: formatTokens(row.tokens.output_tokens),
+                          cache: formatTokens(row.tokens.cache_read_tokens),
+                        })}
+                      </small>
+                    </td>
+                    <td>
+                      <strong className={styles.costValue}>
+                        {row.billing?.priced
+                          ? `${row.billing.pricing?.estimated ? '≈ ' : ''}${formatUSD(row.cost_usd ?? row.billing.total_usd)}`
+                          : '—'}
+                      </strong>
+                      {!row.billing?.priced && <small>{t('usage_stats.unpriced')}</small>}
+                    </td>
+                    <td className={styles.numeric}>{formatDuration(row.latency_ms || null)}</td>
+                    <td className={styles.numeric}>{formatDuration(row.ttft_ms || null)}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className={styles.detailButton}
+                        onClick={() => void showRecord(row)}
+                        aria-label={t('usage_stats.view_detail')}
+                        title={t('usage_stats.view_detail')}
+                      >
+                        <IconEye size={17} />
+                      </button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {recentDetails.length ? (
-                    recentDetails.map((detail, index) => (
-                      <tr key={detail.request_id || `${detail.timestamp}-${index}`}>
-                        <td>{new Date(detail.timestamp).toLocaleString()}</td>
-                        <td title={detail.source}>{detailAccount(detail)}</td>
-                        <td>
-                          <strong>
-                            {detail.alias || detail.billing?.pricing?.matched_model || 'unknown'}
-                          </strong>
-                          <small>
-                            {detail.provider} · {detail.service_tier}
-                          </small>
-                        </td>
-                        <td>{formatTokens(detail.tokens.total_tokens)}</td>
-                        <td>
-                          {detail.billing?.priced ? (
-                            `${
-                              detail.billing.pricing?.estimated ||
-                              hasUnreportedCodexCacheWrite(detail)
-                                ? '≈ '
-                                : ''
-                            }${formatUSD(detail.cost_usd ?? detail.billing.total_usd)}`
-                          ) : (
-                            <span className={styles.muted}>{detail.billing?.reason || '—'}</span>
-                          )}
-                        </td>
-                        <td>{detail.latency_ms.toLocaleString()} ms</td>
-                        <td>
-                          <span className={detail.failed ? styles.failed : styles.success}>
-                            {detail.status_code}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={7} className={styles.empty}>
-                        {t('usage_stats.no_data')}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </article>
-
-          <article className={styles.panel}>
-            <PanelHeader
-              title={t('usage_stats.pricing_title')}
-              meta={
-                pricingStatus
-                  ? `${pricingStatus.model_count.toLocaleString()} · ${pricingStatus.active_source}`
-                  : undefined
-              }
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className={styles.pagination}>
+          <span>
+            {t('usage_stats.pagination_summary', {
+              from:
+                canShowRecords && records.total ? (records.page - 1) * records.page_size + 1 : 0,
+              to: canShowRecords ? Math.min(records.page * records.page_size, records.total) : 0,
+              total: canShowRecords ? records.total : 0,
+            })}
+          </span>
+          <div>
+            <Select
+              value={String(pageSize)}
+              onChange={(value) => {
+                setPageSize(Number(value));
+                setPage(1);
+              }}
+              ariaLabel={t('usage_stats.page_size')}
+              options={[10, 25, 50, 100].map((value) => ({
+                value: String(value),
+                label: t('usage_stats.per_page', { count: value }),
+              }))}
+              size="sm"
             />
-            <div className={styles.pricingToolbar}>
-              <input
-                value={pricingQuery}
-                onChange={(event) => setPricingQuery(event.target.value)}
-                placeholder={t('usage_stats.pricing_search')}
-              />
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => void handleRefreshPricing()}
-                loading={pricingLoading}
-              >
-                {t('usage_stats.pricing_refresh')}
-              </Button>
-            </div>
-            {pricingStatus?.last_error ? (
-              <div className={styles.errorBanner}>{pricingStatus.last_error}</div>
-            ) : null}
-            <div className={`${styles.tableWrap} ${styles.pricingTableWrap}`}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>{t('usage_stats.model')}</th>
-                    <th>{t('usage_stats.provider')}</th>
-                    <th>{t('usage_stats.input_price')}</th>
-                    <th>{t('usage_stats.output_price')}</th>
-                    <th>{t('usage_stats.cache_read_price')}</th>
-                    <th>{t('usage_stats.cache_write_price')}</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {pricingModels.map((model) => (
-                    <tr key={model.model}>
-                      <td>
-                        <strong>{model.model}</strong>
-                        {model.custom_override ? (
-                          <small>{t('usage_stats.custom_override')}</small>
-                        ) : null}
-                      </td>
-                      <td>{model.provider || '—'}</td>
-                      <td>{formatUSD(model.input_usd_per_million_tokens)}</td>
-                      <td>{formatUSD(model.output_usd_per_million_tokens)}</td>
-                      <td>{formatUSD(model.cache_read_usd_per_million_tokens)}</td>
-                      <td>{formatUSD(model.cache_write_usd_per_million_tokens)}</td>
-                      <td className={styles.rowActions}>
-                        <button onClick={() => editPricing(model)}>{t('common.edit')}</button>
-                        {model.custom_override ? (
-                          <button onClick={() => void handleDeletePricing(model.model)}>
-                            {t('common.delete')}
-                          </button>
-                        ) : null}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </article>
-
-          {pricingDraft.model ? (
-            <article className={styles.panel}>
-              <PanelHeader title={t('usage_stats.pricing_edit', { model: pricingDraft.model })} />
-              <div className={styles.priceForm}>
-                {(['provider', 'input', 'output', 'cacheRead', 'cacheWrite'] as const).map(
-                  (field) => (
-                    <label key={field}>
-                      <span>{t(`usage_stats.field_${field}`)}</span>
-                      <input
-                        value={pricingDraft[field]}
-                        onChange={(event) =>
-                          setPricingDraft((current) => ({
-                            ...current,
-                            [field]: event.target.value,
-                          }))
-                        }
-                      />
-                    </label>
-                  )
-                )}
-              </div>
-              <div className={styles.formActions}>
-                <Button variant="ghost" onClick={() => setPricingDraft(EMPTY_DRAFT)}>
-                  {t('common.cancel')}
-                </Button>
-                <Button onClick={() => void handleSavePricing()} loading={savingPricing}>
-                  {t('common.save')}
-                </Button>
-              </div>
-            </article>
-          ) : null}
-
-          <article className={`${styles.panel} ${styles.storagePanel}`}>
-            <div>
-              <h2>{t('usage_stats.storage_title')}</h2>
-              <p>{storage?.storage_path || t('usage_stats.storage_path_default')}</p>
-            </div>
-            <div className={styles.headerActions}>
-              <input
-                ref={importInputRef}
-                type="file"
-                accept="application/json,.json"
-                hidden
-                onChange={(event) => void handleImport(event.target.files?.[0])}
-              />
-              <Button variant="secondary" size="sm" onClick={() => importInputRef.current?.click()}>
-                {t('usage_stats.import')}
-              </Button>
-              <Button variant="secondary" size="sm" onClick={() => void handleExport()}>
-                {t('usage_stats.export')}
-              </Button>
-              <Button variant="danger" size="sm" onClick={handleClear}>
-                {t('usage_stats.clear')}
-              </Button>
-            </div>
-          </article>
-        </>
-      )}
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={!query || recordsLoading || page <= 1}
+              onClick={() => setPage((current) => current - 1)}
+              aria-label={t('usage_stats.previous_page')}
+            >
+              <IconChevronLeft size={15} />
+            </Button>
+            <span>
+              {page} / {Math.max(1, records.total_pages)}
+            </span>
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={!query || recordsLoading || page >= records.total_pages}
+              onClick={() => setPage((current) => current + 1)}
+              aria-label={t('usage_stats.next_page')}
+            >
+              <IconChevronLeft size={15} style={{ transform: 'rotate(180deg)' }} />
+            </Button>
+          </div>
+        </div>
+      </article>
+      <footer className={styles.pageFooter}>
+        <span>{t('usage_stats.scope_note')}</span>
+        {currentData && (
+          <span>
+            {t('usage_stats.last_updated')} {snapshotAt.toLocaleTimeString(i18n.language)}
+          </span>
+        )}
+      </footer>
+      <Modal
+        open={managementOpen}
+        onClose={() => setManagementOpen(false)}
+        title={t('usage_stats.manage')}
+        width={1100}
+      >
+        {managementOpen && <UsageManagement storage={data?.storage} onChange={refresh} />}
+      </Modal>
+      <UsageRecordModal record={selectedRecord} onClose={() => setSelectedRecord(null)} />
     </div>
   );
 }
-
 function MetricCard({
   label,
   value,
-  accent,
+  detail,
+  tone,
+  icon,
 }: {
   label: string;
   value: string;
-  accent?: 'cost' | 'success' | 'warning';
+  detail: string;
+  tone: string;
+  icon: React.ReactNode;
 }) {
   return (
-    <article className={`${styles.metric} ${accent ? styles[accent] : ''}`}>
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </article>
-  );
-}
-
-function PanelHeader({ title, meta }: { title: string; meta?: string }) {
-  return (
-    <div className={styles.panelHeader}>
-      <h2>{title}</h2>
-      {meta ? <span>{meta}</span> : null}
-    </div>
-  );
-}
-
-function TokenItem({ label, value }: { label: string; value: number }) {
-  return (
-    <div className={styles.tokenItem}>
-      <span>{label}</span>
-      <strong>{formatTokens(value)}</strong>
-    </div>
-  );
-}
-
-function RankingPanel({
-  title,
-  rows,
-}: {
-  title: string;
-  rows: ReturnType<typeof sortedDimensions>;
-}) {
-  return (
-    <article className={styles.panel}>
-      <PanelHeader title={title} />
-      <div className={styles.ranking}>
-        {rows.length ? (
-          rows.map(([name, value], index) => (
-            <div className={styles.rankRow} key={name}>
-              <span className={styles.rankIndex}>{index + 1}</span>
-              <div>
-                <strong title={name}>{name}</strong>
-                <small>
-                  {value.total_requests.toLocaleString()} req · {formatTokens(value.total_tokens)}{' '}
-                  tok
-                </small>
-              </div>
-              <b>{formatUSD(value.total_cost_usd)}</b>
-            </div>
-          ))
-        ) : (
-          <div className={styles.empty}>—</div>
-        )}
+    <article className={styles.metric}>
+      <div className={`${styles.metricIcon} ${styles[tone]}`}>{icon}</div>
+      <div>
+        <span>{label}</span>
+        <strong>{value}</strong>
+        <small title={detail}>{detail}</small>
       </div>
     </article>
   );

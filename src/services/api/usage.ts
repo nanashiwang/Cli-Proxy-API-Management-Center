@@ -1,6 +1,11 @@
 import { apiClient } from './client';
 import type {
   ModelPricingStatus,
+  UsageDashboard,
+  UsageFilters,
+  UsageRecord,
+  UsageRecordsQuery,
+  UsageRecordsResponse,
   ModelPricingSummary,
   UsageAccountRangeInput,
   UsageAccountRangesResponse,
@@ -23,6 +28,12 @@ export interface PricingOverrideInput {
 }
 
 export const usageApi = {
+  getDashboard: (params: UsageFilters, signal?: AbortSignal) =>
+    apiClient.get<UsageDashboard>('/usage/dashboard', { params, signal, timeout: 30_000 }),
+  getRecords: (params: UsageRecordsQuery, signal?: AbortSignal) =>
+    apiClient.get<UsageRecordsResponse>('/usage/records', { params, signal, timeout: 30_000 }),
+  getRecord: (id: string, signal?: AbortSignal) =>
+    apiClient.get<UsageRecord>(`/usage/records/${encodeURIComponent(id)}`, { signal }),
   getUsage: (from?: string, to?: string, range?: UsageRange) =>
     apiClient.get<UsageResponse>('/usage', {
       params: {

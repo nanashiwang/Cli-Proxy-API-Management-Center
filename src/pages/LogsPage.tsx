@@ -1,6 +1,7 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -154,7 +155,10 @@ export function LogsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [autoRefresh, setAutoRefresh] = useLocalStorage('logsPage.autoRefresh', false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchParams] = useSearchParams();
+  const linkedRequestId = searchParams.get('request_id') ?? '';
+  const appliedLinkedRequestId = useRef('');
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('request_id') ?? '');
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const [hideManagementLogs, setHideManagementLogs] = useLocalStorage(
     'logsPage.hideManagementLogs',
@@ -485,6 +489,12 @@ export function LogsPage() {
   }, [baseLines, hideManagementLogs, trimmedSearchQuery]);
 
   const filters = useLogFilters({ parsedLines: parsedSearchLines });
+  useEffect(() => {
+    if (!linkedRequestId || appliedLinkedRequestId.current === linkedRequestId) return;
+    appliedLinkedRequestId.current = linkedRequestId;
+    setSearchQuery(linkedRequestId);
+    filters.clearStructuredFilters();
+  }, [linkedRequestId, filters]);
   const structuredFiltersPanelId = 'logs-structured-filters';
   const structuredFilterCount =
     filters.methodFilters.length + filters.statusFilters.length + filters.pathFilters.length;
