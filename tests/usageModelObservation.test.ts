@@ -191,6 +191,7 @@ describe('usage model rendering', () => {
     );
     expect(markup).toContain('data-match="unknown"');
     expect(markup).toContain(i18n.t('usage_stats.model_not_reported'));
+    expect(markup).toContain(i18n.t('usage_stats.model_match_hint_unreported'));
     expect(markup).not.toContain('data-match="matched"');
   });
 
@@ -227,6 +228,7 @@ describe('usage model rendering', () => {
         'model_match_hint_matched',
         'model_match_hint_mismatch',
         'model_match_hint_unknown',
+        'model_match_hint_unreported',
         'sent_model',
         'returned_model',
         'sent_short',

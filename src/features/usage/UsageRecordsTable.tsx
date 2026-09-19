@@ -4,7 +4,8 @@ import { IconEye } from '@/components/ui/icons';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import type { UsageRecord, UsageSort } from '@/types/usage';
 import { formatDuration, usageRecordAccount } from './analytics';
-import { formatTokens, formatUSD } from './utils';
+import { formatUSD } from './utils';
+import { UsageTokenCell } from './UsageTokenCell';
 import { UsageModelCell } from './UsageModelCell';
 import {
   USAGE_RECORD_COLUMNS,
@@ -161,14 +162,7 @@ export function UsageRecordsTable({
                     <UsageTransportBadge value={row.client_transport} direction="client" />
                   </td>
                   <td className={styles.tokensCell}>
-                    <strong>{formatTokens(row.tokens.total_tokens)}</strong>
-                    <small>
-                      {t('usage_stats.token_short', {
-                        input: formatTokens(row.tokens.input_tokens),
-                        output: formatTokens(row.tokens.output_tokens),
-                        cache: formatTokens(row.tokens.cache_read_tokens),
-                      })}
-                    </small>
+                    <UsageTokenCell record={row} />
                   </td>
                   <td>
                     <strong className={styles.costValue}>

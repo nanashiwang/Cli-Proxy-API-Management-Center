@@ -42,7 +42,7 @@ export const USAGE_RECORD_COLUMN_WIDTHS: Record<UsageRecordColumn, number> = {
   endpoint: 180,
   upstream_transport: 82,
   client_transport: 82,
-  tokens: 170,
+  tokens: 230,
   cost: 105,
   request_latency: 132,
   time: 112,

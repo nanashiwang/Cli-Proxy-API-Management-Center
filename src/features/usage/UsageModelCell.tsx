@@ -5,15 +5,20 @@ import styles from './UsagePage.module.scss';
 
 export function UsageModelMatchBadge({ record }: { record: UsageRecord }) {
   const { t } = useTranslation();
-  const { match } = usageModelObservation(record);
+  const { match, sent, returned } = usageModelObservation(record);
+  const missingReport = Boolean(sent && !returned);
   return (
     <span
       className={styles.modelMatchBadge}
       data-match={match}
-      title={t(`usage_stats.model_match_hint_${match}`)}
+      title={t(
+        missingReport
+          ? 'usage_stats.model_match_hint_unreported'
+          : `usage_stats.model_match_hint_${match}`
+      )}
     >
       <i aria-hidden="true" />
-      {t(`usage_stats.model_match_${match}`)}
+      {t(missingReport ? 'usage_stats.model_not_reported' : `usage_stats.model_match_${match}`)}
     </span>
   );
 }
