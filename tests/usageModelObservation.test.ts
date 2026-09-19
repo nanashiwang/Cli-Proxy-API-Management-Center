@@ -161,7 +161,7 @@ describe('usage model observation semantics', () => {
 });
 
 describe('usage model rendering', () => {
-  test('shows original, sent, and reported names while treating mapping separately from mismatch', () => {
+  test('keeps only the requested model in the list while details retain observations', () => {
     const markup = renderToStaticMarkup(
       createElement(UsageModelCell, {
         record: record({
@@ -172,16 +172,16 @@ describe('usage model rendering', () => {
       })
     );
     expect(markup).toContain('friendly-alias');
-    expect(markup).toContain('gpt-real');
-    expect(markup).toContain('data-match="matched"');
-    expect(markup).toContain(i18n.t('usage_stats.model_mapped'));
+    expect(markup).not.toContain('gpt-real');
+    expect(markup).not.toContain('data-match=');
+    expect(markup).not.toContain(i18n.t('usage_stats.model_mapped'));
     expect(markup).not.toContain('legacy-alias');
     expect(markup).not.toContain('price-table-model');
   });
 
-  test('shows a missing report as unknown rather than a successful match', () => {
+  test('details show a missing report as unknown rather than a successful match', () => {
     const markup = renderToStaticMarkup(
-      createElement(UsageModelCell, {
+      createElement(UsageModelDetails, {
         record: record({
           requested_model: 'friendly-alias',
           upstream_model: 'gpt-real',

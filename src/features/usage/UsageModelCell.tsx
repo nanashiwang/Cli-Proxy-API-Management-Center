@@ -28,40 +28,12 @@ export function UsageModelCell({ record }: { record: UsageRecord }) {
   const { t } = useTranslation();
   const model = usageModelObservation(record);
   return (
-    <div className={styles.modelObservation}>
-      <div className={styles.modelIdentity}>
-        <strong title={`${t('usage_stats.requested_model')}: ${model.primary}`}>
-          {model.primary}
-        </strong>
-        <UsageModelMatchBadge record={record} />
-      </div>
-      {model.sent || model.returned ? (
-        <div className={styles.modelRoutes}>
-          <div
-            className={styles.modelRoute}
-            title={`${t('usage_stats.sent_model')}: ${model.sent || t('usage_stats.not_recorded')}`}
-          >
-            <span className={styles.modelRouteLabel}>{t('usage_stats.sent_short')}</span>
-            <code>{model.sent || '—'}</code>
-            {model.mapped && (
-              <span className={styles.modelMapping} title={t('usage_stats.model_mapping_hint')}>
-                {t('usage_stats.model_mapped')}
-              </span>
-            )}
-          </div>
-          <div
-            className={styles.modelRoute}
-            data-route="returned"
-            title={`${t('usage_stats.returned_model')}: ${model.returned || t('usage_stats.model_not_reported')}`}
-          >
-            <span className={styles.modelRouteLabel}>{t('usage_stats.returned_short')}</span>
-            <code>{model.returned || t('usage_stats.model_not_reported')}</code>
-          </div>
-        </div>
-      ) : (
-        <span className={styles.modelMissing}>{t('usage_stats.model_observation_missing')}</span>
-      )}
-    </div>
+    <strong
+      className={styles.modelName}
+      title={`${t('usage_stats.requested_model')}: ${model.primary}`}
+    >
+      {model.primary}
+    </strong>
   );
 }
 

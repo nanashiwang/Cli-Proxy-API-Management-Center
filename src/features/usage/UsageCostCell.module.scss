@@ -1,0 +1,52 @@
+@use '../../styles/variables' as *;
+.cell {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.amount > span {
+  color: #00845f;
+  font: 600 12px/1.5 $font-mono;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+:global([data-theme='dark']) .amount > span {
+  color: #3cdbab;
+}
+.priceTable > div {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr;
+  gap: 8px;
+  align-items: baseline;
+  padding: 8px 0;
+  font-size: 12px;
+}
+.priceTable [role='cell']:not(:first-child) {
+  font-family: $font-mono;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.priceTable .priceHeader {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+.priceHeader > span:not(:first-child) {
+  text-align: right;
+}
+.snapshot {
+  border-top: 1px solid var(--border-color);
+  margin-top: 14px !important;
+  padding-top: 6px;
+}
+.snapshot > div {
+  align-items: flex-start !important;
+}
+.snapshot dt {
+  flex-shrink: 0;
+  font-size: 11px;
+}
+.snapshot dd {
+  min-width: 0;
+  font-size: 11px !important;
+}

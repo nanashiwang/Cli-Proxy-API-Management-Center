@@ -24,6 +24,17 @@ export function UsageTransportBadge({
   );
 }
 
+export function UsageReasoningEffort({ value }: { value?: string }) {
+  const { t } = useTranslation();
+  const text = usageRecordedText(value);
+  const state = text && ['default', 'auto', 'enabled', 'none'].includes(text) ? text : null;
+  return (
+    <span title={state ? t(`usage_stats.reasoning_hint_${state}`) : text || undefined}>
+      {state ? t(`usage_stats.reasoning_${state}`) : text || t('usage_stats.not_recorded')}
+    </span>
+  );
+}
+
 /** Native details keeps long addresses and user agents readable on touch and keyboard. */
 export function UsageExpandableValue({ value, label }: { value?: string; label: string }) {
   const { t } = useTranslation();
@@ -51,7 +62,7 @@ export function UsageRequestMetadata({ record }: { record: UsageRecord }) {
         <div className={styles.detailField}>
           <span>{t('usage_stats.reasoning_effort')}</span>
           <strong>
-            {usageRecordedText(record.reasoning_effort) || t('usage_stats.not_recorded')}
+            <UsageReasoningEffort value={record.reasoning_effort} />
           </strong>
         </div>
         <div className={styles.detailField}>
