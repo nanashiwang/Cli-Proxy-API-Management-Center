@@ -415,9 +415,6 @@ export function UsagePage() {
           icon={<IconTimer size={19} />}
         />
       </section>
-      {summary?.cache_write_unreported && (
-        <div className={styles.warningBanner}>{t('usage_stats.cache_write_unreported')}</div>
-      )}
       {query && !currentData && !error ? (
         <div className={styles.loading}>
           <LoadingSpinner size={28} />
