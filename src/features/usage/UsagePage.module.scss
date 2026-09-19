@@ -534,7 +534,105 @@
   white-space: nowrap;
 }
 .modelCell {
-  max-width: 190px;
+  min-width: 230px;
+  max-width: 300px;
+}
+.modelObservation {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.modelIdentity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.modelIdentity > strong {
+  min-width: 0;
+  flex: 1;
+  font-family: $font-mono;
+}
+.modelMatchBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 3px 6px;
+  border-radius: 5px;
+  color: var(--text-tertiary);
+  background: var(--bg-secondary);
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+.modelMatchBadge > i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.modelMatchBadge[data-match='matched'] {
+  color: var(--success-badge-text);
+  background: var(--success-badge-bg);
+}
+.modelMatchBadge[data-match='mismatch'] {
+  color: var(--warning-text);
+  background: var(--warning-bg);
+}
+.modelRoutes {
+  display: grid;
+  gap: 4px;
+}
+.modelRoute {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--text-secondary);
+}
+.modelRouteLabel {
+  flex-shrink: 0;
+  color: var(--usage-blue);
+  font-size: 9px;
+}
+.modelRoute[data-route='returned'] .modelRouteLabel {
+  color: var(--usage-orange);
+}
+.modelRoute > code {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 10px/1.35 $font-mono;
+}
+.modelMapping {
+  flex-shrink: 0;
+  border-radius: 3px;
+  padding: 1px 4px;
+  color: var(--usage-blue);
+  background: color-mix(in srgb, var(--usage-blue) 9%, transparent);
+  font-size: 8px;
+}
+.modelMissing {
+  color: var(--text-tertiary);
+  font-size: 9px;
+}
+.modelDetailHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.modelDetailHeading > h3 {
+  margin: 0;
+}
+.modelMappingNote {
+  color: var(--usage-blue);
+  font-size: 10px;
+  line-height: 1.5;
 }
 .modelCell strong,
 .modelCell small {
