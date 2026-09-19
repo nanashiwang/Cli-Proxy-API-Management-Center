@@ -13,7 +13,6 @@ import {
   IconSearch,
   IconSidebarUsage,
   IconInbox,
-  IconEye,
   IconChevronLeft,
 } from '@/components/ui/icons';
 import { useHeaderRefresh } from '@/hooks/useHeaderRefresh';
@@ -27,19 +26,18 @@ import type {
   UsageRecordsResponse,
   UsageSort,
 } from '@/types/usage';
-import { formatTokens, formatUSD } from './utils';
+import { formatTokens } from './utils';
 import {
   customRangeFilters,
   formatDuration,
   formatRate,
   usageTimeFilters,
   usageEndpointUnavailable,
-  usageRecordAccount,
 } from './analytics';
 import { Segments, UsageInsights } from './UsageInsights';
 import { UsageManagement } from './UsageManagement';
 import { UsageRecordModal } from './UsageRecordModal';
-import { UsageModelCell } from './UsageModelCell';
+import { UsageRecordsTable } from './UsageRecordsTable';
 import styles from './UsagePage.module.scss';
 
 type DimensionFilters = Pick<
@@ -215,12 +213,6 @@ export function UsagePage() {
     }
     setPage(1);
   };
-  const sortHeader = (value: UsageSort, label: string) => (
-    <button className={styles.sortButton} onClick={() => sortBy(value)}>
-      {label}
-      <span aria-hidden="true">{sort === value ? (order === 'desc' ? '↓' : '↑') : '↕'}</span>
-    </button>
-  );
   const showRecord = async (row: UsageRecord) => {
     setSelectedRecord(row);
     const currentKey = activeQuery.current;
@@ -470,150 +462,34 @@ export function UsagePage() {
             {recordsError}
           </div>
         )}
-        <div className={styles.tableWrap} aria-busy={recordsLoading && !!query}>
-          <table className={styles.recordsTable}>
-            <thead>
-              <tr>
-                <th
-                  aria-sort={
-                    sort === 'timestamp' ? (order === 'desc' ? 'descending' : 'ascending') : 'none'
-                  }
-                >
-                  {sortHeader('timestamp', t('usage_stats.time'))}
-                </th>
-                <th>{t('usage_stats.account')}</th>
-                <th>{t('usage_stats.model')}</th>
-                <th>{t('usage_stats.status')}</th>
-                <th
-                  aria-sort={
-                    sort === 'tokens' ? (order === 'desc' ? 'descending' : 'ascending') : 'none'
-                  }
-                >
-                  {sortHeader('tokens', t('usage_stats.tokens'))}
-                </th>
-                <th
-                  aria-sort={
-                    sort === 'cost' ? (order === 'desc' ? 'descending' : 'ascending') : 'none'
-                  }
-                >
-                  {sortHeader('cost', t('usage_stats.cost'))}
-                </th>
-                <th
-                  aria-sort={
-                    sort === 'latency' ? (order === 'desc' ? 'descending' : 'ascending') : 'none'
-                  }
-                >
-                  {sortHeader('latency', t('usage_stats.latency'))}
-                </th>
-                <th
-                  aria-sort={
-                    sort === 'ttft' ? (order === 'desc' ? 'descending' : 'ascending') : 'none'
-                  }
-                >
-                  {sortHeader('ttft', t('usage_stats.ttft'))}
-                </th>
-                <th>
-                  <span className={styles.srOnly}>{t('usage_stats.view_detail')}</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {recordsLoading && query ? (
-                <tr>
-                  <td colSpan={9} className={styles.empty}>
-                    <LoadingSpinner size={24} />
-                  </td>
-                </tr>
-              ) : !canShowRecords || !records.items.length ? (
-                <tr>
-                  <td colSpan={9} className={styles.empty}>
-                    <IconInbox size={32} />
-                    <strong>
-                      {t(
-                        unsupported
-                          ? 'usage_stats.backend_upgrade_required'
-                          : recordsError
-                            ? 'usage_stats.load_failed'
-                            : 'usage_stats.no_matching_records'
-                      )}
-                    </strong>
-                    {!unsupported && !recordsError && (
-                      <span>{t('usage_stats.no_matching_hint')}</span>
-                    )}
-                    {filterCount > 0 && (
-                      <Button variant="ghost" size="sm" onClick={resetFilters}>
-                        {t('usage_stats.reset_filters')}
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ) : (
-                records.items.map((row) => (
-                  <tr key={row.id}>
-                    <td className={styles.timeCell}>
-                      <strong>
-                        {new Date(row.timestamp).toLocaleTimeString(i18n.language, {
-                          hour12: false,
-                        })}
-                      </strong>
-                      <small>{new Date(row.timestamp).toLocaleDateString(i18n.language)}</small>
-                    </td>
-                    <td className={styles.accountCell}>
-                      <strong title={row.account}>{usageRecordAccount(row)}</strong>
-                      <small>
-                        {row.provider} · {row.auth_type || '—'}
-                      </small>
-                    </td>
-                    <td className={styles.modelCell}>
-                      <UsageModelCell record={row} />
-                      <small title={row.endpoint}>
-                        {row.endpoint || row.service_tier || '—'}
-                        {!row.generate ? ` · ${t('usage_stats.warmup')}` : ''}
-                      </small>
-                    </td>
-                    <td>
-                      <span className={row.failed ? styles.failed : styles.success}>
-                        {row.status_code ||
-                          t(row.failed ? 'usage_stats.failed' : 'usage_stats.succeeded')}
-                      </span>
-                    </td>
-                    <td>
-                      <strong>{formatTokens(row.tokens.total_tokens)}</strong>
-                      <small>
-                        {t('usage_stats.token_short', {
-                          input: formatTokens(row.tokens.input_tokens),
-                          output: formatTokens(row.tokens.output_tokens),
-                          cache: formatTokens(row.tokens.cache_read_tokens),
-                        })}
-                      </small>
-                    </td>
-                    <td>
-                      <strong className={styles.costValue}>
-                        {row.billing?.priced
-                          ? `${row.billing.pricing?.estimated ? '≈ ' : ''}${formatUSD(row.cost_usd ?? row.billing.total_usd)}`
-                          : '—'}
-                      </strong>
-                      {!row.billing?.priced && <small>{t('usage_stats.unpriced')}</small>}
-                    </td>
-                    <td className={styles.numeric}>{formatDuration(row.latency_ms || null)}</td>
-                    <td className={styles.numeric}>{formatDuration(row.ttft_ms || null)}</td>
-                    <td>
-                      <button
-                        type="button"
-                        className={styles.detailButton}
-                        onClick={() => void showRecord(row)}
-                        aria-label={t('usage_stats.view_detail')}
-                        title={t('usage_stats.view_detail')}
-                      >
-                        <IconEye size={17} />
-                      </button>
-                    </td>
-                  </tr>
-                ))
+        <UsageRecordsTable
+          records={canShowRecords ? records.items : []}
+          loading={recordsLoading && !!query}
+          sort={sort}
+          order={order}
+          onSort={sortBy}
+          onViewDetail={(row) => void showRecord(row)}
+          emptyContent={
+            <>
+              <IconInbox size={32} />
+              <strong>
+                {t(
+                  unsupported
+                    ? 'usage_stats.backend_upgrade_required'
+                    : recordsError
+                      ? 'usage_stats.load_failed'
+                      : 'usage_stats.no_matching_records'
+                )}
+              </strong>
+              {!unsupported && !recordsError && <span>{t('usage_stats.no_matching_hint')}</span>}
+              {filterCount > 0 && (
+                <Button variant="ghost" size="sm" onClick={resetFilters}>
+                  {t('usage_stats.reset_filters')}
+                </Button>
               )}
-            </tbody>
-          </table>
-        </div>
+            </>
+          }
+        />
         <div className={styles.pagination}>
           <span>
             {t('usage_stats.pagination_summary', {

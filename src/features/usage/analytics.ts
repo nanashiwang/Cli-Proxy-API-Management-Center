@@ -98,6 +98,8 @@ export function usageDiagnosticBundle(record: UsageRecord, now = new Date()) {
     omitted: [
       'account_identifiers',
       'api_keys',
+      'client_ip',
+      'user_agent',
       'model_names',
       'source_paths',
       'headers',

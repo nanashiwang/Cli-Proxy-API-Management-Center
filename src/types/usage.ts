@@ -30,6 +30,8 @@ export interface UsageBilling {
   };
 }
 
+export type UsageTransport = 'http' | 'sse' | 'ws';
+
 export type UsageModelMatch = 'matched' | 'mismatch' | 'unknown';
 export type UsageModelResponseSource = 'header' | 'body' | 'metadata';
 
@@ -54,6 +56,11 @@ export interface UsageRequestDetail {
   request_id?: string;
   service_tier: string;
   response_service_tier?: string;
+  reasoning_effort?: string;
+  client_transport?: UsageTransport;
+  upstream_transport?: UsageTransport;
+  client_ip?: string;
+  user_agent?: string;
   tokens: UsageTokenStats;
   failed: boolean;
   status_code: number;

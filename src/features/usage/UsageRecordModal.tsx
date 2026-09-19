@@ -12,6 +12,7 @@ import { formatDuration, usageDiagnosticBundle, usageRecordAccount } from './ana
 import { formatTokens, formatUSD } from './utils';
 import { usageModelObservation } from './modelObservation';
 import { UsageModelDetails } from './UsageModelCell';
+import { UsageRequestMetadata } from './UsageRequestMetadata';
 import styles from './UsagePage.module.scss';
 
 export function UsageRecordModal({
@@ -151,6 +152,10 @@ export function UsageRecordModal({
               <Field label={t('usage_stats.account')} value={usageRecordAccount(record)} />
               <Field label={t('usage_stats.endpoint')} value={record.endpoint || '—'} />
               <Field label={t('usage_stats.executor')} value={record.executor_type || '—'} />
+              <Field
+                label={t('usage_stats.provider')}
+                value={record.provider || t('usage_stats.not_recorded')}
+              />
               <Field label={t('usage_stats.auth_type')} value={record.auth_type || '—'} />
               <Field
                 label={t('usage_stats.record_kind')}
@@ -158,6 +163,7 @@ export function UsageRecordModal({
               />
             </div>
           </section>
+          <UsageRequestMetadata record={record} />
           <div className={styles.detailGrid}>
             <section className={styles.detailSection}>
               <h3>{t('usage_stats.token_breakdown')}</h3>
