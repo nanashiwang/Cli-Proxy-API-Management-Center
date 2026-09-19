@@ -39,6 +39,7 @@ import {
 import { Segments, UsageInsights } from './UsageInsights';
 import { UsageManagement } from './UsageManagement';
 import { UsageRecordModal } from './UsageRecordModal';
+import { UsageModelCell } from './UsageModelCell';
 import styles from './UsagePage.module.scss';
 
 type DimensionFilters = Pick<
@@ -564,7 +565,7 @@ export function UsagePage() {
                       </small>
                     </td>
                     <td className={styles.modelCell}>
-                      <strong>{row.model || row.alias || '—'}</strong>
+                      <UsageModelCell record={row} />
                       <small title={row.endpoint}>
                         {row.endpoint || row.service_tier || '—'}
                         {!row.generate ? ` · ${t('usage_stats.warmup')}` : ''}

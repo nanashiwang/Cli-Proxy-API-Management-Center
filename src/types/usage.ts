@@ -30,7 +30,16 @@ export interface UsageBilling {
   };
 }
 
+export type UsageModelMatch = 'matched' | 'mismatch' | 'unknown';
+export type UsageModelResponseSource = 'header' | 'body' | 'metadata';
+
 export interface UsageRequestDetail {
+  /** Observations are absent on historical records; never infer them from model/alias. */
+  requested_model?: string;
+  upstream_model?: string;
+  upstream_response_model?: string;
+  upstream_response_model_source?: UsageModelResponseSource;
+  model_match?: UsageModelMatch;
   timestamp: string;
   latency_ms: number;
   ttft_ms: number;

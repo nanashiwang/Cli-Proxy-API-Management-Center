@@ -1,5 +1,6 @@
 import type { UsageFilters, UsageRange, UsageRecord } from '@/types/usage';
 import { usageRangeStart } from './utils';
+import { usageModelObservation } from './modelObservation';
 
 export function formatDuration(value: number | null | undefined): string {
   if (value == null || !Number.isFinite(value)) return '—';
@@ -50,6 +51,7 @@ export function usageEndpointUnavailable(error: unknown): boolean {
 
 /** A strict allowlist: never export credentials, account names, payloads or arbitrary metadata. */
 export function usageDiagnosticBundle(record: UsageRecord, now = new Date()) {
+  const model = usageModelObservation(record);
   const number = (value: unknown) =>
     typeof value === 'number' && Number.isFinite(value) ? value : null;
   return {
@@ -66,6 +68,8 @@ export function usageDiagnosticBundle(record: UsageRecord, now = new Date()) {
       latency_ms: number(record.latency_ms),
       ttft_ms: number(record.ttft_ms),
       generate: record.generate,
+      model_match: model.match,
+      upstream_response_model_source: model.source,
       tokens: {
         input_tokens: number(record.tokens.input_tokens),
         output_tokens: number(record.tokens.output_tokens),

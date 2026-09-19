@@ -10,6 +10,8 @@ import { downloadBlob } from '@/utils/download';
 import type { UsageRecord } from '@/types/usage';
 import { formatDuration, usageDiagnosticBundle, usageRecordAccount } from './analytics';
 import { formatTokens, formatUSD } from './utils';
+import { usageModelObservation } from './modelObservation';
+import { UsageModelDetails } from './UsageModelCell';
 import styles from './UsagePage.module.scss';
 
 export function UsageRecordModal({
@@ -109,7 +111,7 @@ export function UsageRecordModal({
                 {record.status_code || '—'} ·{' '}
                 {t(record.failed ? 'usage_stats.failed' : 'usage_stats.succeeded')}
               </span>
-              <h3>{record.model || record.alias || '—'}</h3>
+              <h3>{usageModelObservation(record).primary}</h3>
               <p>
                 {new Date(record.timestamp).toLocaleString()} · {record.provider}
               </p>
@@ -138,6 +140,7 @@ export function UsageRecordModal({
               value={record.response_service_tier || record.service_tier || '—'}
             />
           </div>
+          <UsageModelDetails record={record} />
           <section className={styles.detailSection}>
             <h3>{t('usage_stats.routing_identity')}</h3>
             <div className={styles.detailFields}>
@@ -148,14 +151,6 @@ export function UsageRecordModal({
               <Field label={t('usage_stats.account')} value={usageRecordAccount(record)} />
               <Field label={t('usage_stats.endpoint')} value={record.endpoint || '—'} />
               <Field label={t('usage_stats.executor')} value={record.executor_type || '—'} />
-              <Field
-                label={t('usage_stats.requested_model')}
-                value={record.alias || record.model || '—'}
-              />
-              <Field
-                label={t('usage_stats.priced_model')}
-                value={record.billing?.pricing?.matched_model || '—'}
-              />
               <Field label={t('usage_stats.auth_type')} value={record.auth_type || '—'} />
               <Field
                 label={t('usage_stats.record_kind')}
