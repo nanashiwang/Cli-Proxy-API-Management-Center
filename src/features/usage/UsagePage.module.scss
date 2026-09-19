@@ -521,6 +521,191 @@
   font-size: 9.5px;
   white-space: nowrap;
 }
+.recordsTableWrap {
+  max-height: min(72vh, 820px);
+  border-radius: 8px;
+  overscroll-behavior-x: contain;
+}
+.recordsTableWrap:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 3px;
+}
+.recordsTableWrap .recordsTable {
+  min-width: 2139px;
+  table-layout: fixed;
+}
+.recordsTableWrap th {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.recordsTableEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.tableScrollHint {
+  margin: -3px 0 10px;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+.recordStatus {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 7px;
+  font-size: 9px;
+}
+.providerTypeCell {
+  min-width: 100px;
+  max-width: 170px;
+  overflow-wrap: anywhere;
+}
+.reasoningCell {
+  min-width: 92px;
+  max-width: 140px;
+  overflow-wrap: anywhere;
+  font-family: $font-mono;
+}
+.endpointCell {
+  min-width: 145px;
+  max-width: 220px;
+}
+.endpointCell > code {
+  font: 10px/1.5 $font-mono;
+  overflow-wrap: anywhere;
+}
+.transportBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 7px;
+  border-radius: 5px;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  font: 600 10px/1.25 $font-mono;
+  white-space: nowrap;
+}
+.transportBadge[data-transport='ws'] {
+  color: var(--usage-purple);
+  background: color-mix(in srgb, var(--usage-purple) 10%, transparent);
+}
+.transportBadge[data-transport='sse'] {
+  color: var(--usage-blue);
+  background: color-mix(in srgb, var(--usage-blue) 10%, transparent);
+}
+.transportBadge[data-transport='unknown'] {
+  white-space: normal;
+  color: var(--text-tertiary);
+  font-family: inherit;
+  font-weight: 400;
+}
+.tokensCell {
+  min-width: 170px;
+}
+.latencyHeader {
+  display: grid;
+  gap: 7px;
+}
+.latencyHeader > div {
+  display: flex;
+  gap: 12px;
+  font-size: 9px;
+}
+.latencyHeader .sortButton[aria-pressed='true'] {
+  color: var(--primary-active);
+}
+.latencyCell {
+  min-width: 120px;
+}
+.clientIpCell {
+  min-width: 150px;
+  max-width: 200px;
+}
+.userAgentCell {
+  min-width: 220px;
+  max-width: 280px;
+}
+.expandableValue {
+  min-width: 0;
+}
+.expandableValue > summary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  list-style: none;
+  font: 10px/1.6 $font-mono;
+}
+.expandableValue > summary::-webkit-details-marker {
+  display: none;
+}
+.expandableValue > summary > span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.expandableValue > summary > svg {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+}
+.expandableValue[open] > summary > svg {
+  transform: rotate(180deg);
+}
+.expandableValue > div {
+  margin-top: 8px;
+  padding: 9px;
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+.expandableValue code {
+  font: 10px/1.65 $font-mono;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.recordsTable .recordActionsColumn {
+  position: sticky;
+  right: 0;
+  min-width: 98px;
+  background: var(--bg-primary);
+  box-shadow: -5px 0 7px -6px var(--text-tertiary);
+  z-index: 1;
+}
+.recordsTable th.recordActionsColumn {
+  z-index: 3;
+  background: var(--bg-secondary);
+}
+.recordsTable tbody tr:hover .recordActionsColumn {
+  background: var(--bg-secondary);
+}
+.recordDetailAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.recordDetailAction:hover {
+  color: var(--primary-active);
+  border-color: var(--primary-color);
+}
+.fullWidthField {
+  grid-column: 1 / -1;
+}
 .timeCell {
   font-family: $font-mono;
   white-space: nowrap;
@@ -1059,6 +1244,13 @@
   }
 }
 @media (max-width: 650px) {
+  .recordsTable .recordActionsColumn {
+    right: auto;
+    box-shadow: none;
+  }
+  .recordsTable td.recordActionsColumn {
+    position: static;
+  }
   .page {
     gap: 13px;
   }
