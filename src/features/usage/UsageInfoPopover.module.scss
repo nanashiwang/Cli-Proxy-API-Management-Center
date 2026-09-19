@@ -1,0 +1,91 @@
+@use '../../styles/variables' as *;
+.popover,
+.info {
+  --token-output: #4263dc;
+  font-variant-numeric: tabular-nums;
+}
+:global([data-theme='dark']) .popover,
+:global([data-theme='dark']) .info {
+  --token-output: #90a5ff;
+}
+.info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--token-output);
+  background: color-mix(in srgb, var(--token-output) 8%, transparent);
+  cursor: pointer;
+}
+.info:hover,
+.info[aria-expanded='true'] {
+  background: color-mix(in srgb, var(--token-output) 16%, transparent);
+}
+.info:focus-visible {
+  outline: 2px solid var(--token-output);
+  outline-offset: 3px;
+}
+.popover {
+  position: fixed;
+  z-index: 2020;
+  width: min(326px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 19px 21px;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  box-shadow: 0 12px 40px #0000001f;
+}
+.popover h3 {
+  margin: 0 0 14px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.popover dl {
+  margin: 0;
+}
+.popover dl > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  margin: 9px 0;
+  font-size: 13px;
+}
+.popover dt {
+  color: var(--text-secondary);
+}
+.popover dd {
+  margin: 0;
+  font: 600 13px/1.5 $font-mono;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.popover [data-total] {
+  margin-top: 15px;
+  padding-top: 13px;
+  border-top: 1px solid var(--border-color);
+}
+.popover [data-total] dd {
+  color: var(--token-output);
+}
+.popover p {
+  margin: 12px 0 0;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 1.6;
+}
+@media (max-width: 650px) {
+  .info {
+    width: 32px;
+    height: 32px;
+  }
+}

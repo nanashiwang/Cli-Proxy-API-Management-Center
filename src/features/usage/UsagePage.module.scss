@@ -531,7 +531,7 @@
   outline-offset: 3px;
 }
 .recordsTableWrap .recordsTable {
-  min-width: 2199px;
+  min-width: 2204px;
   table-layout: fixed;
 }
 .recordsTableWrap th {
@@ -719,24 +719,12 @@
   white-space: nowrap;
 }
 .modelCell {
-  min-width: 230px;
+  min-width: 200px;
   max-width: 300px;
 }
-.modelObservation {
-  display: grid;
-  gap: 6px;
-  min-width: 0;
-}
-.modelIdentity {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-.modelIdentity > strong {
-  min-width: 0;
-  flex: 1;
+.modelName {
   font-family: $font-mono;
+  overflow-wrap: anywhere;
 }
 .modelMatchBadge {
   display: inline-flex;
@@ -765,44 +753,6 @@
 .modelMatchBadge[data-match='mismatch'] {
   color: var(--warning-text);
   background: var(--warning-bg);
-}
-.modelRoutes {
-  display: grid;
-  gap: 4px;
-}
-.modelRoute {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-  color: var(--text-secondary);
-}
-.modelRouteLabel {
-  flex-shrink: 0;
-  color: var(--usage-blue);
-  font-size: 9px;
-}
-.modelRoute[data-route='returned'] .modelRouteLabel {
-  color: var(--usage-orange);
-}
-.modelRoute > code {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font: 10px/1.35 $font-mono;
-}
-.modelMapping {
-  flex-shrink: 0;
-  border-radius: 3px;
-  padding: 1px 4px;
-  color: var(--usage-blue);
-  background: color-mix(in srgb, var(--usage-blue) 9%, transparent);
-  font-size: 8px;
-}
-.modelMissing {
-  color: var(--text-tertiary);
-  font-size: 9px;
 }
 .modelDetailHeading {
   display: flex;

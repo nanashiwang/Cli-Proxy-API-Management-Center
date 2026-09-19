@@ -25,6 +25,13 @@ export interface UsageBilling {
     matched_model: string;
     matched_provider?: string;
     service_tier: string;
+    context_threshold_tokens?: number;
+    unit_prices_usd_per_million_tokens?: {
+      input: number;
+      output: number;
+      cache_read: number;
+      cache_write: number;
+    };
     estimated: boolean;
     calculated_at: string;
   };

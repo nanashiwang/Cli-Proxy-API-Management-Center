@@ -4,7 +4,7 @@ import { IconEye } from '@/components/ui/icons';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import type { UsageRecord, UsageSort } from '@/types/usage';
 import { formatDuration, usageRecordAccount } from './analytics';
-import { formatUSD } from './utils';
+import { UsageCostCell } from './UsageCostCell';
 import { UsageTokenCell } from './UsageTokenCell';
 import { UsageModelCell } from './UsageModelCell';
 import {
@@ -13,7 +13,11 @@ import {
   usageRecordedText,
 } from './recordPresentation';
 import styles from './UsagePage.module.scss';
-import { UsageExpandableValue, UsageTransportBadge } from './UsageRequestMetadata';
+import {
+  UsageExpandableValue,
+  UsageTransportBadge,
+  UsageReasoningEffort,
+} from './UsageRequestMetadata';
 
 export function UsageRecordsTable({
   records,
@@ -146,9 +150,7 @@ export function UsageRecordsTable({
                     <UsageModelCell record={row} />
                   </td>
                   <td className={styles.reasoningCell}>
-                    <span title={row.reasoning_effort}>
-                      {usageRecordedText(row.reasoning_effort) || t('usage_stats.not_recorded')}
-                    </span>
+                    <UsageReasoningEffort value={row.reasoning_effort} />
                   </td>
                   <td className={styles.endpointCell}>
                     <code title={row.endpoint}>
@@ -165,12 +167,7 @@ export function UsageRecordsTable({
                     <UsageTokenCell record={row} />
                   </td>
                   <td>
-                    <strong className={styles.costValue}>
-                      {row.billing?.priced
-                        ? `${row.billing.pricing?.estimated ? '≈ ' : ''}${formatUSD(row.cost_usd ?? row.billing.total_usd)}`
-                        : '—'}
-                    </strong>
-                    {!row.billing?.priced && <small>{t('usage_stats.unpriced')}</small>}
+                    <UsageCostCell record={row} />
                   </td>
                   <td className={`${styles.numeric} ${styles.latencyCell}`}>
                     <strong>{formatDuration(row.latency_ms || null)}</strong>

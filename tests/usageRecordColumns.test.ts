@@ -89,7 +89,7 @@ function cells(markup: string, section: 'thead' | 'tbody', cell: 'th' | 'td') {
 }
 
 describe('usage record columns', () => {
-  test('renders every requested column in order with status and observed models retained', () => {
+  test('renders every requested column in order with status and the requested model retained', () => {
     const markup = renderTable();
     const headers = cells(markup, 'thead', 'th');
     const rows = cells(markup, 'tbody', 'td');
@@ -120,8 +120,8 @@ describe('usage record columns', () => {
     expect(rows[1]).toContain('codex');
     expect(rows[1]).toContain('oauth');
     expect(rows[2]).toContain('friendly-model');
-    expect(rows[2]).toContain('sent-model');
-    expect(rows[2]).toContain('data-match="matched"');
+    expect(rows[2]).not.toContain('sent-model');
+    expect(rows[2]).not.toContain('data-match=');
     expect(rows[3]).toContain('high');
     expect(rows[4]).toContain('/v1/responses');
     expect(rows[5]).toContain('data-transport="ws"');
