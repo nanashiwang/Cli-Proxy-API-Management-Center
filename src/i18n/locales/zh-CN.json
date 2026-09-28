@@ -419,7 +419,8 @@
       "full": "满载",
       "description": "显示本机正在执行的生成请求，随列表刷新。排队、空闲连接和独享租约不计入；不限表示 CPA 未设本地并发上限，不代表上游不限额。Home 管理的共享上限无法从本机推算。",
       "unavailable": "当前后端未提供并发信息，升级后端后可查看。",
-      "observed": "观测时间：{{time}}"
+      "observed": "观测时间：{{time}}",
+      "stale": "数据已过期"
     }
   },
   "antigravity_subscription": {
@@ -2043,7 +2044,7 @@
     "pricing_source": "价格来源",
     "pricing_version": "价格版本",
     "diagnostic_title": "请求诊断",
-    "diagnostic_availability": "这是一条用量事件。当前记录没有完整重试链路或阶段时间线，无法据此还原所有上游尝试。可使用请求 ID 关联已保留的日志。",
+    "diagnostic_availability": "此历史记录未采集执行尝试与事件诊断。",
     "open_logs": "查看关联日志",
     "download_request_log": "下载请求日志",
     "request_log_unavailable": "请求日志不可用，可能未启用记录或已被清理",
@@ -2084,7 +2085,7 @@
     "details_action": "详情",
     "expand_record_value": "展开或收起完整{{field}}",
     "sort_record_column": "按{{column}}排序",
-    "records_scroll_hint": "全部 14 列均已展示，可横向滚动；点击 IP 或 User-Agent 可展开完整内容。",
+    "records_scroll_hint": "可在列设置中选择、排序或固定字段；横向滚动查看更多，点击 IP 或 User-Agent 可展开完整内容。",
     "request_metadata_title": "接入与请求信息",
     "client_ip_hint": "连接来源 IP（与请求日志一致）。",
     "aistudio_transport_note": "通过 WebSocket 中继，按上游 API 的 HTTP/SSE 显示。",
@@ -2113,7 +2114,60 @@
     "billing_reason_cache_write_price_not_found": "缺少缓存写入单价。",
     "billing_reason_pricing_service_unavailable": "定价服务暂不可用。",
     "billing_reason_pricing_calculator_unavailable": "费用计算服务不可用。",
-    "billing_reason_calculator_panic": "该请求的费用计算失败。"
+    "billing_reason_calculator_panic": "该请求的费用计算失败。",
+    "columns": {
+      "title": "列设置",
+      "hint": "设置保存在当前浏览器。最多固定两列到左侧，窄屏下暂停固定；操作列始终保留。",
+      "up": "将{{column}}向左移动",
+      "down": "将{{column}}向右移动",
+      "pin_label": "固定{{column}}",
+      "pin": "固定",
+      "unpin": "取消固定",
+      "reset": "恢复默认列"
+    },
+    "diagnostics": {
+      "scope": "展示本次请求或 WebSocket 会话实际调用的执行器；执行器内部发送记录为事件。事件时间从追踪开始计算，耗时与首字按执行尝试采集。仅包含已发布的观测，不代表完整网络抓包。",
+      "captured": "最新保留观测：{{time}}",
+      "truncated": "已达到诊断上限（32 次尝试 / 96 个事件），仅展示保留的观测。",
+      "outcome": {
+        "running": "进行中",
+        "succeeded": "成功",
+        "failed": "失败",
+        "cancelled": "已取消",
+        "interrupted": "已中断",
+        "unknown": "未知"
+      },
+      "phase": {
+        "executor": "进入执行器",
+        "upstream_request": "发送上游请求",
+        "upstream_headers": "已收到响应头",
+        "response_body": "读取响应内容",
+        "unknown": "阶段未采集"
+      },
+      "reason": {
+        "initial": "首次尝试",
+        "same_account_retry": "同账号重试",
+        "account_switch": "切换账号",
+        "model_fallback": "模型回退",
+        "unknown": "原因未采集"
+      },
+      "event": {
+        "upstream_request": "发送上游请求",
+        "upstream_headers": "收到响应头",
+        "first_byte": "收到首字节",
+        "response_started": "响应开始",
+        "interrupt_sent": "已发送中断",
+        "interrupt_confirmed": "上游确认中断",
+        "interrupt_rejected": "中断被拒绝",
+        "http_size_fallback": "大 WebSocket 请求改走 HTTP",
+        "replay_required": "需要完整上下文重放",
+        "buffer_byte_limit": "缓冲达到字节上限",
+        "buffer_event_limit": "缓冲达到事件上限",
+        "buffer_output": "开始输出并释放缓冲",
+        "buffer_terminal": "终止事件释放缓冲",
+        "buffer_upstream_error": "缓冲期间上游报错"
+      }
+    }
   },
   "account_pools": {
     "temporary_status": "用户 {{owner}} · 临时占用，请求结束后释放 · 在途 {{active}}",

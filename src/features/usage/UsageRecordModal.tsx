@@ -14,6 +14,7 @@ import { usageModelObservation } from './modelObservation';
 import { UsageModelDetails } from './UsageModelCell';
 import { UsageRequestMetadata } from './UsageRequestMetadata';
 import styles from './UsagePage.module.scss';
+import { UsageDiagnostics } from './UsageDiagnostics';
 
 export function UsageRecordModal({
   record,
@@ -245,7 +246,7 @@ export function UsageRecordModal({
           </div>
           <section className={styles.detailSection}>
             <h3>{t('usage_stats.diagnostic_title')}</h3>
-            <p className={styles.detailNote}>{t('usage_stats.diagnostic_availability')}</p>
+            <UsageDiagnostics record={record} />
             <div className={styles.detailActions}>
               {record.request_id ? (
                 <>

@@ -42,7 +42,30 @@ export type UsageTransport = 'http' | 'sse' | 'ws';
 export type UsageModelMatch = 'matched' | 'mismatch' | 'unknown';
 export type UsageModelResponseSource = 'header' | 'body' | 'metadata';
 
+export interface UsageDiagnostics {
+  trace_id: string;
+  started_at: string;
+  captured_at: string;
+  truncated: boolean;
+  attempts: Array<{
+    sequence: number;
+    provider: string;
+    auth_id?: string;
+    model?: string;
+    started_at: string;
+    ended_at?: string;
+    outcome: string;
+    status_code?: number;
+    phase: string;
+    retry_reason: string;
+    transport?: UsageTransport;
+    first_byte_ms?: number;
+  }>;
+  events: Array<{ attempt: number; kind: string; offset_ms: number }>;
+}
+
 export interface UsageRequestDetail {
+  diagnostics?: UsageDiagnostics;
   /** Observations are absent on historical records; never infer them from model/alias. */
   requested_model?: string;
   upstream_model?: string;

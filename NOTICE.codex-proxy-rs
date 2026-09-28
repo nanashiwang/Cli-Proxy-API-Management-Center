@@ -29,3 +29,8 @@ Additional account-capacity references:
 Source area: frontend/src/views/accounts/components/AccountCapacityIndicator.vue
 CPA adapts the capacity presentation to React and process-local execution
 observations, with explicit unknown data and independent lease/health status.
+
+CPA follow-up improvements add browser-local column preferences, visible-account
+capacity polling and bounded diagnostics for actual Go executor calls. These
+are local implementations building on the references above, not a wholesale
+import of the upstream execution tracer or scheduling/plugin architecture.

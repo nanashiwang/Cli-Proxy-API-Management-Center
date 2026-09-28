@@ -3,7 +3,13 @@ import type { ExecutionCapacity } from '@/types/authFile';
 import { executionCapacityFull } from '../executionCapacity';
 import styles from './AuthFileCapacity.module.scss';
 
-export function AuthFileCapacity({ capacity }: { capacity?: ExecutionCapacity }) {
+export function AuthFileCapacity({
+  capacity,
+  stale = false,
+}: {
+  capacity?: ExecutionCapacity;
+  stale?: boolean;
+}) {
   const { t, i18n } = useTranslation();
   const limit = capacity?.unlimited
     ? t('auth_files.capacity.unlimited')
@@ -17,6 +23,7 @@ export function AuthFileCapacity({ capacity }: { capacity?: ExecutionCapacity })
         <span className={styles.value}>
           {capacity ? capacity.active.toLocaleString(i18n.language) : '—'} / {limit}
           {executionCapacityFull(capacity) && <span> · {t('auth_files.capacity.full')}</span>}
+          {stale && <span> · {t('auth_files.capacity.stale')}</span>}
         </span>
       </summary>
       <p>{t(capacity ? 'auth_files.capacity.description' : 'auth_files.capacity.unavailable')}</p>

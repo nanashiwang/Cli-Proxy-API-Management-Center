@@ -419,7 +419,8 @@
       "full": "Full",
       "description": "Active generation requests in this CPA process, updated with the list. Excludes queued work, idle connections and exclusive leases. Unlimited means no local CPA cap, not unlimited upstream capacity. Shared Home limits cannot be inferred locally.",
       "unavailable": "Concurrency information is unavailable. Upgrade the backend to view it.",
-      "observed": "Observed at {{time}}"
+      "observed": "Observed at {{time}}",
+      "stale": "Out of date"
     }
   },
   "antigravity_subscription": {
@@ -2043,7 +2044,7 @@
     "pricing_source": "Pricing source",
     "pricing_version": "Pricing version",
     "diagnostic_title": "Request diagnostics",
-    "diagnostic_availability": "This is a usage event. Complete retries and stage traces were not collected, so it cannot reconstruct all upstream attempts. Use the request ID to find retained logs.",
+    "diagnostic_availability": "No attempt or event diagnostics were collected for this historical record.",
     "open_logs": "Open related logs",
     "download_request_log": "Download request log",
     "request_log_unavailable": "Request log unavailable; logging may be disabled or the file was removed",
@@ -2084,7 +2085,7 @@
     "details_action": "Details",
     "expand_record_value": "Expand or collapse the full {{field}}",
     "sort_record_column": "Sort by {{column}}",
-    "records_scroll_hint": "All 14 columns are shown. Scroll horizontally; select an IP or User-Agent to read its full value.",
+    "records_scroll_hint": "Choose, reorder or pin columns in Columns. Scroll horizontally for more fields; click IP or User-Agent to expand.",
     "request_metadata_title": "Client and request metadata",
     "client_ip_hint": "Connection source IP, consistent with the request log.",
     "aistudio_transport_note": "Relayed over WebSocket; the upstream API HTTP/SSE mode is shown.",
@@ -2113,7 +2114,60 @@
     "billing_reason_cache_write_price_not_found": "The cache write rate is missing.",
     "billing_reason_pricing_service_unavailable": "The pricing service is unavailable.",
     "billing_reason_pricing_calculator_unavailable": "The cost calculator is unavailable.",
-    "billing_reason_calculator_panic": "Cost calculation failed for this request."
+    "billing_reason_calculator_panic": "Cost calculation failed for this request.",
+    "columns": {
+      "title": "Columns",
+      "hint": "Preferences are saved in this browser. Pin up to two columns on the left; pinning pauses on narrow screens. Actions remain visible.",
+      "up": "Move {{column}} left",
+      "down": "Move {{column}} right",
+      "pin_label": "Pin {{column}}",
+      "pin": "Pin",
+      "unpin": "Unpin",
+      "reset": "Reset columns"
+    },
+    "diagnostics": {
+      "scope": "Observed executor attempts for this request or WebSocket session. Internal sends appear as events. Events are relative to the trace start; timings are per executor attempt. Only published observations are available; this is not a network packet trace.",
+      "captured": "Latest retained observation: {{time}}",
+      "truncated": "Diagnostic limit reached (32 attempts / 96 events); only the retained observations are shown.",
+      "outcome": {
+        "running": "Running",
+        "succeeded": "Succeeded",
+        "failed": "Failed",
+        "cancelled": "Cancelled",
+        "interrupted": "Interrupted",
+        "unknown": "Unknown"
+      },
+      "phase": {
+        "executor": "Executor entered",
+        "upstream_request": "Sending upstream",
+        "upstream_headers": "Headers received",
+        "response_body": "Reading response",
+        "unknown": "Phase not collected"
+      },
+      "reason": {
+        "initial": "Initial attempt",
+        "same_account_retry": "Same-account retry",
+        "account_switch": "Account switch",
+        "model_fallback": "Model fallback",
+        "unknown": "Reason not collected"
+      },
+      "event": {
+        "upstream_request": "Upstream send",
+        "upstream_headers": "Headers received",
+        "first_byte": "First byte observed",
+        "response_started": "Response started",
+        "interrupt_sent": "Interrupt sent",
+        "interrupt_confirmed": "Interrupt confirmed",
+        "interrupt_rejected": "Interrupt rejected",
+        "http_size_fallback": "Oversized WebSocket request uses HTTP",
+        "replay_required": "Full-context replay required",
+        "buffer_byte_limit": "Buffer byte limit reached",
+        "buffer_event_limit": "Buffer event limit reached",
+        "buffer_output": "Buffer released for output",
+        "buffer_terminal": "Buffer released on terminal event",
+        "buffer_upstream_error": "Upstream error during buffering"
+      }
+    }
   },
   "account_pools": {
     "temporary_status": "User {{owner}} · Temporary, released after request completion · In flight {{active}}",

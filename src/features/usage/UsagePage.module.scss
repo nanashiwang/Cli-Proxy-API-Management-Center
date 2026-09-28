@@ -531,7 +531,7 @@
   outline-offset: 3px;
 }
 .recordsTableWrap .recordsTable {
-  min-width: 2204px;
+  min-width: 0;
   table-layout: fixed;
 }
 .recordsTableWrap th {
@@ -1323,5 +1323,88 @@
   .storagePanel {
     align-items: stretch;
     flex-direction: column;
+  }
+}
+
+.columnSettings {
+  margin-bottom: 10px;
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+}
+.columnOptions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+.columnOption {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  label {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  button {
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border-radius: 5px;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+  button:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  button[aria-pressed='true'] {
+    color: var(--primary-color);
+  }
+}
+.recordsTable .recordPinnedColumn {
+  position: sticky;
+  z-index: 1;
+  background: var(--bg-primary);
+  box-shadow: 5px 0 7px -6px var(--text-tertiary);
+}
+.recordsTable th.recordPinnedColumn {
+  z-index: 3;
+  background: var(--bg-secondary);
+}
+.recordsTable tbody tr:hover .recordPinnedColumn {
+  background: var(--bg-secondary);
+}
+@media (max-width: 650px) {
+  .recordsTable .recordPinnedColumn {
+    left: auto !important;
+    box-shadow: none;
+  }
+  .recordsTable td.recordPinnedColumn {
+    position: static;
+  }
+}
+.diagnosticAttempt {
+  border-left: 2px solid var(--border-color);
+  padding: 10px 14px;
+  margin: 10px 0;
+  overflow-wrap: anywhere;
+}
+.diagnosticEvents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  li {
+    background: var(--bg-secondary);
+    border-radius: 5px;
+    padding: 4px 8px;
+    font-size: 12px;
   }
 }

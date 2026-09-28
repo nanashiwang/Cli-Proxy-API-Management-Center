@@ -40,6 +40,7 @@ import { AuthFileCapacity } from './AuthFileCapacity';
 import styles from './AuthFileCard.module.scss';
 
 export type AuthFileCardProps = {
+  liveCapacity?: { capacity?: import('@/types/authFile').ExecutionCapacity; stale: boolean };
   poolInfo?: import('react').ReactNode;
   file: AuthFileItem;
   compact: boolean;
@@ -224,7 +225,7 @@ export function AuthFileCard(props: AuthFileCardProps) {
       )}
 
       {props.poolInfo}
-      <AuthFileCapacity capacity={file.executionCapacity} />
+      <AuthFileCapacity {...(props.liveCapacity ?? { capacity: file.executionCapacity })} />
 
       {!compact && noteValue && (
         <p className={styles.note} title={noteValue}>

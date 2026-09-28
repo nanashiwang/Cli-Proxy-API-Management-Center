@@ -1,6 +1,7 @@
 import type { UsageFilters, UsageRange, UsageRecord } from '@/types/usage';
 import { usageRangeStart } from './utils';
 import { usageModelObservation } from './modelObservation';
+import { redactedUsageDiagnostics } from './diagnostics';
 
 export function formatDuration(value: number | null | undefined): string {
   if (value == null || !Number.isFinite(value)) return '—';
@@ -52,6 +53,7 @@ export function usageEndpointUnavailable(error: unknown): boolean {
 /** A strict allowlist: never export credentials, account names, payloads or arbitrary metadata. */
 export function usageDiagnosticBundle(record: UsageRecord, now = new Date()) {
   const model = usageModelObservation(record);
+  const diagnostics = redactedUsageDiagnostics(record.diagnostics);
   const number = (value: unknown) =>
     typeof value === 'number' && Number.isFinite(value) ? value : null;
   return {
@@ -94,7 +96,12 @@ export function usageDiagnosticBundle(record: UsageRecord, now = new Date()) {
           : null,
       },
     },
-    availability: { attempts: 'not_collected', trace: 'not_collected', payloads: 'not_included' },
+    ...(diagnostics ? { diagnostics } : {}),
+    availability: {
+      attempts: diagnostics ? 'collected' : 'not_collected',
+      trace: diagnostics ? 'collected' : 'not_collected',
+      payloads: 'not_included',
+    },
     omitted: [
       'account_identifiers',
       'api_keys',

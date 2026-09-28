@@ -38,6 +38,7 @@ import {
   sortAuthFiles,
 } from '@/features/authFiles/logic';
 import { useAuthFilesData } from '@/features/authFiles/hooks/useAuthFilesData';
+import { useExecutionCapacity } from './hooks/useExecutionCapacity';
 import { useAuthFilesModels } from '@/features/authFiles/hooks/useAuthFilesModels';
 import { useAuthFilesOauth } from '@/features/authFiles/hooks/useAuthFilesOauth';
 import { useAuthFilesPrefixProxyEditor } from '@/features/authFiles/hooks/useAuthFilesPrefixProxyEditor';
@@ -511,6 +512,10 @@ export function AuthFilesPage() {
   const currentPage = Math.min(page, totalPages);
   const start = (currentPage - 1) * pageSize;
   const pageItems = useMemo(() => sorted.slice(start, start + pageSize), [pageSize, sorted, start]);
+  const liveCapacity = useExecutionCapacity(
+    pageItems,
+    isCurrentLayer && connectionStatus === 'connected'
+  );
   const selectablePageItems = useMemo(
     () => pageItems.filter((file) => !isRuntimeOnlyAuthFile(file)),
     [pageItems]
@@ -799,6 +804,7 @@ export function AuthFilesPage() {
           <div className={gridClasses}>
             {pageItems.map((file, index) => (
               <AuthFileCard
+                liveCapacity={liveCapacity(file)}
                 key={file.name}
                 file={file}
                 poolInfo={

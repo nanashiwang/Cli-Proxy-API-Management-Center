@@ -419,7 +419,8 @@
       "full": "滿載",
       "description": "顯示本機正在執行的生成請求，隨清單更新。排隊、閒置連線和獨享租約不計入；不限表示 CPA 未設本機上限，不代表上游不限額。Home 管理的共享上限無法從本機推算。",
       "unavailable": "目前後端未提供並行資訊，升級後端後可查看。",
-      "observed": "觀測時間：{{time}}"
+      "observed": "觀測時間：{{time}}",
+      "stale": "資料已過期"
     }
   },
   "antigravity_subscription": {
@@ -2069,7 +2070,7 @@
     "pricing_source": "價格來源",
     "pricing_version": "價格版本",
     "diagnostic_title": "請求診斷",
-    "diagnostic_availability": "這是一筆用量事件。目前記錄沒有完整重試鏈路或階段時間線，無法據此還原所有上游嘗試。可使用請求 ID 關聯已保留的日誌。",
+    "diagnostic_availability": "此歷史記錄未採集執行嘗試與事件診斷。",
     "open_logs": "檢視關聯日誌",
     "download_request_log": "下載請求日誌",
     "request_log_unavailable": "請求日誌不可用，可能未啟用記錄或已被清除",
@@ -2110,7 +2111,7 @@
     "details_action": "詳情",
     "expand_record_value": "展開或收合完整{{field}}",
     "sort_record_column": "依{{column}}排序",
-    "records_scroll_hint": "全部 14 欄均已顯示，可橫向捲動；點選 IP 或 User-Agent 可展開完整內容。",
+    "records_scroll_hint": "可在欄位設定中選擇、排序或固定欄位；橫向捲動查看更多，點擊 IP 或 User-Agent 可展開完整內容。",
     "request_metadata_title": "接入與請求資訊",
     "client_ip_hint": "連線來源 IP（與請求日誌一致）。",
     "aistudio_transport_note": "透過 WebSocket 中繼，依上游 API 的 HTTP/SSE 顯示。",
@@ -2139,7 +2140,60 @@
     "billing_reason_cache_write_price_not_found": "缺少快取寫入單價。",
     "billing_reason_pricing_service_unavailable": "定價服務暫時無法使用。",
     "billing_reason_pricing_calculator_unavailable": "費用計算服務無法使用。",
-    "billing_reason_calculator_panic": "此請求的費用計算失敗。"
+    "billing_reason_calculator_panic": "此請求的費用計算失敗。",
+    "columns": {
+      "title": "欄位設定",
+      "hint": "設定儲存在目前瀏覽器。最多固定兩欄到左側，窄螢幕下暫停固定；操作欄始終保留。",
+      "up": "將{{column}}向左移動",
+      "down": "將{{column}}向右移動",
+      "pin_label": "固定{{column}}",
+      "pin": "固定",
+      "unpin": "取消固定",
+      "reset": "恢復預設欄位"
+    },
+    "diagnostics": {
+      "scope": "顯示本次請求或 WebSocket 工作階段實際呼叫的執行器；內部傳送記錄為事件。事件時間從追蹤開始計算，耗時與首字按執行嘗試採集。僅包含已發布的觀測，不代表完整網路封包。",
+      "captured": "最新保留觀測：{{time}}",
+      "truncated": "已達診斷上限（32 次嘗試 / 96 個事件），僅顯示保留的觀測。",
+      "outcome": {
+        "running": "進行中",
+        "succeeded": "成功",
+        "failed": "失敗",
+        "cancelled": "已取消",
+        "interrupted": "已中斷",
+        "unknown": "未知"
+      },
+      "phase": {
+        "executor": "進入執行器",
+        "upstream_request": "傳送上游請求",
+        "upstream_headers": "已收到回應標頭",
+        "response_body": "讀取回應內容",
+        "unknown": "階段未採集"
+      },
+      "reason": {
+        "initial": "首次嘗試",
+        "same_account_retry": "同帳號重試",
+        "account_switch": "切換帳號",
+        "model_fallback": "模型回退",
+        "unknown": "原因未採集"
+      },
+      "event": {
+        "upstream_request": "傳送上游請求",
+        "upstream_headers": "收到回應標頭",
+        "first_byte": "收到首位元組",
+        "response_started": "回應開始",
+        "interrupt_sent": "已傳送中斷",
+        "interrupt_confirmed": "上游確認中斷",
+        "interrupt_rejected": "中斷被拒絕",
+        "http_size_fallback": "大 WebSocket 請求改走 HTTP",
+        "replay_required": "需要完整上下文重放",
+        "buffer_byte_limit": "緩衝達到位元組上限",
+        "buffer_event_limit": "緩衝達到事件上限",
+        "buffer_output": "開始輸出並釋放緩衝",
+        "buffer_terminal": "終止事件釋放緩衝",
+        "buffer_upstream_error": "緩衝期間上游報錯"
+      }
+    }
   },
   "account_pools": {
     "temporary_status": "使用者 {{owner}} · 暫時占用，請求結束後釋放 · 處理中 {{active}}",
