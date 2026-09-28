@@ -22,3 +22,10 @@ No separate upstream NOTICE file was present in either referenced source snapsho
 This attribution was written by CPA maintainers and is not an upstream NOTICE.
 The original management center MIT license remains in LICENSE. This attribution
 does not relicense the upstream work or remove terms applicable to adaptations.
+
+Additional account-capacity references:
+  ea4e3059db5d2e744518fec5dd8df10b5905b867
+  2a65b53b44b3e15551746ed0424e96aef5f35b34
+Source area: frontend/src/views/accounts/components/AccountCapacityIndicator.vue
+CPA adapts the capacity presentation to React and process-local execution
+observations, with explicit unknown data and independent lease/health status.

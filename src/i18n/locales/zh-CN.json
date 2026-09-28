@@ -411,7 +411,16 @@
     "quota_refresh_failed": "刷新 \"{{name}}\" 的额度失败：{{message}}",
     "refresh_all_credentials": "刷新全部凭证",
     "refresh_all_result": "凭证刷新完成：成功 {{success}}，失败 {{failed}}",
-    "refresh_all_failed": "凭证刷新失败：{{message}}"
+    "refresh_all_failed": "凭证刷新失败：{{message}}",
+    "capacity": {
+      "label": "本机并发",
+      "unlimited": "不限",
+      "unknown": "上限未知",
+      "full": "满载",
+      "description": "显示本机正在执行的生成请求，随列表刷新。排队、空闲连接和独享租约不计入；不限表示 CPA 未设本地并发上限，不代表上游不限额。Home 管理的共享上限无法从本机推算。",
+      "unavailable": "当前后端未提供并发信息，升级后端后可查看。",
+      "observed": "观测时间：{{time}}"
+    }
   },
   "antigravity_subscription": {
     "plan_unknown": "未知",

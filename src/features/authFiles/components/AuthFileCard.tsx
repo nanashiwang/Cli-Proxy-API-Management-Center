@@ -36,6 +36,7 @@ import {
 import { deriveAuthFileIdentity } from '@/features/authFiles/identity';
 import type { AuthFileStatusBarData } from '@/features/authFiles/hooks/useAuthFilesStatusBarCache';
 import { AuthFileQuotaSection } from '@/features/authFiles/components/AuthFileQuotaSection';
+import { AuthFileCapacity } from './AuthFileCapacity';
 import styles from './AuthFileCard.module.scss';
 
 export type AuthFileCardProps = {
@@ -223,6 +224,7 @@ export function AuthFileCard(props: AuthFileCardProps) {
       )}
 
       {props.poolInfo}
+      <AuthFileCapacity capacity={file.executionCapacity} />
 
       {!compact && noteValue && (
         <p className={styles.note} title={noteValue}>

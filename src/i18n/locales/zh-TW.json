@@ -411,7 +411,16 @@
     "quota_refresh_failed": "重新整理「{{name}}」的配額失敗：{{message}}",
     "refresh_all_credentials": "重新整理全部憑證",
     "refresh_all_result": "憑證重新整理完成：成功 {{success}}，失敗 {{failed}}",
-    "refresh_all_failed": "憑證重新整理失敗：{{message}}"
+    "refresh_all_failed": "憑證重新整理失敗：{{message}}",
+    "capacity": {
+      "label": "本機並行",
+      "unlimited": "不限",
+      "unknown": "上限未知",
+      "full": "滿載",
+      "description": "顯示本機正在執行的生成請求，隨清單更新。排隊、閒置連線和獨享租約不計入；不限表示 CPA 未設本機上限，不代表上游不限額。Home 管理的共享上限無法從本機推算。",
+      "unavailable": "目前後端未提供並行資訊，升級後端後可查看。",
+      "observed": "觀測時間：{{time}}"
+    }
   },
   "antigravity_subscription": {
     "plan_unknown": "未知",

@@ -19,7 +19,16 @@ export type AuthFileType =
   | 'empty'
   | 'unknown';
 
+export interface ExecutionCapacity {
+  active: number;
+  limit: number | null;
+  unlimited: boolean;
+  scope: 'local';
+  observedAt: string;
+}
+
 export interface AuthFileItem {
+  executionCapacity?: ExecutionCapacity;
   name: string;
   type?: AuthFileType | string;
   provider?: string;

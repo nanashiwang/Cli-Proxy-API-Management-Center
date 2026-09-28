@@ -411,7 +411,16 @@
     "quota_refresh_failed": "Failed to refresh quota for \"{{name}}\": {{message}}",
     "refresh_all_credentials": "Refresh all credentials",
     "refresh_all_result": "Credential refresh complete: {{success}} succeeded, {{failed}} failed",
-    "refresh_all_failed": "Credential refresh failed: {{message}}"
+    "refresh_all_failed": "Credential refresh failed: {{message}}",
+    "capacity": {
+      "label": "Local concurrency",
+      "unlimited": "Unlimited",
+      "unknown": "Unknown limit",
+      "full": "Full",
+      "description": "Active generation requests in this CPA process, updated with the list. Excludes queued work, idle connections and exclusive leases. Unlimited means no local CPA cap, not unlimited upstream capacity. Shared Home limits cannot be inferred locally.",
+      "unavailable": "Concurrency information is unavailable. Upgrade the backend to view it.",
+      "observed": "Observed at {{time}}"
+    }
   },
   "antigravity_subscription": {
     "plan_unknown": "Unknown",
