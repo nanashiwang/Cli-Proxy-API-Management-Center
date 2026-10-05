@@ -76,6 +76,7 @@ export function UsagePage() {
   const [loadedRecordsQuery, setLoadedRecordsQuery] = useState('');
   const [managementOpen, setManagementOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<UsageRecord | null>(null);
+  const [recordOpen, setRecordOpen] = useState(false);
   const activeQuery = useRef('');
   const [loadedQuery, setLoadedQuery] = useState('');
 
@@ -93,7 +94,14 @@ export function UsagePage() {
   );
   const query = useMemo<UsageFilters | null>(() => {
     const time = usageTimeFilters(range, snapshotAt, customTime);
-    return time ? { ...filters, search: search || undefined, ...time } : null;
+    return time
+      ? {
+          ...filters,
+          search: search || undefined,
+          ...time,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+        }
+      : null;
   }, [range, customTime, snapshotAt, filters, search]);
   const queryKey = JSON.stringify(query);
   const refreshing = loading || recordsLoading;
@@ -215,6 +223,7 @@ export function UsagePage() {
   };
   const showRecord = async (row: UsageRecord) => {
     setSelectedRecord(row);
+    setRecordOpen(true);
     const currentKey = activeQuery.current;
     try {
       const detail = await usageApi.getRecord(row.id);
@@ -550,7 +559,12 @@ export function UsagePage() {
       >
         {managementOpen && <UsageManagement storage={data?.storage} onChange={refresh} />}
       </Modal>
-      <UsageRecordModal record={selectedRecord} onClose={() => setSelectedRecord(null)} />
+      <UsageRecordModal
+        record={selectedRecord}
+        open={recordOpen}
+        onClose={() => setRecordOpen(false)}
+        onAfterClose={() => setSelectedRecord(null)}
+      />
     </div>
   );
 }

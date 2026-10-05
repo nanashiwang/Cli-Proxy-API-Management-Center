@@ -50,3 +50,17 @@
   min-width: 0;
   font-size: 11px !important;
 }
+
+.amount > .fastBadge {
+  display: inline-flex;
+  margin-left: 6px;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: #fff1b8;
+  color: #765600;
+  font: 600 10px/1.5 $font-mono;
+}
+:global([data-theme='dark']) .amount > .fastBadge {
+  background: #4f4012;
+  color: #ffdc75;
+}

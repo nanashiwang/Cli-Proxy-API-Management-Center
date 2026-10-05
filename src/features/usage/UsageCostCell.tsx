@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { UsageRecord } from '@/types/usage';
-import { usageCostRows, usageRecordedCost } from './costPresentation';
+import { usageCostRows, usageRecordedCost, usageHasFastBilling } from './costPresentation';
 import { formatUSD } from './utils';
 import { UsageInfoPopover } from './UsageInfoPopover';
 import styles from './UsageCostCell.module.scss';
@@ -16,6 +16,15 @@ export function UsageCostCell({ record }: { record: UsageRecord }) {
     <div className={styles.cell}>
       <div className={styles.amount}>
         <span>{total}</span>
+        {usageHasFastBilling(record) && (
+          <span
+            className={styles.fastBadge}
+            title={t('usage_stats.fast_billing')}
+            aria-label={t('usage_stats.fast_billing')}
+          >
+            ⚡ Fast
+          </span>
+        )}
         {!record.billing?.priced && <small>{t('usage_stats.unpriced')}</small>}
       </div>
       <UsageInfoPopover label={t('usage_stats.price_details')} width={386}>

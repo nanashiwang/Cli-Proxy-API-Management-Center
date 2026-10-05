@@ -61,12 +61,21 @@ export function UsageInsights({
   const [dimension, setDimension] = useState<'models' | 'providers' | 'accounts'>('models');
   const [performanceView, setPerformanceView] = useState<'latency' | 'ttft'>('latency');
   const [costView, setCostView] = useState<'cost' | 'tokens' | 'cache'>('cost');
+  // Older backends use UTC buckets and do not declare a timezone.
+  const timezone = data.timezone || 'UTC';
   const labels = data.trend.map((point) =>
     new Intl.DateTimeFormat(
       i18n.language,
       data.granularity === 'hour'
-        ? { month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' }
-        : { month: '2-digit', day: '2-digit' }
+        ? {
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            hourCycle: 'h23',
+            timeZone: timezone,
+            timeZoneName: 'shortOffset',
+          }
+        : { month: '2-digit', day: '2-digit', timeZone: timezone }
     ).format(new Date(point.timestamp))
   );
   const perf = data.performance;
@@ -119,7 +128,10 @@ export function UsageInsights({
         <div className={styles.panelHeader}>
           <div>
             <h2>{t('usage_stats.health_title')}</h2>
-            <p>{t('usage_stats.health_description')}</p>
+            <p>
+              {t('usage_stats.health_description')} ·{' '}
+              {t('usage_stats.chart_timezone', { timezone })}
+            </p>
           </div>
           <span className={styles.panelTag}>
             {t(`usage_stats.granularity_${data.granularity}`)}

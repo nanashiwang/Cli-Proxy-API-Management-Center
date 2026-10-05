@@ -526,7 +526,11 @@
     "plan_team": "Team",
     "plan_free": "Free",
     "plan_pro": "Pro 20x",
-    "plan_prolite": "Pro 5x"
+    "plan_prolite": "Pro 5x",
+    "credits_balance": "Баланс кредитов Codex",
+    "credits_unlimited": "Без ограничений",
+    "credits_unavailable": "Нет доступных кредитов",
+    "credits_not_reported": "Баланс не предоставлен"
   },
   "kimi_quota": {
     "title": "Квота Kimi",
@@ -2157,7 +2161,9 @@
         "buffer_terminal": "Буфер освобождён при завершении",
         "buffer_upstream_error": "Ошибка upstream при буферизации"
       }
-    }
+    },
+    "chart_timezone": "Часовой пояс графика: {{timezone}}",
+    "fast_billing": "Тарификация Fast"
   },
   "account_pools": {
     "temporary_status": "Пользователь {{owner}} · Временно, до завершения запроса · Активных {{active}}",

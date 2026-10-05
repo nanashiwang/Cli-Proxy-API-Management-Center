@@ -60,6 +60,22 @@ describe('CodexQuotaBody', () => {
     rateLimitResetCreditsAvailableCount: 1,
   };
 
+  test.each([
+    [{ balance: '12345.678900', unlimited: false, hasCredits: true }, '12,345.678900'],
+    [{ balance: '0', unlimited: false, hasCredits: false }, '>0<'],
+    [{ balance: '0', unlimited: true, hasCredits: true }, 'Unlimited'],
+    [{ balance: null, unlimited: false, hasCredits: false }, 'No available credits'],
+    [null, 'Balance not reported'],
+  ] as const)('keeps credit balance facts separate from manual resets: %j', (credits, expected) => {
+    const markup = renderToStaticMarkup(
+      createElement(CodexQuotaBody, { quota: { ...quota, credits }, classes })
+    );
+    expect(markup).toContain('Codex credit balance');
+    expect(markup).toContain(expected);
+    expect(markup).toContain('Manual resets');
+    expect(markup).toContain('Manual reset expiry');
+  });
+
   test('renders a window reset as absolute plus countdown', () => {
     const markup = renderToStaticMarkup(createElement(CodexQuotaBody, { quota, classes }));
 

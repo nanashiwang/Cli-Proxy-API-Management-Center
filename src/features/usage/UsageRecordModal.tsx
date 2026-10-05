@@ -19,9 +19,13 @@ import { UsageDiagnostics } from './UsageDiagnostics';
 export function UsageRecordModal({
   record,
   onClose,
+  open = record != null,
+  onAfterClose,
 }: {
   record: UsageRecord | null;
   onClose: () => void;
+  open?: boolean;
+  onAfterClose?: () => void;
 }) {
   const { t } = useTranslation();
   const { showNotification } = useNotificationStore();
@@ -91,8 +95,9 @@ export function UsageRecordModal({
   let tokenOffset = 0;
   return (
     <Modal
-      open={record != null}
+      open={open}
       onClose={onClose}
+      onAfterClose={onAfterClose}
       title={t('usage_stats.record_detail')}
       width={940}
       className={styles.detailModal}

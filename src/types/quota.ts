@@ -77,6 +77,7 @@ export interface CodexRateLimitResetCredit {
 }
 
 export interface CodexUsagePayload {
+  credits?: unknown;
   plan_type?: string;
   planType?: string;
   rate_limit?: CodexRateLimitInfo | null;
@@ -233,6 +234,7 @@ export interface CodexQuotaWindow {
 }
 
 export interface CodexQuotaState {
+  credits?: CodexCreditBalance | null;
   status: 'idle' | 'loading' | 'success' | 'error';
   windows: CodexQuotaWindow[];
   /** Instant when the official usage payload was received. */
@@ -245,6 +247,12 @@ export interface CodexQuotaState {
   rateLimitResetCreditsError?: string;
   error?: string;
   errorStatus?: number;
+}
+
+export interface CodexCreditBalance {
+  balance: string | null;
+  unlimited: boolean | null;
+  hasCredits: boolean | null;
 }
 
 // Kimi API payload types

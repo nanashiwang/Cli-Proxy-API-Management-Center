@@ -12,6 +12,7 @@ import type {
   CodexUsageWindow,
   CodexQuotaWindow,
   CodexUsagePayload,
+  CodexCreditBalance,
 } from '@/types';
 import { apiCallApi, getApiCallErrorMessage } from '@/services/api';
 import {
@@ -37,6 +38,7 @@ import {
 } from '@/utils/quota';
 import { normalizeAuthIndex } from '@/utils/authIndex';
 import type { QuotaProviderData } from '../types';
+import { parseCodexCredits } from './credits';
 
 const CODEX_RESET_CREDITS_REQUEST_TIMEOUT_MS = 8000;
 
@@ -48,6 +50,7 @@ type CodexResetCreditsData = {
 };
 
 export type CodexQuotaData = {
+  credits: CodexCreditBalance | null;
   capturedAtMs: number;
   planType: string | null;
   subscriptionActiveUntil: string | number | null;
@@ -397,6 +400,7 @@ const fetchCodexQuota = async (file: AuthFileItem, t: TFunction): Promise<CodexQ
   const windows = buildCodexQuotaWindows(payload, t);
   return {
     capturedAtMs,
+    credits: parseCodexCredits(payload.credits),
     planType,
     subscriptionActiveUntil,
     rateLimitResetCreditsAvailableCount,
@@ -461,12 +465,14 @@ export const CODEX_CONFIG: QuotaProviderData<CodexQuotaState, CodexQuotaData> = 
   storeSelector: (state) => state.codexQuota,
   storeSetter: 'setCodexQuota',
   buildLoadingState: () => ({
+    credits: null,
     status: 'loading',
     windows: [],
     rateLimitResetCredits: [],
     rateLimitResetCreditsError: '',
   }),
   buildSuccessState: (data) => ({
+    credits: data.credits ?? null,
     status: 'success',
     windows: data.windows,
     capturedAtMs: data.capturedAtMs,
@@ -479,6 +485,7 @@ export const CODEX_CONFIG: QuotaProviderData<CodexQuotaState, CodexQuotaData> = 
     rateLimitResetCreditsError: data.rateLimitResetCreditsError,
   }),
   buildErrorState: (message, status) => ({
+    credits: null,
     status: 'error',
     windows: [],
     rateLimitResetCredits: [],

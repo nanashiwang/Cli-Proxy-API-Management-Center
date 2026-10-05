@@ -16,6 +16,7 @@ interface ModalProps {
   open: boolean;
   title?: ReactNode;
   onClose: () => void;
+  onAfterClose?: () => void;
   footer?: ReactNode;
   width?: number | string;
   className?: string;
@@ -28,6 +29,7 @@ export function Modal({
   open,
   title,
   onClose,
+  onAfterClose,
   footer,
   width = 520,
   className,
@@ -42,6 +44,7 @@ export function Modal({
   const modalRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  const wasOpenRef = useRef(false);
 
   const getFocusableElements = useCallback(() => {
     if (!modalRef.current) return [] as HTMLElement[];
@@ -61,25 +64,30 @@ export function Modal({
         if (notifyParent) {
           onClose();
         }
+        onAfterClose?.();
       }, CLOSE_ANIMATION_DURATION);
     },
-    [onClose]
+    [onClose, onAfterClose]
   );
 
   useEffect(() => {
     let cancelled = false;
+    let opened = false;
+    const opening = open && !wasOpenRef.current;
+    wasOpenRef.current = open;
 
-    if (open) {
+    if (opening) {
       if (closeTimerRef.current !== null) {
         window.clearTimeout(closeTimerRef.current);
         closeTimerRef.current = null;
       }
       queueMicrotask(() => {
         if (cancelled) return;
+        opened = true;
         setIsVisible(true);
         setIsClosing(false);
       });
-    } else if (isVisible) {
+    } else if (!open && isVisible) {
       queueMicrotask(() => {
         if (cancelled) return;
         startClose(false);
@@ -88,6 +96,8 @@ export function Modal({
 
     return () => {
       cancelled = true;
+      // StrictMode may replay setup before the opening microtask runs.
+      if (opening && !opened) wasOpenRef.current = false;
     };
   }, [open, isVisible, startClose]);
 

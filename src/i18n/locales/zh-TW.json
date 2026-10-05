@@ -527,7 +527,11 @@
     "plan_team": "Team",
     "plan_free": "Free",
     "plan_pro": "Pro 20x",
-    "plan_prolite": "Pro 5x"
+    "plan_prolite": "Pro 5x",
+    "credits_balance": "Codex 點數餘額",
+    "credits_unlimited": "無限",
+    "credits_unavailable": "暫無可用點數",
+    "credits_not_reported": "上游未提供餘額"
   },
   "kimi_quota": {
     "title": "Kimi 配額",
@@ -2193,7 +2197,9 @@
         "buffer_terminal": "終止事件釋放緩衝",
         "buffer_upstream_error": "緩衝期間上游報錯"
       }
-    }
+    },
+    "chart_timezone": "圖表時區：{{timezone}}",
+    "fast_billing": "Fast 加速計費"
   },
   "account_pools": {
     "temporary_status": "使用者 {{owner}} · 暫時占用，請求結束後釋放 · 處理中 {{active}}",

@@ -87,3 +87,45 @@ describe('Codex current usage payload', () => {
     expect(CODEX_CONFIG.canResetQuota?.(quota)).toBeTrue();
   });
 });
+
+describe('Codex observed credit balance', () => {
+  test('preserves exact decimals and distinguishes zero, unlimited and unknown', async () => {
+    const { parseCodexCredits, formatCodexCreditBalance } =
+      await import('@/features/quota/providers/codex/credits');
+    const balance = '9007199254740993.00100';
+    expect(parseCodexCredits({ balance, has_credits: true, unlimited: false })?.balance).toBe(
+      balance
+    );
+    expect(formatCodexCreditBalance(balance, 'en')).toBe('9,007,199,254,740,993.00100');
+    expect(formatCodexCreditBalance('0.1250', 'ru')).toBe('0,1250');
+    expect(parseCodexCredits({ balance: 0 })?.balance).toBe('0');
+    expect(parseCodexCredits({ unlimited: true })?.unlimited).toBe(true);
+    expect(parseCodexCredits({ has_credits: false })?.hasCredits).toBe(false);
+    for (const raw of [
+      null,
+      [],
+      {},
+      { balance: 'invalid' },
+      { balance: Infinity },
+      { balance: 9007199254740994 },
+      { balance: '1'.repeat(129) },
+    ])
+      expect(parseCodexCredits(raw)).toBeNull();
+  });
+  test('a new missing payload clears old balances without changing reset eligibility', () => {
+    const state = CODEX_CONFIG.buildSuccessState({
+      credits: null,
+      windows: [],
+      capturedAtMs: 0,
+      planType: null,
+      subscriptionActiveUntil: null,
+      rateLimitResetCreditsAvailableCount: 1,
+      rateLimitResetCreditsApplicableAvailableCount: 1,
+      rateLimitResetCredits: [],
+      rateLimitResetCreditsError: '',
+    });
+    expect(state.credits).toBeNull();
+    expect(CODEX_CONFIG.canResetQuota!(state)).toBe(true);
+    expect(CODEX_CONFIG.buildErrorState('failed').credits).toBeNull();
+  });
+});

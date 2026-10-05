@@ -22,6 +22,7 @@ import { QuotaMeter } from '../../components/QuotaMeter';
 import { QuotaResetLabel } from '../../components/QuotaResetLabel';
 import { collectQuotaRowInstants, pickUrgentRowId, resetCreditRowId } from '../../resetSchedule';
 import type { QuotaBodyProps, QuotaClassMap } from '../../types';
+import { formatCodexCreditBalance } from './credits';
 
 const getPlanValueClass = (planType: string | null, classes: QuotaClassMap): string => {
   // elite/premium 顺序契约由 resolvePlanTier 承载（tests/quotaPlanTier.test.ts 守护）。
@@ -62,6 +63,14 @@ export function CodexQuotaBody({ quota, classes }: QuotaBodyProps<CodexQuotaStat
   };
 
   const planLabel = getPlanLabel(planType);
+  const credits = quota.credits;
+  const creditBalance = credits?.unlimited
+    ? t('codex_quota.credits_unlimited')
+    : credits?.balance != null
+      ? formatCodexCreditBalance(credits.balance, locale)
+      : credits?.hasCredits === false
+        ? t('codex_quota.credits_unavailable')
+        : t('codex_quota.credits_not_reported');
   const planValueClass = getPlanValueClass(planType, classes);
 
   // Renewal was the one date on this card in a different shape (a full
@@ -79,6 +88,12 @@ export function CodexQuotaBody({ quota, classes }: QuotaBodyProps<CodexQuotaStat
 
   return (
     <>
+      <div className={classes.codexPlan} aria-label={t('codex_quota.credits_balance')}>
+        <span className={classes.codexPlanItem}>
+          <span className={classes.codexPlanLabel}>{t('codex_quota.credits_balance')}</span>
+          <span className={classes.codexPlanValue}>{creditBalance}</span>
+        </span>
+      </div>
       {(planLabel || expiryDisplay || rateLimitResetCreditsAvailableCount !== null) && (
         <div className={classes.codexPlan}>
           {planLabel && (

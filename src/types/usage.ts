@@ -241,6 +241,7 @@ export interface ModelPricingSummary {
 
 /** Server-side analytics contract. Rates are fractions in [0, 1]. */
 export interface UsageFilters {
+  timezone?: string;
   range?: UsageRange;
   from?: string;
   to?: string;
@@ -359,6 +360,7 @@ export interface UsageOption {
   label: string;
 }
 export interface UsageDashboard {
+  timezone?: string;
   summary: UsageSummary;
   performance: UsagePerformance;
   health: UsageHealth;

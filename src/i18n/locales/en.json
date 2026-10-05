@@ -527,7 +527,11 @@
     "plan_team": "Team",
     "plan_free": "Free",
     "plan_pro": "Pro 20x",
-    "plan_prolite": "Pro 5x"
+    "plan_prolite": "Pro 5x",
+    "credits_balance": "Codex credit balance",
+    "credits_unlimited": "Unlimited",
+    "credits_unavailable": "No available credits",
+    "credits_not_reported": "Balance not reported"
   },
   "kimi_quota": {
     "title": "Kimi Quota",
@@ -2167,7 +2171,9 @@
         "buffer_terminal": "Buffer released on terminal event",
         "buffer_upstream_error": "Upstream error during buffering"
       }
-    }
+    },
+    "chart_timezone": "Chart timezone: {{timezone}}",
+    "fast_billing": "Fast billing"
   },
   "account_pools": {
     "temporary_status": "User {{owner}} · Temporary, released after request completion · In flight {{active}}",
