@@ -894,7 +894,8 @@
     "search_empty_desc": "尝试更换关键字或清空筛选条件。",
     "double_click_copy_hint": "双击复制日志原文",
     "copy_success": "已复制日志原文",
-    "copy_failed": "复制失败"
+    "copy_failed": "复制失败",
+    "health_incomplete": "日志记录不完整：丢弃 {{dropped}} 项，写入失败 {{errors}} 项（本次服务启动累计）。"
   },
   "config_management": {
     "title": "配置面板",
@@ -1987,7 +1988,7 @@
     "performance_title": "响应速度",
     "performance_description": "成功生成请求的总耗时与首字延迟分位趋势",
     "performance_metric": "性能指标",
-    "ttft": "首字",
+    "ttft": "首次输出",
     "sample_coverage": "{{count}} 个样本 · 覆盖 {{rate}}",
     "throughput": "输出吞吐",
     "cost_title": "成本效率",
@@ -2173,7 +2174,32 @@
       }
     },
     "chart_timezone": "图表时区：{{timezone}}",
-    "fast_billing": "Fast 加速计费"
+    "fast_billing": "Fast 加速计费",
+    "first_byte": "首字节",
+    "upstream_throughput": "上游吞吐",
+    "local_throughput": "本地吞吐估算",
+    "timing_note": "首次输出不计前导事件。上游指标仅使用单次响应回报的时间；本地估算包含传输与交付耗时。历史缺失数据保持未知。",
+    "failure_category": "失败原因",
+    "timing": {
+      "first_text_ms": "首次正文",
+      "first_reasoning_ms": "首次推理",
+      "upstream_response_ms": "上游响应耗时",
+      "upstream_engine_ms": "上游引擎耗时",
+      "upstream_overhead_ms": "上游 API 开销"
+    },
+    "failure_categories": {
+      "cancelled": "已取消",
+      "timeout": "超时",
+      "dns": "DNS 解析",
+      "tls": "TLS 证书",
+      "connection_refused": "连接被拒绝",
+      "connection_closed": "连接已关闭",
+      "authentication": "认证失败",
+      "rate_limited": "请求受限",
+      "upstream_server": "上游服务错误",
+      "invalid_request": "请求无效",
+      "unknown": "未知"
+    }
   },
   "account_pools": {
     "temporary_status": "用户 {{owner}} · 临时占用，请求结束后释放 · 在途 {{active}}",

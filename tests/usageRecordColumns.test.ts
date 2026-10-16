@@ -66,12 +66,18 @@ const makeRecord = (patch: Partial<UsageRecord> = {}): UsageRecord => ({
   ...patch,
 });
 
-function renderTable(records = [makeRecord()], sort: UsageSort = 'timestamp', loading = false) {
+function renderTable(
+  records = [makeRecord()],
+  sort: UsageSort = 'timestamp',
+  loading = false,
+  outputTiming = true
+) {
   return renderToStaticMarkup(
     createElement(UsageRecordsTable, {
       records,
       loading,
       sort,
+      outputTiming,
       order: 'desc',
       onSort: () => {},
       onViewDetail: () => {},
@@ -307,4 +313,11 @@ describe('request metadata semantics and details', () => {
       expect(locale.usage_stats.diagnostic_export_note).toContain('User-Agent');
     }
   });
+});
+
+test('old backend sorting stays explicitly labelled as first byte', () => {
+  const markup = renderTable([makeRecord()], 'ttft', false, false);
+  expect(markup).toContain(
+    i18n.t('usage_stats.sort_record_column', { column: i18n.t('usage_stats.first_byte') })
+  );
 });

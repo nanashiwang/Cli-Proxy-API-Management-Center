@@ -58,13 +58,25 @@ export interface UsageDiagnostics {
     status_code?: number;
     phase: string;
     retry_reason: string;
+    failure_category?: string;
     transport?: UsageTransport;
     first_byte_ms?: number;
   }>;
   events: Array<{ attempt: number; kind: string; offset_ms: number }>;
 }
 
+export interface UsageResponseTiming {
+  first_byte_ms?: number;
+  first_output_ms?: number;
+  first_text_ms?: number;
+  first_reasoning_ms?: number;
+  upstream_response_ms?: number;
+  upstream_engine_ms?: number;
+  upstream_overhead_ms?: number;
+}
+
 export interface UsageRequestDetail {
+  timing?: UsageResponseTiming;
   diagnostics?: UsageDiagnostics;
   /** Observations are absent on historical records; never infer them from model/alias. */
   requested_model?: string;
@@ -301,6 +313,9 @@ export interface UsageSummary extends UsageDimensionSnapshot {
   };
 }
 export interface UsagePerformance {
+  timing_semantics?: string;
+  local_output_tokens_per_second?: number | null;
+  local_throughput_samples?: number;
   latency_p50_ms: number | null;
   latency_p95_ms: number | null;
   latency_p99_ms: number | null;

@@ -893,7 +893,8 @@
     "search_empty_desc": "Попробуйте другой запрос или сбросьте фильтры.",
     "double_click_copy_hint": "Дважды нажмите, чтобы скопировать строку журнала",
     "copy_success": "Строка журнала скопирована",
-    "copy_failed": "Не удалось скопировать"
+    "copy_failed": "Не удалось скопировать",
+    "health_incomplete": "Журнал неполон: отброшено {{dropped}}, ошибок записи {{errors}} с запуска службы."
   },
   "config_management": {
     "title": "Панель конфигурации",
@@ -1977,7 +1978,7 @@
     "performance_title": "Скорость ответа",
     "performance_description": "Перцентили задержки и первого токена успешных генераций",
     "performance_metric": "Метрика производительности",
-    "ttft": "Первый токен",
+    "ttft": "Первый вывод",
     "sample_coverage": "{{count}} выборок · покрытие {{rate}}",
     "throughput": "Скорость вывода",
     "cost_title": "Эффективность затрат",
@@ -2163,7 +2164,32 @@
       }
     },
     "chart_timezone": "Часовой пояс графика: {{timezone}}",
-    "fast_billing": "Тарификация Fast"
+    "fast_billing": "Тарификация Fast",
+    "first_byte": "Первый байт",
+    "upstream_throughput": "Скорость upstream",
+    "local_throughput": "Локальная оценка скорости",
+    "timing_note": "Первый вывод не включает служебные события. Метрики upstream требуют времени отдельного ответа; локальная оценка включает передачу. Отсутствующие исторические данные остаются неизвестными.",
+    "failure_category": "Причина сбоя",
+    "timing": {
+      "first_text_ms": "Первый текст",
+      "first_reasoning_ms": "Первое рассуждение",
+      "upstream_response_ms": "Время ответа upstream",
+      "upstream_engine_ms": "Время движка upstream",
+      "upstream_overhead_ms": "Накладные расходы API"
+    },
+    "failure_categories": {
+      "cancelled": "Отменено",
+      "timeout": "Тайм-аут",
+      "dns": "DNS",
+      "tls": "Сертификат TLS",
+      "connection_refused": "Отказ соединения",
+      "connection_closed": "Соединение закрыто",
+      "authentication": "Аутентификация",
+      "rate_limited": "Ограничение запросов",
+      "upstream_server": "Ошибка upstream",
+      "invalid_request": "Неверный запрос",
+      "unknown": "Неизвестно"
+    }
   },
   "account_pools": {
     "temporary_status": "Пользователь {{owner}} · Временно, до завершения запроса · Активных {{active}}",

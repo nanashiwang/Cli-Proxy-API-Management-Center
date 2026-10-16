@@ -56,3 +56,12 @@ test('old data remains unavailable and unbounded payloads are capped', () => {
   expect(data.events).toHaveLength(96);
   expect(data.truncated).toBe(true);
 });
+
+test('Go null event slices do not hide a failed attempt without stream events', () => {
+  const data = normalizeUsageDiagnostics({
+    ...sample,
+    events: null,
+  } as unknown as UsageDiagnostics);
+  expect(data?.attempts).toHaveLength(1);
+  expect(data?.events).toEqual([]);
+});

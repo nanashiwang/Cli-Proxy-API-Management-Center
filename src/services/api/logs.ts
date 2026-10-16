@@ -12,7 +12,18 @@ export interface LogsQuery {
   limit?: number;
 }
 
+export interface LogHealth {
+  dropped_records: number;
+  dropped_errors: number;
+  write_errors: number;
+  stream_chunks_dropped: number;
+  forwarded_logs_dropped: number;
+  queued_records: number;
+  queued_bytes: number;
+}
+
 export interface LogsResponse {
+  health?: LogHealth;
   lines: string[];
   latestAfter?: number;
   nextCursor?: string;
@@ -44,6 +55,26 @@ const unixSecondsFromValue = (value: unknown): number => {
   return Number.isFinite(asDate) ? Math.floor(asDate / 1000) : 0;
 };
 
+export function normalizeLogHealth(value: unknown): LogHealth | undefined {
+  if (!isRecord(value)) return undefined;
+  const keys = [
+    'dropped_records',
+    'dropped_errors',
+    'write_errors',
+    'stream_chunks_dropped',
+    'forwarded_logs_dropped',
+    'queued_records',
+    'queued_bytes',
+  ] as const;
+  if (
+    !keys.every(
+      (key) => typeof value[key] === 'number' && Number.isSafeInteger(value[key]) && value[key] >= 0
+    )
+  )
+    return undefined;
+  return Object.fromEntries(keys.map((key) => [key, value[key]])) as unknown as LogHealth;
+}
+
 const normalizeLogsResponse = (data: unknown): LogsResponse => {
   if (!isRecord(data)) {
     return { lines: [] };
@@ -55,6 +86,7 @@ const normalizeLogsResponse = (data: unknown): LogsResponse => {
   const latestTimestamp = unixSecondsFromValue(data['latest-timestamp']);
 
   return {
+    health: normalizeLogHealth(data.log_health),
     lines,
     latestAfter: latestTimestamp > 0 ? latestTimestamp : undefined,
     nextCursor: stringValue(data['next-cursor']) || undefined,

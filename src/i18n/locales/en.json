@@ -894,7 +894,8 @@
     "search_empty_desc": "Try a different keyword or clear the filters.",
     "double_click_copy_hint": "Double-click to copy raw log line",
     "copy_success": "Log copied to clipboard",
-    "copy_failed": "Copy failed"
+    "copy_failed": "Copy failed",
+    "health_incomplete": "Logs are incomplete: {{dropped}} items dropped, {{errors}} write failures since service start."
   },
   "config_management": {
     "title": "Config Panel",
@@ -1987,7 +1988,7 @@
     "performance_title": "Response speed",
     "performance_description": "Latency and first-token percentiles for successful generations",
     "performance_metric": "Performance metric",
-    "ttft": "First token",
+    "ttft": "First output",
     "sample_coverage": "{{count}} samples · {{rate}} coverage",
     "throughput": "Output throughput",
     "cost_title": "Cost efficiency",
@@ -2173,7 +2174,32 @@
       }
     },
     "chart_timezone": "Chart timezone: {{timezone}}",
-    "fast_billing": "Fast billing"
+    "fast_billing": "Fast billing",
+    "first_byte": "First byte",
+    "upstream_throughput": "Upstream throughput",
+    "local_throughput": "Local throughput estimate",
+    "timing_note": "First output excludes prelude events. Upstream metrics require reported per-response timings; local estimates include transport and delivery. Missing historical observations stay unknown.",
+    "failure_category": "Failure category",
+    "timing": {
+      "first_text_ms": "First text",
+      "first_reasoning_ms": "First reasoning",
+      "upstream_response_ms": "Upstream response",
+      "upstream_engine_ms": "Upstream engine",
+      "upstream_overhead_ms": "Upstream API overhead"
+    },
+    "failure_categories": {
+      "cancelled": "Cancelled",
+      "timeout": "Timeout",
+      "dns": "DNS resolution",
+      "tls": "TLS certificate",
+      "connection_refused": "Connection refused",
+      "connection_closed": "Connection closed",
+      "authentication": "Authentication",
+      "rate_limited": "Rate limited",
+      "upstream_server": "Upstream server",
+      "invalid_request": "Invalid request",
+      "unknown": "Unknown"
+    }
   },
   "account_pools": {
     "temporary_status": "User {{owner}} · Temporary, released after request completion · In flight {{active}}",

@@ -1,3 +1,4 @@
+import { recordFirstOutput, recordFirstByte } from './timing';
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconEye } from '@/components/ui/icons';
@@ -34,6 +35,7 @@ export function UsageRecordsTable({
   onSort,
   onViewDetail,
   emptyContent,
+  outputTiming = false,
 }: {
   records: UsageRecord[];
   loading: boolean;
@@ -42,6 +44,7 @@ export function UsageRecordsTable({
   onSort: (sort: UsageSort) => void;
   onViewDetail: (record: UsageRecord) => void;
   emptyContent: ReactNode;
+  outputTiming?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const [preferences, setPreferences] = useState(readColumnPreferences);
@@ -185,7 +188,8 @@ export function UsageRecordsTable({
           >
             <strong>{formatDuration(row.latency_ms || null)}</strong>
             <small>
-              {t('usage_stats.ttft')}: {formatDuration(row.ttft_ms || null)}
+              {t(row.timing ? 'usage_stats.ttft' : 'usage_stats.first_byte')}:{' '}
+              {formatDuration(row.timing ? recordFirstOutput(row) : recordFirstByte(row))}
             </small>
           </td>
         );
@@ -291,7 +295,10 @@ export function UsageRecordsTable({
                       <span>{t('usage_stats.request_latency')}</span>
                       <div>
                         {sortButton('latency', t('usage_stats.latency'))}
-                        {sortButton('ttft', t('usage_stats.ttft'))}
+                        {sortButton(
+                          'ttft',
+                          t(outputTiming ? 'usage_stats.ttft' : 'usage_stats.first_byte')
+                        )}
                       </div>
                     </div>
                   ) : (

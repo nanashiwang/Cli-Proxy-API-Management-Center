@@ -920,7 +920,8 @@
     "search_empty_desc": "嘗試更換關鍵字或清空篩選條件。",
     "double_click_copy_hint": "雙擊複製記錄原文",
     "copy_success": "已複製記錄原文",
-    "copy_failed": "複製失敗"
+    "copy_failed": "複製失敗",
+    "health_incomplete": "日誌記錄不完整：捨棄 {{dropped}} 項，寫入失敗 {{errors}} 項（本次服務啟動累計）。"
   },
   "config_management": {
     "title": "設定面板",
@@ -2013,7 +2014,7 @@
     "performance_title": "回應速度",
     "performance_description": "成功生成請求的總耗時與首字延遲分位趨勢",
     "performance_metric": "效能指標",
-    "ttft": "首字",
+    "ttft": "首次輸出",
     "sample_coverage": "{{count}} 個樣本 · 覆蓋 {{rate}}",
     "throughput": "輸出吞吐",
     "cost_title": "成本效率",
@@ -2199,7 +2200,32 @@
       }
     },
     "chart_timezone": "圖表時區：{{timezone}}",
-    "fast_billing": "Fast 加速計費"
+    "fast_billing": "Fast 加速計費",
+    "first_byte": "首位元組",
+    "upstream_throughput": "上游吞吐",
+    "local_throughput": "本地吞吐估算",
+    "timing_note": "首次輸出不計前導事件。上游指標僅使用單次回應回報的時間；本地估算包含傳輸與交付耗時。歷史缺失資料保持未知。",
+    "failure_category": "失敗原因",
+    "timing": {
+      "first_text_ms": "首次正文",
+      "first_reasoning_ms": "首次推理",
+      "upstream_response_ms": "上游回應耗時",
+      "upstream_engine_ms": "上游引擎耗時",
+      "upstream_overhead_ms": "上游 API 開銷"
+    },
+    "failure_categories": {
+      "cancelled": "已取消",
+      "timeout": "逾時",
+      "dns": "DNS 解析",
+      "tls": "TLS 憑證",
+      "connection_refused": "連線遭拒",
+      "connection_closed": "連線已關閉",
+      "authentication": "驗證失敗",
+      "rate_limited": "請求受限",
+      "upstream_server": "上游服務錯誤",
+      "invalid_request": "請求無效",
+      "unknown": "未知"
+    }
   },
   "account_pools": {
     "temporary_status": "使用者 {{owner}} · 暫時占用，請求結束後釋放 · 處理中 {{active}}",

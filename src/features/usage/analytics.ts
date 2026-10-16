@@ -1,3 +1,4 @@
+import { observedDuration } from './timing';
 import type { UsageFilters, UsageRange, UsageRecord } from '@/types/usage';
 import { usageRangeStart } from './utils';
 import { usageModelObservation } from './modelObservation';
@@ -69,6 +70,15 @@ export function usageDiagnosticBundle(record: UsageRecord, now = new Date()) {
       status_code: number(record.status_code),
       latency_ms: number(record.latency_ms),
       ttft_ms: number(record.ttft_ms),
+      timing: {
+        first_byte_ms: observedDuration(record.timing?.first_byte_ms),
+        first_output_ms: observedDuration(record.timing?.first_output_ms),
+        first_text_ms: observedDuration(record.timing?.first_text_ms),
+        first_reasoning_ms: observedDuration(record.timing?.first_reasoning_ms),
+        upstream_response_ms: observedDuration(record.timing?.upstream_response_ms),
+        upstream_engine_ms: observedDuration(record.timing?.upstream_engine_ms),
+        upstream_overhead_ms: observedDuration(record.timing?.upstream_overhead_ms),
+      },
       generate: record.generate,
       model_match: model.match,
       upstream_response_model_source: model.source,

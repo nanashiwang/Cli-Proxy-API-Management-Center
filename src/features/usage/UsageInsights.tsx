@@ -79,6 +79,8 @@ export function UsageInsights({
     ).format(new Date(point.timestamp))
   );
   const perf = data.performance;
+  const outputTiming = perf.timing_semantics === 'output_v1';
+  const firstLabel = t(outputTiming ? 'usage_stats.ttft' : 'usage_stats.first_byte');
   const rows = [...data.dimensions[dimension]]
     .sort((a, b) => b.total_requests - a.total_requests)
     .slice(0, 7);
@@ -238,7 +240,7 @@ export function UsageInsights({
             onChange={setPerformanceView}
             options={[
               { value: 'latency', label: t('usage_stats.latency') },
-              { value: 'ttft', label: t('usage_stats.ttft') },
+              { value: 'ttft', label: firstLabel },
             ]}
           />
         </div>
@@ -271,12 +273,21 @@ export function UsageInsights({
             })}
           </span>
           <span>
-            {t('usage_stats.throughput')}:{' '}
+            {t(outputTiming ? 'usage_stats.upstream_throughput' : 'usage_stats.local_throughput')}:{' '}
             {perf.output_tokens_per_second == null
               ? '—'
               : `${perf.output_tokens_per_second.toFixed(1)} tok/s`}
           </span>
+          {outputTiming && (
+            <span>
+              {t('usage_stats.local_throughput')}:{' '}
+              {perf.local_output_tokens_per_second == null
+                ? '—'
+                : `≈ ${perf.local_output_tokens_per_second.toFixed(1)} tok/s`}
+            </span>
+          )}
         </div>
+        <p className={styles.detailNote}>{t('usage_stats.timing_note')}</p>
       </article>
       <article className={styles.insightPanel}>
         <div className={styles.panelHeader}>

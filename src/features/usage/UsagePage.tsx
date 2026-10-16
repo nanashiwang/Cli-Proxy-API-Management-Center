@@ -419,7 +419,7 @@ export function UsagePage() {
         <MetricCard
           label={t('usage_stats.avg_latency')}
           value={formatDuration(summary?.avg_latency_ms)}
-          detail={`${t('usage_stats.ttft')} ${formatDuration(summary?.avg_ttft_ms)}`}
+          detail={`${t(currentData?.performance.timing_semantics === 'output_v1' ? 'usage_stats.ttft' : 'usage_stats.first_byte')} ${formatDuration(summary?.avg_ttft_ms)}`}
           tone="cyan"
           icon={<IconTimer size={19} />}
         />
@@ -469,6 +469,7 @@ export function UsagePage() {
           </div>
         )}
         <UsageRecordsTable
+          outputTiming={currentData?.performance.timing_semantics === 'output_v1'}
           records={canShowRecords ? records.items : []}
           loading={recordsLoading && !!query}
           sort={sort}

@@ -38,8 +38,14 @@ export function UsageDiagnostics({ record }: { record: UsageRecord }) {
                 ? Date.parse(attempt.ended_at) - Date.parse(attempt.started_at)
                 : null
             )}{' '}
-            · {t('usage_stats.ttft')}: {formatDuration(attempt.first_byte_ms)}
+            · {t('usage_stats.first_byte')}: {formatDuration(attempt.first_byte_ms)}
           </div>
+          {attempt.failure_category && (
+            <p className={styles.detailNote}>
+              {t('usage_stats.failure_category')}:{' '}
+              {t(`usage_stats.failure_categories.${attempt.failure_category}`)}
+            </p>
+          )}
           <ul className={styles.diagnosticEvents}>
             {data.events
               .filter((event) => event.attempt === attempt.sequence)

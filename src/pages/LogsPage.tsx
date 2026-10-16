@@ -1,3 +1,4 @@
+import type { LogHealth } from '@/services/api/logs';
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -154,6 +155,7 @@ export function LogsPage() {
   const [logState, setLogState] = useState<LogState>({ buffer: [], visibleFrom: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [logHealth, setLogHealth] = useState<LogHealth>();
   const [autoRefresh, setAutoRefresh] = useLocalStorage('logsPage.autoRefresh', false);
   const [searchParams] = useSearchParams();
   const linkedRequestId = searchParams.get('request_id') ?? '';
@@ -258,6 +260,7 @@ export function LogsPage() {
 
       const params = buildLogsQuery(incremental, logPositionRef.current);
       const data = await logsApi.fetchLogs(params);
+      setLogHealth(data.health);
       setFileLoggingRequired(false);
 
       updateLogPosition(data, incremental);
@@ -700,6 +703,22 @@ export function LogsPage() {
               </div>
             )}
             {error && <div className="error-box">{error}</div>}
+            {logHealth &&
+              logHealth.dropped_records +
+                logHealth.stream_chunks_dropped +
+                logHealth.forwarded_logs_dropped +
+                logHealth.write_errors >
+                0 && (
+                <div className="error-box" role="status">
+                  {t('logs.health_incomplete', {
+                    dropped:
+                      logHealth.dropped_records +
+                      logHealth.stream_chunks_dropped +
+                      logHealth.forwarded_logs_dropped,
+                    errors: logHealth.write_errors,
+                  })}
+                </div>
+              )}
 
             <div className={styles.filters}>
               {!fullscreenLogs && (

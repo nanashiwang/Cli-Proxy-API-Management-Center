@@ -1,3 +1,4 @@
+import { observedDuration, recordFirstOutput, recordFirstByte } from './timing';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -137,7 +138,29 @@ export function UsageRecordModal({
               label={t('usage_stats.latency')}
               value={formatDuration(record.latency_ms || null)}
             />
-            <Field label={t('usage_stats.ttft')} value={formatDuration(record.ttft_ms || null)} />
+            <Field
+              label={t('usage_stats.ttft')}
+              value={formatDuration(recordFirstOutput(record))}
+            />
+            <Field
+              label={t('usage_stats.first_byte')}
+              value={formatDuration(recordFirstByte(record))}
+            />
+            {(
+              [
+                'first_text_ms',
+                'first_reasoning_ms',
+                'upstream_response_ms',
+                'upstream_engine_ms',
+                'upstream_overhead_ms',
+              ] as const
+            ).map((metric) => (
+              <Field
+                key={metric}
+                label={t(`usage_stats.timing.${metric}`)}
+                value={formatDuration(observedDuration(record.timing?.[metric]))}
+              />
+            ))}
             <Field
               label={t('usage_stats.total_tokens')}
               value={record.tokens.total_tokens.toLocaleString()}

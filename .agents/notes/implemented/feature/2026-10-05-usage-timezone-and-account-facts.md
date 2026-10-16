@@ -33,3 +33,5 @@ Frontend `bun run verify` passes 572 tests, TypeScript and production build, wit
 Old backends still return UTC buckets; the new page must label that fallback truthfully. Browser timezone is a display choice, not an account scheduling policy. Tool charges and residency premiums remain outside the existing token-only cost schema. No raw credentials or account facts enter redacted diagnostic exports.
 
 Implementation: [usage page](../../../../src/features/usage/UsagePage.tsx), [billing facts](../../../../src/features/usage/costPresentation.ts), [credit parser](../../../../src/features/quota/providers/codex/credits.ts), and [modal lifecycle](../../../../src/components/ui/Modal.tsx). The generic modal tracks opening transitions so a quick Escape does not cancel its close timer.
+
+Related decision: [observed timing, query caching and operational log health](2026-10-12-usage-performance-and-log-health.md) extends the same usage entry points while preserving this note's timezone and historical billing rules.
