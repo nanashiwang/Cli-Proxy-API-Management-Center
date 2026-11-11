@@ -1113,12 +1113,14 @@
           "switch_preview_model": "切换预览模型",
           "switch_preview_model_desc": "配额耗尽时切换到预览版本模型",
           "antigravity_credits": "使用Antigravity Credits",
-          "guard_enabled": "Codex 额度保护",
-          "guard_hint": "任一窗口已用比例触线时暂停该账号，确认用量降至两个阈值以下后恢复。随机阈值按账号与窗口类型固定；仅适用于独立模式 OAuth 账号，进行中的请求可能越过阈值。",
-          "five-hour-used-percent": "5 小时已用阈值（%）",
-          "five-hour-jitter": "5 小时上下浮动（百分点）",
+          "guard_enabled": "多平台额度保护",
+          "guard_hint": "适用于 Codex、Claude、Grok、Kimi、Antigravity 返回的明确额度比例。任一窗口触线即暂停该账号，确认额度恢复后继续；新接入平台每分钟检查一次。随机阈值固定，旧 Codex 配置继续兼容。仅支持独立模式。",
+          "five-hour-used-percent": "5 小时／短窗口已用阈值（%）",
+          "five-hour-jitter": "短窗口上下浮动（百分点）",
           "weekly-used-percent": "每周已用阈值（%）",
-          "weekly-jitter": "每周上下浮动（百分点）"
+          "weekly-jitter": "每周上下浮动（百分点）",
+          "monthly-used-percent": "月窗口已用阈值（%）",
+          "monthly-jitter": "月窗口上下浮动（百分点）"
         },
         "streaming": {
           "title": "流式传输配置",

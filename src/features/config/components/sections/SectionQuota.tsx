@@ -28,66 +28,92 @@ export function SectionQuota({
       animateIn={animateIn}
     >
       <FieldStack>
-        <FieldAnchor fieldId="codexQuotaGuardEnabled">
+        <FieldAnchor fieldId="quotaGuardEnabled">
           <ToggleRow
             title={t('config_management.visual.sections.quota.guard_enabled')}
             description={t('config_management.visual.sections.quota.guard_hint')}
-            checked={values.codexQuotaGuardEnabled}
+            checked={values.quotaGuardEnabled}
             disabled={disabled}
-            onChange={(codexQuotaGuardEnabled) => onChange({ codexQuotaGuardEnabled })}
+            onChange={(quotaGuardEnabled) => onChange({ quotaGuardEnabled })}
           />
         </FieldAnchor>
         <FieldGrid>
-          <FieldAnchor fieldId="codexQuotaFiveHourPercent">
+          <FieldAnchor fieldId="quotaGuardFiveHourPercent">
             <Input
               label={t('config_management.visual.sections.quota.five-hour-used-percent')}
               type="number"
               min={0}
               max={100}
               step="0.1"
-              value={values.codexQuotaFiveHourPercent}
+              value={values.quotaGuardFiveHourPercent}
               disabled={disabled}
-              error={getValidationMessage(t, validationErrors?.codexQuotaFiveHourPercent)}
-              onChange={(e) => onChange({ codexQuotaFiveHourPercent: e.target.value })}
+              error={getValidationMessage(t, validationErrors?.quotaGuardFiveHourPercent)}
+              onChange={(e) => onChange({ quotaGuardFiveHourPercent: e.target.value })}
             />
           </FieldAnchor>
-          <FieldAnchor fieldId="codexQuotaFiveHourJitter">
+          <FieldAnchor fieldId="quotaGuardFiveHourJitter">
             <Input
               label={t('config_management.visual.sections.quota.five-hour-jitter')}
               type="number"
               min={0}
               max={100}
               step="0.1"
-              value={values.codexQuotaFiveHourJitter}
+              value={values.quotaGuardFiveHourJitter}
               disabled={disabled}
-              error={getValidationMessage(t, validationErrors?.codexQuotaFiveHourJitter)}
-              onChange={(e) => onChange({ codexQuotaFiveHourJitter: e.target.value })}
+              error={getValidationMessage(t, validationErrors?.quotaGuardFiveHourJitter)}
+              onChange={(e) => onChange({ quotaGuardFiveHourJitter: e.target.value })}
             />
           </FieldAnchor>
-          <FieldAnchor fieldId="codexQuotaWeeklyPercent">
+          <FieldAnchor fieldId="quotaGuardWeeklyPercent">
             <Input
               label={t('config_management.visual.sections.quota.weekly-used-percent')}
               type="number"
               min={0}
               max={100}
               step="0.1"
-              value={values.codexQuotaWeeklyPercent}
+              value={values.quotaGuardWeeklyPercent}
               disabled={disabled}
-              error={getValidationMessage(t, validationErrors?.codexQuotaWeeklyPercent)}
-              onChange={(e) => onChange({ codexQuotaWeeklyPercent: e.target.value })}
+              error={getValidationMessage(t, validationErrors?.quotaGuardWeeklyPercent)}
+              onChange={(e) => onChange({ quotaGuardWeeklyPercent: e.target.value })}
             />
           </FieldAnchor>
-          <FieldAnchor fieldId="codexQuotaWeeklyJitter">
+          <FieldAnchor fieldId="quotaGuardWeeklyJitter">
             <Input
               label={t('config_management.visual.sections.quota.weekly-jitter')}
               type="number"
               min={0}
               max={100}
               step="0.1"
-              value={values.codexQuotaWeeklyJitter}
+              value={values.quotaGuardWeeklyJitter}
               disabled={disabled}
-              error={getValidationMessage(t, validationErrors?.codexQuotaWeeklyJitter)}
-              onChange={(e) => onChange({ codexQuotaWeeklyJitter: e.target.value })}
+              error={getValidationMessage(t, validationErrors?.quotaGuardWeeklyJitter)}
+              onChange={(e) => onChange({ quotaGuardWeeklyJitter: e.target.value })}
+            />
+          </FieldAnchor>
+          <FieldAnchor fieldId="quotaGuardMonthlyPercent">
+            <Input
+              label={t('config_management.visual.sections.quota.monthly-used-percent')}
+              type="number"
+              min={0}
+              max={100}
+              step="0.1"
+              value={values.quotaGuardMonthlyPercent}
+              disabled={disabled}
+              error={getValidationMessage(t, validationErrors?.quotaGuardMonthlyPercent)}
+              onChange={(e) => onChange({ quotaGuardMonthlyPercent: e.target.value })}
+            />
+          </FieldAnchor>
+          <FieldAnchor fieldId="quotaGuardMonthlyJitter">
+            <Input
+              label={t('config_management.visual.sections.quota.monthly-jitter')}
+              type="number"
+              min={0}
+              max={100}
+              step="0.1"
+              value={values.quotaGuardMonthlyJitter}
+              disabled={disabled}
+              error={getValidationMessage(t, validationErrors?.quotaGuardMonthlyJitter)}
+              onChange={(e) => onChange({ quotaGuardMonthlyJitter: e.target.value })}
             />
           </FieldAnchor>
 

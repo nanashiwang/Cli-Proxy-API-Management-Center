@@ -1139,12 +1139,14 @@
           "switch_preview_model": "切換預覽模型",
           "switch_preview_model_desc": "配額耗盡時切換到預覽版本模型",
           "antigravity_credits": "使用Antigravity Credits",
-          "guard_enabled": "Codex 額度保護",
-          "guard_hint": "任一視窗已用比例觸線時暫停該帳號，確認用量降至兩個閾值以下後恢復。隨機閾值按帳號與視窗類型固定；僅適用於獨立模式 OAuth 帳號，進行中的請求可能越過閾值。",
-          "five-hour-used-percent": "5 小時已用閾值（%）",
-          "five-hour-jitter": "5 小時上下浮動（百分點）",
+          "guard_enabled": "多平台額度保護",
+          "guard_hint": "適用於 Codex、Claude、Grok、Kimi、Antigravity 回傳的明確額度比例。任一視窗觸線即暫停該帳號，確認額度恢復後繼續；新接入平台每分鐘檢查一次。隨機閾值固定，舊 Codex 設定繼續相容。僅支援獨立模式。",
+          "five-hour-used-percent": "5 小時／短視窗已用閾值（%）",
+          "five-hour-jitter": "短視窗上下浮動（百分點）",
           "weekly-used-percent": "每週已用閾值（%）",
-          "weekly-jitter": "每週上下浮動（百分點）"
+          "weekly-jitter": "每週上下浮動（百分點）",
+          "monthly-used-percent": "月視窗已用閾值（%）",
+          "monthly-jitter": "月視窗上下浮動（百分點）"
         },
         "streaming": {
           "title": "串流傳輸設定",

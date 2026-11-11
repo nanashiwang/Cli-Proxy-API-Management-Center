@@ -7,10 +7,12 @@ export type PayloadParamValidationErrorCode =
   'payload_invalid_number' | 'payload_invalid_boolean' | 'payload_invalid_json';
 
 export type VisualConfigFieldPath =
-  | 'codexQuotaFiveHourPercent'
-  | 'codexQuotaFiveHourJitter'
-  | 'codexQuotaWeeklyPercent'
-  | 'codexQuotaWeeklyJitter'
+  | 'quotaGuardFiveHourPercent'
+  | 'quotaGuardFiveHourJitter'
+  | 'quotaGuardMonthlyPercent'
+  | 'quotaGuardMonthlyJitter'
+  | 'quotaGuardWeeklyPercent'
+  | 'quotaGuardWeeklyJitter'
   | 'port'
   | 'errorLogsMaxFiles'
   | 'logsMaxTotalSizeMb'
@@ -119,11 +121,13 @@ export type VisualConfigValues = {
   disableImageGeneration: DisableImageGenerationMode;
   gptImage2BaseModel: string;
   authAutoRefreshWorkers: string;
-  codexQuotaGuardEnabled: boolean;
-  codexQuotaFiveHourPercent: string;
-  codexQuotaFiveHourJitter: string;
-  codexQuotaWeeklyPercent: string;
-  codexQuotaWeeklyJitter: string;
+  quotaGuardEnabled: boolean;
+  quotaGuardFiveHourPercent: string;
+  quotaGuardFiveHourJitter: string;
+  quotaGuardMonthlyPercent: string;
+  quotaGuardMonthlyJitter: string;
+  quotaGuardWeeklyPercent: string;
+  quotaGuardWeeklyJitter: string;
   quotaSwitchProject: boolean;
   quotaSwitchPreviewModel: boolean;
   quotaAntigravityCredits: boolean;
@@ -189,11 +193,13 @@ export const DEFAULT_VISUAL_VALUES: VisualConfigValues = {
   disableImageGeneration: 'false',
   gptImage2BaseModel: '',
   authAutoRefreshWorkers: '',
-  codexQuotaGuardEnabled: true,
-  codexQuotaFiveHourPercent: '90',
-  codexQuotaFiveHourJitter: '5',
-  codexQuotaWeeklyPercent: '93',
-  codexQuotaWeeklyJitter: '3',
+  quotaGuardEnabled: true,
+  quotaGuardFiveHourPercent: '90',
+  quotaGuardFiveHourJitter: '5',
+  quotaGuardMonthlyPercent: '93',
+  quotaGuardMonthlyJitter: '3',
+  quotaGuardWeeklyPercent: '93',
+  quotaGuardWeeklyJitter: '3',
   quotaSwitchProject: true,
   quotaSwitchPreviewModel: true,
   quotaAntigravityCredits: false,

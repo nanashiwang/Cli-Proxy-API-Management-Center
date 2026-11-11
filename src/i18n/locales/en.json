@@ -1113,12 +1113,14 @@
           "switch_preview_model": "Switch to Preview Model",
           "switch_preview_model_desc": "Switch to preview model version when quota is exceeded",
           "antigravity_credits": "Use Antigravity Credits",
-          "guard_enabled": "Codex quota protection",
-          "guard_hint": "Stops the account when either consumed quota reaches its stable randomized threshold. Resumes after observed usage falls below both thresholds. Standalone OAuth accounts only; in-flight requests may exceed the limit.",
-          "five-hour-used-percent": "5h used threshold (%)",
-          "five-hour-jitter": "5h variation (percentage points)",
+          "guard_enabled": "Multi-provider quota protection",
+          "guard_hint": "Uses explicit quota percentages from Codex, Claude, Grok, Kimi and Antigravity. Any threshold pauses the account until fresh quota confirms recovery; newly supported providers are checked every minute. Stable randomized thresholds; legacy Codex settings remain compatible. Standalone mode only.",
+          "five-hour-used-percent": "5h / short-window used threshold (%)",
+          "five-hour-jitter": "Short-window variation (percentage points)",
           "weekly-used-percent": "Weekly used threshold (%)",
-          "weekly-jitter": "Weekly variation (percentage points)"
+          "weekly-jitter": "Weekly variation (percentage points)",
+          "monthly-used-percent": "Monthly used threshold (%)",
+          "monthly-jitter": "Monthly variation (percentage points)"
         },
         "streaming": {
           "title": "Streaming Configuration",

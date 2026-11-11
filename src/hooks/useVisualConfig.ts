@@ -212,21 +212,29 @@ export function getVisualConfigValidationErrors(
   values: VisualConfigValues
 ): VisualConfigValidationErrors {
   return {
-    codexQuotaFiveHourPercent: getQuotaGuardError(
-      values.codexQuotaFiveHourPercent,
-      values.codexQuotaFiveHourJitter
+    quotaGuardFiveHourPercent: getQuotaGuardError(
+      values.quotaGuardFiveHourPercent,
+      values.quotaGuardFiveHourJitter
     ),
-    codexQuotaFiveHourJitter: getQuotaGuardError(
-      values.codexQuotaFiveHourPercent,
-      values.codexQuotaFiveHourJitter
+    quotaGuardFiveHourJitter: getQuotaGuardError(
+      values.quotaGuardFiveHourPercent,
+      values.quotaGuardFiveHourJitter
     ),
-    codexQuotaWeeklyPercent: getQuotaGuardError(
-      values.codexQuotaWeeklyPercent,
-      values.codexQuotaWeeklyJitter
+    quotaGuardMonthlyPercent: getQuotaGuardError(
+      values.quotaGuardMonthlyPercent,
+      values.quotaGuardMonthlyJitter
     ),
-    codexQuotaWeeklyJitter: getQuotaGuardError(
-      values.codexQuotaWeeklyPercent,
-      values.codexQuotaWeeklyJitter
+    quotaGuardMonthlyJitter: getQuotaGuardError(
+      values.quotaGuardMonthlyPercent,
+      values.quotaGuardMonthlyJitter
+    ),
+    quotaGuardWeeklyPercent: getQuotaGuardError(
+      values.quotaGuardWeeklyPercent,
+      values.quotaGuardWeeklyJitter
+    ),
+    quotaGuardWeeklyJitter: getQuotaGuardError(
+      values.quotaGuardWeeklyPercent,
+      values.quotaGuardWeeklyJitter
     ),
     port: getPortError(values.port),
     errorLogsMaxFiles: getNonNegativeIntegerError(values.errorLogsMaxFiles),
@@ -943,11 +951,13 @@ function getNextDirtyFields(
       'maxRetryCredentials',
       'maxRetryInterval',
       'wsAuth',
-      'codexQuotaGuardEnabled',
-      'codexQuotaFiveHourPercent',
-      'codexQuotaFiveHourJitter',
-      'codexQuotaWeeklyPercent',
-      'codexQuotaWeeklyJitter',
+      'quotaGuardEnabled',
+      'quotaGuardFiveHourPercent',
+      'quotaGuardFiveHourJitter',
+      'quotaGuardMonthlyPercent',
+      'quotaGuardMonthlyJitter',
+      'quotaGuardWeeklyPercent',
+      'quotaGuardWeeklyJitter',
       'quotaSwitchProject',
       'quotaSwitchPreviewModel',
       'quotaAntigravityCredits',
@@ -1112,7 +1122,10 @@ export function useVisualConfig() {
       const parsed = asRecord(parsedRaw) ?? {};
       const tls = asRecord(parsed.tls);
       const remoteManagement = asRecord(parsed['remote-management']);
-      const quotaGuard = asRecord(parsed['codex-quota-guard']);
+      const quotaGuard = {
+        ...asRecord(parsed['codex-quota-guard']),
+        ...asRecord(parsed['quota-guard']),
+      };
       const quotaExceeded = asRecord(parsed['quota-exceeded']);
       const routing = asRecord(parsed.routing);
       const payload = asRecord(parsed.payload);
@@ -1209,11 +1222,13 @@ export function useVisualConfig() {
             ? codexHeaderDefaults['beta-features']
             : '',
 
-        codexQuotaGuardEnabled: Boolean(quotaGuard?.['enabled'] ?? true),
-        codexQuotaFiveHourPercent: String(quotaGuard?.['five-hour-used-percent'] ?? 90),
-        codexQuotaFiveHourJitter: String(quotaGuard?.['five-hour-jitter'] ?? 5),
-        codexQuotaWeeklyPercent: String(quotaGuard?.['weekly-used-percent'] ?? 93),
-        codexQuotaWeeklyJitter: String(quotaGuard?.['weekly-jitter'] ?? 3),
+        quotaGuardEnabled: Boolean(quotaGuard?.['enabled'] ?? true),
+        quotaGuardFiveHourPercent: String(quotaGuard?.['five-hour-used-percent'] ?? 90),
+        quotaGuardFiveHourJitter: String(quotaGuard?.['five-hour-jitter'] ?? 5),
+        quotaGuardMonthlyPercent: String(quotaGuard?.['monthly-used-percent'] ?? 93),
+        quotaGuardMonthlyJitter: String(quotaGuard?.['monthly-jitter'] ?? 3),
+        quotaGuardWeeklyPercent: String(quotaGuard?.['weekly-used-percent'] ?? 93),
+        quotaGuardWeeklyJitter: String(quotaGuard?.['weekly-jitter'] ?? 3),
         quotaSwitchProject: Boolean(quotaExceeded?.['switch-project'] ?? true),
         quotaSwitchPreviewModel: Boolean(quotaExceeded?.['switch-preview-model'] ?? true),
         quotaAntigravityCredits: Boolean(quotaExceeded?.['antigravity-credits'] ?? false),
@@ -1513,34 +1528,39 @@ export function useVisualConfig() {
           deleteIfMapEmpty(doc, ['codex-header-defaults']);
         }
 
-        if (dirtyFields.has('codexQuotaGuardEnabled')) {
-          ensureMapInDoc(doc, ['codex-quota-guard']);
-          doc.setIn(['codex-quota-guard', 'enabled'], values.codexQuotaGuardEnabled);
+        if (dirtyFields.has('quotaGuardEnabled')) {
+          ensureMapInDoc(doc, ['quota-guard']);
+          doc.setIn(['quota-guard', 'enabled'], values.quotaGuardEnabled);
         }
-        if (dirtyFields.has('codexQuotaFiveHourPercent')) {
-          ensureMapInDoc(doc, ['codex-quota-guard']);
+        if (dirtyFields.has('quotaGuardFiveHourPercent')) {
+          ensureMapInDoc(doc, ['quota-guard']);
           doc.setIn(
-            ['codex-quota-guard', 'five-hour-used-percent'],
-            Number(values.codexQuotaFiveHourPercent)
+            ['quota-guard', 'five-hour-used-percent'],
+            Number(values.quotaGuardFiveHourPercent)
           );
         }
-        if (dirtyFields.has('codexQuotaFiveHourJitter')) {
-          ensureMapInDoc(doc, ['codex-quota-guard']);
+        if (dirtyFields.has('quotaGuardFiveHourJitter')) {
+          ensureMapInDoc(doc, ['quota-guard']);
+          doc.setIn(['quota-guard', 'five-hour-jitter'], Number(values.quotaGuardFiveHourJitter));
+        }
+        if (dirtyFields.has('quotaGuardMonthlyPercent')) {
+          ensureMapInDoc(doc, ['quota-guard']);
           doc.setIn(
-            ['codex-quota-guard', 'five-hour-jitter'],
-            Number(values.codexQuotaFiveHourJitter)
+            ['quota-guard', 'monthly-used-percent'],
+            Number(values.quotaGuardMonthlyPercent)
           );
         }
-        if (dirtyFields.has('codexQuotaWeeklyPercent')) {
-          ensureMapInDoc(doc, ['codex-quota-guard']);
-          doc.setIn(
-            ['codex-quota-guard', 'weekly-used-percent'],
-            Number(values.codexQuotaWeeklyPercent)
-          );
+        if (dirtyFields.has('quotaGuardMonthlyJitter')) {
+          ensureMapInDoc(doc, ['quota-guard']);
+          doc.setIn(['quota-guard', 'monthly-jitter'], Number(values.quotaGuardMonthlyJitter));
         }
-        if (dirtyFields.has('codexQuotaWeeklyJitter')) {
-          ensureMapInDoc(doc, ['codex-quota-guard']);
-          doc.setIn(['codex-quota-guard', 'weekly-jitter'], Number(values.codexQuotaWeeklyJitter));
+        if (dirtyFields.has('quotaGuardWeeklyPercent')) {
+          ensureMapInDoc(doc, ['quota-guard']);
+          doc.setIn(['quota-guard', 'weekly-used-percent'], Number(values.quotaGuardWeeklyPercent));
+        }
+        if (dirtyFields.has('quotaGuardWeeklyJitter')) {
+          ensureMapInDoc(doc, ['quota-guard']);
+          doc.setIn(['quota-guard', 'weekly-jitter'], Number(values.quotaGuardWeeklyJitter));
         }
         const quotaDirty =
           dirtyFields.has('quotaSwitchProject') ||
