@@ -7,6 +7,10 @@ export type PayloadParamValidationErrorCode =
   'payload_invalid_number' | 'payload_invalid_boolean' | 'payload_invalid_json';
 
 export type VisualConfigFieldPath =
+  | 'codexQuotaFiveHourPercent'
+  | 'codexQuotaFiveHourJitter'
+  | 'codexQuotaWeeklyPercent'
+  | 'codexQuotaWeeklyJitter'
   | 'port'
   | 'errorLogsMaxFiles'
   | 'logsMaxTotalSizeMb'
@@ -20,7 +24,7 @@ export type VisualConfigFieldPath =
   | 'streaming.nonstreamKeepaliveInterval';
 
 export type VisualConfigValidationErrorCode =
-  'port_range' | 'non_negative_integer' | 'integer_range_1_3600';
+  'quota_guard_range' | 'port_range' | 'non_negative_integer' | 'integer_range_1_3600';
 
 export type VisualConfigValidationErrors = Partial<
   Record<VisualConfigFieldPath, VisualConfigValidationErrorCode>
@@ -115,6 +119,11 @@ export type VisualConfigValues = {
   disableImageGeneration: DisableImageGenerationMode;
   gptImage2BaseModel: string;
   authAutoRefreshWorkers: string;
+  codexQuotaGuardEnabled: boolean;
+  codexQuotaFiveHourPercent: string;
+  codexQuotaFiveHourJitter: string;
+  codexQuotaWeeklyPercent: string;
+  codexQuotaWeeklyJitter: string;
   quotaSwitchProject: boolean;
   quotaSwitchPreviewModel: boolean;
   quotaAntigravityCredits: boolean;
@@ -180,6 +189,11 @@ export const DEFAULT_VISUAL_VALUES: VisualConfigValues = {
   disableImageGeneration: 'false',
   gptImage2BaseModel: '',
   authAutoRefreshWorkers: '',
+  codexQuotaGuardEnabled: true,
+  codexQuotaFiveHourPercent: '90',
+  codexQuotaFiveHourJitter: '5',
+  codexQuotaWeeklyPercent: '93',
+  codexQuotaWeeklyJitter: '3',
   quotaSwitchProject: true,
   quotaSwitchPreviewModel: true,
   quotaAntigravityCredits: false,

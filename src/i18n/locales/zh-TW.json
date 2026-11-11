@@ -1138,7 +1138,13 @@
           "switch_project_desc": "配額耗盡時自動切換到其他專案",
           "switch_preview_model": "切換預覽模型",
           "switch_preview_model_desc": "配額耗盡時切換到預覽版本模型",
-          "antigravity_credits": "使用Antigravity Credits"
+          "antigravity_credits": "使用Antigravity Credits",
+          "guard_enabled": "Codex 額度保護",
+          "guard_hint": "任一視窗已用比例觸線時暫停該帳號，確認用量降至兩個閾值以下後恢復。隨機閾值按帳號與視窗類型固定；僅適用於獨立模式 OAuth 帳號，進行中的請求可能越過閾值。",
+          "five-hour-used-percent": "5 小時已用閾值（%）",
+          "five-hour-jitter": "5 小時上下浮動（百分點）",
+          "weekly-used-percent": "每週已用閾值（%）",
+          "weekly-jitter": "每週上下浮動（百分點）"
         },
         "streaming": {
           "title": "串流傳輸設定",
@@ -1245,7 +1251,8 @@
         "integer_range_1_3600": "請輸入 1 到 3600 之間的整數",
         "payload_invalid_number": "請輸入有效數字",
         "payload_invalid_boolean": "請選擇 true 或 false",
-        "payload_invalid_json": "請輸入有效的 JSON"
+        "payload_invalid_json": "請輸入有效的 JSON",
+        "quota_guard_range": "閾值 ± 浮動範圍必須大於 0 且不超過 100。"
       },
       "common": {
         "edit": "編輯",

@@ -1112,7 +1112,13 @@
           "switch_project_desc": "Automatically switch to another project when quota is exceeded",
           "switch_preview_model": "Switch to Preview Model",
           "switch_preview_model_desc": "Switch to preview model version when quota is exceeded",
-          "antigravity_credits": "Use Antigravity Credits"
+          "antigravity_credits": "Use Antigravity Credits",
+          "guard_enabled": "Codex quota protection",
+          "guard_hint": "Stops the account when either consumed quota reaches its stable randomized threshold. Resumes after observed usage falls below both thresholds. Standalone OAuth accounts only; in-flight requests may exceed the limit.",
+          "five-hour-used-percent": "5h used threshold (%)",
+          "five-hour-jitter": "5h variation (percentage points)",
+          "weekly-used-percent": "Weekly used threshold (%)",
+          "weekly-jitter": "Weekly variation (percentage points)"
         },
         "streaming": {
           "title": "Streaming Configuration",
@@ -1219,7 +1225,8 @@
         "integer_range_1_3600": "Enter a whole number between 1 and 3600",
         "payload_invalid_number": "Enter a valid number",
         "payload_invalid_boolean": "Choose true or false",
-        "payload_invalid_json": "Enter valid JSON"
+        "payload_invalid_json": "Enter valid JSON",
+        "quota_guard_range": "Threshold ± variation must stay above 0 and at or below 100."
       },
       "common": {
         "edit": "Edit",

@@ -262,6 +262,36 @@ export const CONFIG_FIELD_SEARCH_INDEX: ConfigFieldSearchEntry[] = [
     hintKey: L('sections.system.usage_statistics_enabled_desc'),
     yamlKeys: ['usage-statistics-enabled'],
   },
+  {
+    fieldId: 'codexQuotaGuardEnabled',
+    sectionId: 'quota',
+    labelKey: L('sections.quota.guard_enabled'),
+    yamlKeys: ['codex-quota-guard', 'enabled'],
+  },
+  {
+    fieldId: 'codexQuotaFiveHourPercent',
+    sectionId: 'quota',
+    labelKey: L('sections.quota.five-hour-used-percent'),
+    yamlKeys: ['codex-quota-guard', 'five-hour-used-percent'],
+  },
+  {
+    fieldId: 'codexQuotaFiveHourJitter',
+    sectionId: 'quota',
+    labelKey: L('sections.quota.five-hour-jitter'),
+    yamlKeys: ['codex-quota-guard', 'five-hour-jitter'],
+  },
+  {
+    fieldId: 'codexQuotaWeeklyPercent',
+    sectionId: 'quota',
+    labelKey: L('sections.quota.weekly-used-percent'),
+    yamlKeys: ['codex-quota-guard', 'weekly-used-percent'],
+  },
+  {
+    fieldId: 'codexQuotaWeeklyJitter',
+    sectionId: 'quota',
+    labelKey: L('sections.quota.weekly-jitter'),
+    yamlKeys: ['codex-quota-guard', 'weekly-jitter'],
+  },
   // ── quota ─────────────────────────────────────────────────────────────────
   {
     fieldId: 'quotaSwitchProject',

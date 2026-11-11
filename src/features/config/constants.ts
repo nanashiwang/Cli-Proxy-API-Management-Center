@@ -74,7 +74,12 @@ export const SECTION_VALIDATION_FIELDS: Record<VisualSectionId, readonly VisualC
     connectivity: ['port'],
     network: ['requestRetry', 'maxRetryCredentials', 'maxRetryInterval', 'authAutoRefreshWorkers'],
     logging: ['errorLogsMaxFiles', 'logsMaxTotalSizeMb', 'redisUsageQueueRetentionSeconds'],
-    quota: [],
+    quota: [
+      'codexQuotaFiveHourPercent',
+      'codexQuotaFiveHourJitter',
+      'codexQuotaWeeklyPercent',
+      'codexQuotaWeeklyJitter',
+    ],
     streaming: [
       'streaming.keepaliveSeconds',
       'streaming.bootstrapRetries',
@@ -130,6 +135,12 @@ export const FIELD_VALUE_KEYS: Record<string, readonly string[]> = {
   quotaSwitchProject: ['quotaSwitchProject'],
   quotaSwitchPreviewModel: ['quotaSwitchPreviewModel'],
   quotaAntigravityCredits: ['quotaAntigravityCredits'],
+  codexQuotaGuardEnabled: ['codexQuotaGuardEnabled'],
+  codexQuotaFiveHourPercent: ['codexQuotaFiveHourPercent'],
+  codexQuotaFiveHourJitter: ['codexQuotaFiveHourJitter'],
+  codexQuotaWeeklyPercent: ['codexQuotaWeeklyPercent'],
+  codexQuotaWeeklyJitter: ['codexQuotaWeeklyJitter'],
+
   // ── streaming ─────────────────────────────────────────────────────────────
   streamingKeepaliveSeconds: ['streaming.keepaliveSeconds'],
   streamingBootstrapRetries: ['streaming.bootstrapRetries'],

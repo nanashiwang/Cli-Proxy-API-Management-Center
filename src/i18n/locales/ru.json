@@ -1111,7 +1111,13 @@
           "switch_project_desc": "Автоматически переходить на другой проект при превышении квоты",
           "switch_preview_model": "Переключить на preview-модель",
           "switch_preview_model_desc": "Переключаться на preview-версию модели при превышении квоты",
-          "antigravity_credits": "Использовать Antigravity Credits"
+          "antigravity_credits": "Использовать Antigravity Credits",
+          "guard_enabled": "Защита квоты Codex",
+          "guard_hint": "Аккаунт приостанавливается при достижении любого порога и возобновляется после снижения расхода ниже обоих порогов. Порог фиксирован для аккаунта и типа окна. Только автономные OAuth-аккаунты; текущие запросы могут превысить порог.",
+          "five-hour-used-percent": "Порог расхода за 5 ч (%)",
+          "five-hour-jitter": "Разброс за 5 ч (п.п.)",
+          "weekly-used-percent": "Недельный порог расхода (%)",
+          "weekly-jitter": "Недельный разброс (п.п.)"
         },
         "streaming": {
           "title": "Настройки стриминга",
@@ -1218,7 +1224,8 @@
         "integer_range_1_3600": "Введите целое число от 1 до 3600",
         "payload_invalid_number": "Введите корректное число",
         "payload_invalid_boolean": "Выберите true или false",
-        "payload_invalid_json": "Введите корректный JSON"
+        "payload_invalid_json": "Введите корректный JSON",
+        "quota_guard_range": "Порог ± разброс должен быть больше 0 и не больше 100."
       },
       "common": {
         "edit": "Изменить",
