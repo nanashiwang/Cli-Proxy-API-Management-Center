@@ -1114,7 +1114,7 @@
           "switch_preview_model_desc": "Switch to preview model version when quota is exceeded",
           "antigravity_credits": "Use Antigravity Credits",
           "guard_enabled": "Multi-provider quota protection",
-          "guard_hint": "Uses explicit quota percentages from Codex, Claude, Grok, Kimi and Antigravity. Any threshold pauses the account until fresh quota confirms recovery; newly supported providers are checked every minute. Stable randomized thresholds; legacy Codex settings remain compatible. Standalone mode only.",
+          "guard_hint": "Uses explicit quota percentages from Codex, Claude, Grok, Kimi and Antigravity. Checks every 60s, or 15s within 10 percentage points of the sampled threshold. Failed checks or data older than 120s / 30s pause new calls until valid quota confirms recovery. Requests already in flight continue. Stable randomized thresholds; legacy Codex settings remain compatible. Standalone mode only.",
           "five-hour-used-percent": "5h / short-window used threshold (%)",
           "five-hour-jitter": "Short-window variation (percentage points)",
           "weekly-used-percent": "Weekly used threshold (%)",

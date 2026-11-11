@@ -1140,7 +1140,7 @@
           "switch_preview_model_desc": "配額耗盡時切換到預覽版本模型",
           "antigravity_credits": "使用Antigravity Credits",
           "guard_enabled": "多平台額度保護",
-          "guard_hint": "適用於 Codex、Claude、Grok、Kimi、Antigravity 回傳的明確額度比例。任一視窗觸線即暫停該帳號，確認額度恢復後繼續；新接入平台每分鐘檢查一次。隨機閾值固定，舊 Codex 設定繼續相容。僅支援獨立模式。",
+          "guard_hint": "適用於 Codex、Claude、Grok、Kimi、Antigravity 的明確額度比例。正常每 60 秒檢查，接近實際閾值 10 個百分點內改為每 15 秒；資料超過 120 秒／30 秒未更新，或查詢失敗時暫停新呼叫。確認額度恢復後繼續，已送出的請求不會中斷。隨機閾值固定，舊 Codex 設定繼續相容。僅支援獨立模式。",
           "five-hour-used-percent": "5 小時／短視窗已用閾值（%）",
           "five-hour-jitter": "短視窗上下浮動（百分點）",
           "weekly-used-percent": "每週已用閾值（%）",

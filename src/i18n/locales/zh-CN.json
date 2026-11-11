@@ -1114,7 +1114,7 @@
           "switch_preview_model_desc": "配额耗尽时切换到预览版本模型",
           "antigravity_credits": "使用Antigravity Credits",
           "guard_enabled": "多平台额度保护",
-          "guard_hint": "适用于 Codex、Claude、Grok、Kimi、Antigravity 返回的明确额度比例。任一窗口触线即暂停该账号，确认额度恢复后继续；新接入平台每分钟检查一次。随机阈值固定，旧 Codex 配置继续兼容。仅支持独立模式。",
+          "guard_hint": "适用于 Codex、Claude、Grok、Kimi、Antigravity 的明确额度比例。正常每 60 秒检查，接近实际阈值 10 个百分点内改为每 15 秒；数据超过 120 秒／30 秒未更新，或查询失败时暂停新调用。确认额度恢复后继续，已发出的请求不会中断。随机阈值固定，旧 Codex 配置继续兼容。仅支持独立模式。",
           "five-hour-used-percent": "5 小时／短窗口已用阈值（%）",
           "five-hour-jitter": "短窗口上下浮动（百分点）",
           "weekly-used-percent": "每周已用阈值（%）",
