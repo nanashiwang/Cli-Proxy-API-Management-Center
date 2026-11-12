@@ -241,8 +241,22 @@ export function AuthFileQuotaSection(props: AuthFileQuotaSectionProps) {
       ) : (
         <div className={styles.quotaMessage}>{t(`${adapter.i18nPrefix}.idle`)}</div>
       )}
-      {quotaStatus !== 'idle' && resetQuotaAction && (
-        <div className={styles.quotaCardActions}>{resetQuotaAction}</div>
+      {(quota?.backendQuota || (quotaStatus !== 'idle' && resetQuotaAction)) && (
+        <div className={styles.quotaCardActions}>
+          {quota?.backendQuota && (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => void refreshQuotaForFile()}
+              disabled={!canRefreshQuota || quotaStatus === 'loading'}
+              loading={quotaStatus === 'loading'}
+            >
+              {t('auth_files.quota_refresh_single')}
+            </Button>
+          )}
+          {resetQuotaAction}
+        </div>
       )}
     </div>
   );

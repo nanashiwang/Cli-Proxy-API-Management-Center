@@ -8,7 +8,7 @@ The auth-files response already includes normalized backend quota snapshots, but
 
 ## Decision
 
-Read existing codex_quota/provider_quota windows at the display boundary, without new backend endpoints or writes into the manual-response cache. Both hosts show backend percentages, original per-window observation/reset times and guard health. Preserve manual provider details in an explicitly labeled disclosure. Failed/stale observations remain visible as last-known values; no timestamp expiry fabricates replenishment. Reuse normalized observations in timeline/sort and loaded counts. Visible connected pages poll the existing local auth-files endpoint every 15 seconds, with overlap and stale-session fences. This never calls provider quota endpoints.
+Read existing codex_quota/provider_quota windows at the display boundary, without new backend endpoints or writes into the manual-response cache. Both hosts show backend percentages, original per-window observation/reset times and guard health. Preserve manual provider details in an explicitly labeled disclosure. Both hosts retain a manual refresh control when an automatic snapshot is present, respecting the same cooldown. Failed/stale observations remain visible as last-known values; no timestamp expiry fabricates replenishment. Reuse normalized observations in timeline/sort and loaded counts. Visible connected pages poll the existing local auth-files endpoint every 15 seconds, with overlap and stale-session fences. This never calls provider quota endpoints.
 
 ## Alternatives considered
 
