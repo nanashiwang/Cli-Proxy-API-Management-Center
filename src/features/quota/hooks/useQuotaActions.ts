@@ -5,6 +5,8 @@
  */
 
 import { useCallback, useState } from 'react';
+import { getQuotaNextCheck } from '@/services/api/apiCall';
+import { quotaRetryAt, quotaWaitUntil } from '../cooldown';
 import { useTranslation } from 'react-i18next';
 import {
   captureQuotaCacheGeneration,
@@ -29,6 +31,7 @@ export function useQuotaActions(disableControls: boolean) {
       if (disableControls || file.disabled) return;
       if (resettingQuotaName === file.name) return;
       if (getQuotaState(adapter, file.name)?.status === 'loading') return;
+      if (quotaWaitUntil(file, getQuotaState(adapter, file.name)) > Date.now()) return;
       const cacheGeneration = captureQuotaCacheGeneration();
       const setQuota = getQuotaSetter(adapter);
 
@@ -42,7 +45,10 @@ export function useQuotaActions(disableControls: boolean) {
         commitIfQuotaCacheCurrent(cacheGeneration, () => {
           setQuota((prev) => ({
             ...prev,
-            [file.name]: adapter.buildSuccessState(data),
+            [file.name]: {
+              ...adapter.buildSuccessState(data),
+              nextCheckAt: getQuotaNextCheck(file.authIndex ?? file.auth_index),
+            },
           }));
           showNotification(t('auth_files.quota_refresh_success', { name: file.name }), 'success');
         });
@@ -52,7 +58,11 @@ export function useQuotaActions(disableControls: boolean) {
         commitIfQuotaCacheCurrent(cacheGeneration, () => {
           setQuota((prev) => ({
             ...prev,
-            [file.name]: adapter.buildErrorState(message, status),
+            [file.name]: {
+              ...adapter.buildErrorState(message, status),
+              nextCheckAt:
+                quotaRetryAt(err) ?? getQuotaNextCheck(file.authIndex ?? file.auth_index),
+            },
           }));
           showNotification(
             t('auth_files.quota_refresh_failed', { name: file.name, message }),
@@ -70,6 +80,7 @@ export function useQuotaActions(disableControls: boolean) {
       if (!resetQuotaFn) return;
       if (disableControls || file.disabled) return;
       if (getQuotaState(adapter, file.name)?.status === 'loading') return;
+      if (quotaWaitUntil(file, getQuotaState(adapter, file.name)) > Date.now()) return;
       if (resettingQuotaName === file.name) return;
 
       showConfirmation({
@@ -86,7 +97,10 @@ export function useQuotaActions(disableControls: boolean) {
             commitIfQuotaCacheCurrent(cacheGeneration, () => {
               setQuota((prev) => ({
                 ...prev,
-                [file.name]: adapter.buildSuccessState(data),
+                [file.name]: {
+                  ...adapter.buildSuccessState(data),
+                  nextCheckAt: getQuotaNextCheck(file.authIndex ?? file.auth_index),
+                },
               }));
               showNotification(t('codex_quota.reset_success', { name: file.name }), 'success');
             });

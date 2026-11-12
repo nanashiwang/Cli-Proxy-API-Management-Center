@@ -13,7 +13,9 @@ import { useTranslation } from 'react-i18next';
 import { captureQuotaCacheGeneration, commitIfQuotaCacheCurrent } from '@/stores';
 import { getStatusFromError } from '@/utils/quota';
 import type { QuotaFileEntry } from '../logic';
-import { QUOTA_ADAPTERS, getQuotaSetter } from '../providers';
+import { getQuotaNextCheck } from '@/services/api/apiCall';
+import { quotaRetryAt, quotaWaitUntil } from '../cooldown';
+import { QUOTA_ADAPTERS, getQuotaSetter, getQuotaMap } from '../providers';
 import type { QuotaProviderType } from '../providers/types';
 
 interface BatchFetchResult {
@@ -22,6 +24,7 @@ interface BatchFetchResult {
   data?: unknown;
   error?: string;
   errorStatus?: number;
+  nextCheckAt?: number;
 }
 
 export function useQuotaBatchLoader() {
@@ -33,6 +36,10 @@ export function useQuotaBatchLoader() {
   const loadQuota = useCallback(
     async (targets: QuotaFileEntry[]) => {
       if (loadingRef.current) return;
+      targets = targets.filter(
+        ({ file, type }) =>
+          quotaWaitUntil(file, getQuotaMap(QUOTA_ADAPTERS[type])[file.name]) <= Date.now()
+      );
       if (targets.length === 0) return;
       loadingRef.current = true;
       const requestId = ++requestIdRef.current;
@@ -66,7 +73,12 @@ export function useQuotaBatchLoader() {
               entries.map(async ({ file }): Promise<BatchFetchResult> => {
                 try {
                   const data = await adapter.fetchQuota(file, t);
-                  return { name: file.name, status: 'success', data };
+                  return {
+                    name: file.name,
+                    status: 'success',
+                    data,
+                    nextCheckAt: getQuotaNextCheck(file.authIndex ?? file.auth_index),
+                  };
                 } catch (err: unknown) {
                   const message = err instanceof Error ? err.message : t('common.unknown_error');
                   return {
@@ -74,6 +86,8 @@ export function useQuotaBatchLoader() {
                     status: 'error',
                     error: message,
                     errorStatus: getStatusFromError(err),
+                    nextCheckAt:
+                      quotaRetryAt(err) ?? getQuotaNextCheck(file.authIndex ?? file.auth_index),
                   };
                 }
               })
@@ -87,11 +101,17 @@ export function useQuotaBatchLoader() {
                 results.forEach((result) => {
                   nextState[result.name] =
                     result.status === 'success'
-                      ? adapter.buildSuccessState(result.data)
-                      : adapter.buildErrorState(
-                          result.error || t('common.unknown_error'),
-                          result.errorStatus
-                        );
+                      ? {
+                          ...adapter.buildSuccessState(result.data),
+                          nextCheckAt: result.nextCheckAt,
+                        }
+                      : {
+                          ...adapter.buildErrorState(
+                            result.error || t('common.unknown_error'),
+                            result.errorStatus
+                          ),
+                          nextCheckAt: result.nextCheckAt,
+                        };
                 });
                 return nextState;
               });

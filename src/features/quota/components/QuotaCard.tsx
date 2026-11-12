@@ -8,6 +8,8 @@
  */
 
 import { useState, type CSSProperties } from 'react';
+import { useInterval } from '@/hooks/useInterval';
+import { quotaWaitUntil } from '../cooldown';
 import { useTranslation } from 'react-i18next';
 import { IconDollarSign, IconInfo, IconRefreshCw, IconSidebarUsage } from '@/components/ui/icons';
 import type { ResolvedTheme } from '@/types';
@@ -72,6 +74,10 @@ export function QuotaCard(props: QuotaCardProps) {
       ? undefined
       : ({ '--card-delay': `${mountEntranceDelayMs}ms` } as CSSProperties);
 
+  const [clock, setClock] = useState(Date.now);
+  const nextCheck = quotaWaitUntil(file, quota);
+  const cooling = nextCheck > clock;
+  useInterval(() => setClock(Date.now()), cooling ? 1000 : null);
   const status = quota?.status ?? 'idle';
   const loading = status === 'loading';
   const iconSrc = getAuthFileIcon(entry.type, resolvedTheme);
@@ -184,12 +190,17 @@ export function QuotaCard(props: QuotaCardProps) {
       </header>
 
       <div className={styles.body}>
+        {cooling && (
+          <div role="status" className={styles.idleHint}>
+            {t('quota_management.next_check', { time: new Date(nextCheck).toLocaleString() })}
+          </div>
+        )}
         {status === 'idle' ? (
           <button
             type="button"
             className={styles.idleBody}
             onClick={onRefresh}
-            disabled={!canRefresh}
+            disabled={!canRefresh || cooling}
           >
             <IconRefreshCw size={15} aria-hidden="true" className={styles.idleGlyph} />
             <span className={styles.idleHint}>{t(`${adapter.i18nPrefix}.idle`)}</span>
@@ -282,7 +293,7 @@ export function QuotaCard(props: QuotaCardProps) {
               type="button"
               className={styles.refreshButton}
               onClick={onRefresh}
-              disabled={isQuotaRefreshDisabled(canRefresh, loading, resetting)}
+              disabled={isQuotaRefreshDisabled(canRefresh && !cooling, loading, resetting)}
               title={t('auth_files.quota_refresh_hint')}
             >
               <IconRefreshCw size={15} className={loading ? styles.spinning : undefined} />

@@ -15,3 +15,5 @@ Initially verified on 2026-09-29; usage timing and operational log health rechec
 Use personal/main for pushes and Bun for existing application checks. New user-facing strings still require all supported locales. Backend and frontend release versions remain separate.
 
 Before adding a feature, inspect adjacent flows and the current source of truth; shared filters, data definitions and access rules must not diverge across entry points.
+
+Quota refresh controls display server-provided next-check deadlines and skip cooling accounts for both individual and batch actions. Management quota reads reuse the backend observation cache and Retry-After/backoff policy.

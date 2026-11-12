@@ -1114,7 +1114,7 @@
           "switch_preview_model_desc": "Switch to preview model version when quota is exceeded",
           "antigravity_credits": "Use Antigravity Credits",
           "guard_enabled": "Multi-provider quota protection",
-          "guard_hint": "Uses explicit quota percentages from Codex, Claude, Grok, Kimi and Antigravity. Checks every 60s, or 15s within 10 percentage points of the sampled threshold. Failed checks or data older than 120s / 30s pause new calls until valid quota confirms recovery. Requests already in flight continue. Stable randomized thresholds; legacy Codex settings remain compatible. Standalone mode only.",
+          "guard_hint": "Uses explicit quota percentages from Codex, Claude, Grok, Kimi and Antigravity. Checks every 60s, or 15s within 10 percentage points of the sampled threshold. Failed checks or data older than 120s / 30s pause new calls until valid quota confirms recovery. Requests already in flight continue. Stable randomized thresholds; legacy Codex settings remain compatible. Standalone mode only. Quota reads share a cache. On 429, honor Retry-After or exponential backoff. Stopped accounts with a known reset wait until reset verification; the page shows the next check time.",
           "five-hour-used-percent": "5h / short-window used threshold (%)",
           "five-hour-jitter": "Short-window variation (percentage points)",
           "weekly-used-percent": "Weekly used threshold (%)",
@@ -1324,7 +1324,8 @@
       "formulas": "Burn rate = sum of each account’s percentage-point increase divided by its sampling duration within the same reset window.\nSustained total = ceil(burn × window hours / 100); sustained additions = max(0, total − account count).\nRunway = estimated remaining percentage points / burn; near-term additions = ceil(max(0, burn × hours to next reset − remaining points) / 100).",
       "sampling": "Reuses existing quota refreshes without extra requests or server jobs. Snapshots stay in this browser, isolated by server: up to 96 per window over at most 6 hours. Snapshots older than 30 minutes, gaps over 1 hour and resets invalidate extrapolation. No collection while the page is closed. Near-limit usage, rounding and changing demand affect accuracy.",
       "partial_limit": "Some accounts have exhausted quotas. These rough counts may understate actual demand; also check quota-related failures."
-    }
+    },
+    "next_check": "Quota check waiting. Next check: {{time}}"
   },
   "plugin_management": {
     "title": "Plugin Management",
