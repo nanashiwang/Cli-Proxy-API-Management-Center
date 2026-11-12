@@ -1,3 +1,4 @@
+import { captureQuotaCacheGeneration } from '@/stores/useQuotaStore';
 import { useCallback, useEffect, useRef, useState, type ChangeEvent, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { authFilesApi } from '@/services/api';
@@ -191,9 +192,13 @@ export function useAuthFilesData(options?: UseAuthFilesDataOptions): UseAuthFile
     });
   }, [files, selectedFiles.size]);
 
+  const listPending = useRef(0);
   const loadFiles = useCallback(
     async (options?: LoadFilesOptions) => {
       const background = options?.background === true;
+      if (background && listPending.current) return;
+      listPending.current++;
+      const generation = captureQuotaCacheGeneration();
       const requestId = ++loadRequestIdRef.current;
 
       if (background) {
@@ -205,14 +210,17 @@ export function useAuthFilesData(options?: UseAuthFilesDataOptions): UseAuthFile
 
       try {
         const data = await authFilesApi.list();
-        if (requestId !== loadRequestIdRef.current) return; // 已被更新的请求/变更取代
+        if (requestId !== loadRequestIdRef.current || generation !== captureQuotaCacheGeneration())
+          return; // 已被更新的请求/变更取代
         setFiles(data?.files || []);
         setError('');
       } catch (err: unknown) {
-        if (requestId !== loadRequestIdRef.current) return;
+        if (requestId !== loadRequestIdRef.current || generation !== captureQuotaCacheGeneration())
+          return;
         const errorMessage = err instanceof Error ? err.message : t('notification.refresh_failed');
         setError(errorMessage);
       } finally {
+        listPending.current--;
         if (requestId === loadRequestIdRef.current) {
           setLoading(false);
           setRefreshing(false);

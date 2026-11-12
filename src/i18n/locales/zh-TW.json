@@ -1351,7 +1351,22 @@
       "sampling": "僅重用既有配額重新整理，不增加伺服器工作或額外請求。快照僅存於本瀏覽器、依伺服器隔離；每個視窗最多 96 筆，回看最多 6 小時。快照超過 30 分鐘、取樣間隔超過 1 小時或跨重設時不繼續外推。頁面關閉後不取樣；接近上限、取整及負載變化都可能影響精度。",
       "partial_limit": "部分帳號配額已耗盡，以下估算可能低於真實需求；請搭配限額失敗情況判斷。"
     },
-    "next_check": "額度查詢等待中，下次檢查：{{time}}"
+    "next_check": "額度查詢等待中，下次檢查：{{time}}",
+    "window_5h": "5 小時額度",
+    "window_weekly": "週額度",
+    "window_monthly": "月額度",
+    "window_hours": "{{hours}} 小時額度",
+    "remaining_percent": "剩餘 {{percent}}%",
+    "snapshot_observed": "觀測時間：{{time}}",
+    "snapshot_time_unknown": "觀測時間未知",
+    "snapshot_ready": "背景額度快照",
+    "snapshot_threshold": "已達門檻，等待重設後驗證",
+    "snapshot_query_failed": "額度查詢失敗，以下為上次成功取得的額度",
+    "snapshot_stale": "額度資料已過期，以下為上次成功取得的額度",
+    "snapshot_checking": "正在檢查額度，以下為上次成功取得的額度",
+    "snapshot_disabled": "額度保護已關閉，以下為上次取得的額度",
+    "snapshot_unknown": "上次取得的額度",
+    "manual_details": "手動查詢詳情"
   },
   "plugin_management": {
     "title": "插件管理",

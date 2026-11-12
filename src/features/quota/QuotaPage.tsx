@@ -1,8 +1,9 @@
+import { usePageTransitionLayer } from '@/components/common/PageTransitionLayer';
 /**
  * 额度查询页：提供商 tabs + 统一卡网格。
  *
  * 保留的行为契约（重设计不改）：
- * - 点击加载：卡片挂载为 idle，额度只在用户点击/刷新时才打上游；
+ * - 自动展示后台快照；手动查询保留提供商的详细信息；
  * - cacheGeneration 会话隔离 + request-id 去重（见 useQuotaBatchLoader）；
  * - 文件列表变化后按 provider 剪枝额度缓存（已删文件不残留）；
  * - useHeaderRefresh 单槽位：本页唯一注册者，全局刷新 = 重取文件列表。
@@ -64,6 +65,8 @@ import {
   type WeeklyUsageBasis,
 } from './usageCost';
 import styles from './QuotaPage.module.scss';
+import { withBackendQuota } from './backendQuota';
+import { captureQuotaCacheGeneration, commitIfQuotaCacheCurrent } from '@/stores/useQuotaStore';
 
 const TAB_IDS: string[] = ['all', ...QUOTA_TAB_ORDER];
 const SKELETON_CARD_COUNT = 6;
@@ -79,6 +82,8 @@ const quotaEntryKey = (entry: QuotaFileEntry) => `${entry.type}:${entry.file.nam
 
 export function QuotaPage() {
   const { t } = useTranslation();
+  const layer = usePageTransitionLayer();
+  const isCurrentLayer = !layer || layer.status === 'current';
   const connectionStatus = useAuthStore((state) => state.connectionStatus);
   const apiBase = useAuthStore((state) => state.apiBase);
   const resolvedTheme: ResolvedTheme = useThemeStore((state) => state.resolvedTheme);
@@ -108,25 +113,51 @@ export function QuotaPage() {
 
   /* ---------- 文件列表 ---------- */
 
-  const loadFiles = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const data = await authFilesApi.list();
-      setFiles(data?.files || []);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : t('notification.refresh_failed');
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
+  const fileRequest = useRef(0);
+  const filesPending = useRef(false);
+  const loadFiles = useCallback(
+    async (background = false) => {
+      if (background && filesPending.current) return;
+      const request = ++fileRequest.current;
+      const generation = captureQuotaCacheGeneration();
+      filesPending.current = true;
+      if (!background) setLoading(true);
+      setError('');
+      try {
+        const data = await authFilesApi.list();
+        if (request === fileRequest.current)
+          commitIfQuotaCacheCurrent(generation, () => setFiles(data?.files || []));
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : t('notification.refresh_failed');
+        if (request === fileRequest.current)
+          commitIfQuotaCacheCurrent(generation, () => setError(message));
+      } finally {
+        if (request === fileRequest.current) {
+          filesPending.current = false;
+          setLoading(false);
+        }
+      }
+    },
+    [t]
+  );
 
   useHeaderRefresh(loadFiles);
+  useInterval(
+    () => {
+      if (document.visibilityState === 'visible') void loadFiles(true);
+    },
+    disableControls || !isCurrentLayer ? null : 15_000
+  );
 
+  const invalidateFiles = useCallback(() => {
+    fileRequest.current++;
+    filesPending.current = false;
+  }, []);
   useEffect(() => {
+    setFiles([]);
     void loadFiles();
-  }, [loadFiles]);
+    return invalidateFiles;
+  }, [loadFiles, apiBase, invalidateFiles]);
 
   /* ---------- 账号费用 ---------- */
 
@@ -186,8 +217,9 @@ export function QuotaPage() {
   );
 
   const getQuota = useCallback(
-    (entry: QuotaFileEntry): QuotaCardState | undefined => quotaByType[entry.type][entry.file.name],
-    [quotaByType]
+    (entry: QuotaFileEntry): QuotaCardState | undefined =>
+      withBackendQuota(entry.file, quotaByType[entry.type][entry.file.name], t),
+    [quotaByType, t]
   );
 
   /* ---------- 归类 / 过滤 / 排序 / 分页 ---------- */
@@ -344,12 +376,16 @@ export function QuotaPage() {
     let loaded = 0;
     let attention = 0;
     entries.forEach((entry) => {
-      const status = quotaByType[entry.type][entry.file.name]?.status;
-      if (status === 'success') loaded += 1;
-      else if (status === 'error') attention += 1;
+      const quota = getQuota(entry);
+      if (quota?.backendQuota || quota?.status === 'success') loaded += 1;
+      if (
+        quota?.status === 'error' ||
+        ['query_failed', 'stale', 'checking'].includes(quota?.backendQuota?.state ?? '')
+      )
+        attention += 1;
     });
     return { loadedCount: loaded, attentionCount: attention };
-  }, [entries, quotaByType]);
+  }, [entries, getQuota]);
 
   // 剪枝：文件列表落定后，各 provider 缓存只保留仍存在的凭证
   useEffect(() => {

@@ -1,3 +1,4 @@
+import type { BackendQuota } from './backendQuota';
 /**
  * Quota windows timeline: lane derivation and window projection.
  *
@@ -332,7 +333,7 @@ export interface TimelineLaneInput {
   name: string;
   displayName: string;
   provider: QuotaProviderType;
-  quota: { status?: string } | undefined;
+  quota: { status?: string; backendQuota?: BackendQuota } | undefined;
   /**
    * Longest window period worth drawing, in hours — normally the visible span.
    * A window longer than the whole view can't show a boundary, and a much
@@ -368,6 +369,28 @@ export function buildTimelineLane(input: TimelineLaneInput): TimelineLane {
     resetCredits: [],
   };
 
+  if (quota?.backendQuota) {
+    const windows = quota.backendQuota.windows.filter(
+      (window) => window.resetAtMs !== null && (provider !== 'xai' || window.periodHours === 168)
+    );
+    const chosen = pickLaneWindow(windows, maxPeriodHours);
+    if (!chosen) return empty;
+    return {
+      ...empty,
+      anchorMs: chosen.resetAtMs,
+      periodHours: chosen.periodHours,
+      remaining: clampPercent(100 - chosen.usedPercent),
+      resetCredits:
+        provider === 'codex'
+          ? buildTimelineLane({ ...input, quota: { ...quota, backendQuota: undefined } })
+              .resetCredits
+          : [],
+      limits: windows.map((window) => ({
+        label: window.label,
+        remaining: clampPercent(100 - window.usedPercent),
+      })),
+    };
+  }
   if (!quota || quota.status !== 'success') return empty;
 
   if (provider === 'claude' || provider === 'codex') {

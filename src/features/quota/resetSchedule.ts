@@ -1,3 +1,4 @@
+import type { BackendQuota } from './backendQuota';
 /**
  * When each row on a quota card gets its capacity back.
  *
@@ -87,7 +88,25 @@ export function collectQuotaRowInstants(
   provider: QuotaProviderType,
   quota: unknown
 ): QuotaRowInstant[] {
-  const state = quota as { status?: string } | undefined;
+  const state = quota as { status?: string; backendQuota?: BackendQuota } | undefined;
+  if (state?.backendQuota) {
+    const credits =
+      provider === 'codex'
+        ? collectQuotaRowInstants(provider, { ...state, backendQuota: undefined }).filter(
+            (row) => row.kind === 'credit'
+          )
+        : [];
+    return [
+      ...credits,
+      ...state.backendQuota.windows
+        .filter((window) => provider !== 'xai' || window.periodHours === 168)
+        .flatMap((window) =>
+          window.resetAtMs === null
+            ? []
+            : [{ rowId: window.id, atMs: window.resetAtMs, kind: 'window' as const }]
+        ),
+    ];
+  }
   if (!state || state.status !== 'success') return [];
 
   if (provider === 'claude' || provider === 'codex') {

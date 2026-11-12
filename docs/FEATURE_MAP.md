@@ -17,3 +17,5 @@ Use personal/main for pushes and Bun for existing application checks. New user-f
 Before adding a feature, inspect adjacent flows and the current source of truth; shared filters, data definitions and access rules must not diverge across entry points.
 
 Quota refresh controls display server-provided next-check deadlines and skip cooling accounts for both individual and batch actions. Management quota reads reuse the backend observation cache and Retry-After/backoff policy.
+
+Background quota display consumes existing `codex_quota` / `provider_quota` snapshots in both quota card hosts, timeline and recovery sorting. Visible connected pages synchronize the local auth-files list every 15 seconds without provider calls. Per-window observation/reset times and guard health distinguish retained values from fresh verification; manual provider details remain separate.

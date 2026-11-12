@@ -8,6 +8,7 @@
  */
 
 import { useState, type CSSProperties } from 'react';
+import { BackendQuotaBody } from './BackendQuotaBody';
 import { useInterval } from '@/hooks/useInterval';
 import { quotaWaitUntil } from '../cooldown';
 import { useTranslation } from 'react-i18next';
@@ -195,6 +196,9 @@ export function QuotaCard(props: QuotaCardProps) {
             {t('quota_management.next_check', { time: new Date(nextCheck).toLocaleString() })}
           </div>
         )}
+        {quota?.backendQuota && (
+          <BackendQuotaBody quota={quota.backendQuota} classes={quotaClasses} />
+        )}
         {status === 'idle' ? (
           <button
             type="button"
@@ -220,7 +224,16 @@ export function QuotaCard(props: QuotaCardProps) {
             {t(`${adapter.i18nPrefix}.load_failed`, { message: errorMessage })}
           </div>
         ) : quota ? (
-          <adapter.Body quota={quota} classes={quotaClasses} />
+          quota.backendQuota ? (
+            quota.hasManualQuota ? (
+              <details>
+                <summary>{t('quota_management.manual_details')}</summary>
+                <adapter.Body quota={quota} classes={quotaClasses} />
+              </details>
+            ) : null
+          ) : (
+            <adapter.Body quota={quota} classes={quotaClasses} />
+          )
         ) : (
           <div className={styles.idleHint}>{t(`${adapter.i18nPrefix}.idle`)}</div>
         )}

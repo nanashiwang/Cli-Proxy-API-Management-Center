@@ -1325,7 +1325,22 @@
       "sampling": "Reuses existing quota refreshes without extra requests or server jobs. Snapshots stay in this browser, isolated by server: up to 96 per window over at most 6 hours. Snapshots older than 30 minutes, gaps over 1 hour and resets invalidate extrapolation. No collection while the page is closed. Near-limit usage, rounding and changing demand affect accuracy.",
       "partial_limit": "Some accounts have exhausted quotas. These rough counts may understate actual demand; also check quota-related failures."
     },
-    "next_check": "Quota check waiting. Next check: {{time}}"
+    "next_check": "Quota check waiting. Next check: {{time}}",
+    "window_5h": "5-hour limit",
+    "window_weekly": "Weekly limit",
+    "window_monthly": "Monthly limit",
+    "window_hours": "{{hours}}-hour limit",
+    "remaining_percent": "{{percent}}% remaining",
+    "snapshot_observed": "Observed: {{time}}",
+    "snapshot_time_unknown": "Observation time unavailable",
+    "snapshot_ready": "Background quota observation",
+    "snapshot_threshold": "Threshold reached; waiting for reset verification",
+    "snapshot_query_failed": "Quota check failed; showing the last known values",
+    "snapshot_stale": "Observation expired; showing the last known values",
+    "snapshot_checking": "Checking quota; showing the last known values",
+    "snapshot_disabled": "Quota protection disabled; showing the last known values",
+    "snapshot_unknown": "Last known quota observation",
+    "manual_details": "Manual query details"
   },
   "plugin_management": {
     "title": "Plugin Management",

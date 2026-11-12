@@ -24,6 +24,8 @@ import { XaiQuotaBody } from './xai/XaiQuotaBody';
 
 /** 所有 provider 额度状态的公共骨架（各 *QuotaState 的结构子集）。 */
 export interface QuotaCardState {
+  backendQuota?: import('../backendQuota').BackendQuota;
+  hasManualQuota?: boolean;
   nextCheckAt?: number;
   status: 'idle' | 'loading' | 'success' | 'error';
   error?: string;

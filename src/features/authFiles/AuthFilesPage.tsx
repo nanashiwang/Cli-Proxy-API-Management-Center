@@ -424,9 +424,10 @@ export function AuthFilesPage() {
 
   useInterval(
     () => {
-      void loadFiles({ background: true }).catch(() => {});
+      if (document.visibilityState === 'visible')
+        void loadFiles({ background: true }).catch(() => {});
     },
-    isCurrentLayer ? 240_000 : null
+    isCurrentLayer && connectionStatus === 'connected' ? 15_000 : null
   );
 
   /* ---------- 过滤 / 排序 / 分页 memos ---------- */

@@ -1,3 +1,8 @@
+import { BackendQuotaBody } from '@/features/quota/components/BackendQuotaBody';
+import { withBackendQuota } from '@/features/quota/backendQuota';
+import { quotaRetryAt, quotaWaitUntil } from '@/features/quota/cooldown';
+import { getQuotaNextCheck } from '@/services/api/apiCall';
+import { useInterval } from '@/hooks/useInterval';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -40,7 +45,7 @@ export function AuthFileQuotaSection(props: AuthFileQuotaSectionProps) {
   const [resettingQuota, setResettingQuota] = useState(false);
   const adapter = QUOTA_ADAPTERS[quotaType];
 
-  const quota = useQuotaStore((state) => {
+  const manualQuota = useQuotaStore((state) => {
     if (quotaType === 'antigravity')
       return state.antigravityQuota[file.name] as QuotaCardState | undefined;
     if (quotaType === 'claude') return state.claudeQuota[file.name] as QuotaCardState | undefined;
@@ -49,6 +54,12 @@ export function AuthFileQuotaSection(props: AuthFileQuotaSectionProps) {
     if (quotaType === 'xai') return state.xaiQuota[file.name] as QuotaCardState | undefined;
     return assertNever(quotaType);
   });
+
+  const quota = withBackendQuota(file, manualQuota, t);
+  const [clock, setClock] = useState(Date.now);
+  const nextCheck = quotaWaitUntil(file, quota);
+  const cooling = nextCheck > clock;
+  useInterval(() => setClock(Date.now()), cooling ? 1000 : null);
 
   const updateQuotaState = useQuotaStore(
     (state) => state[adapter.storeSetter] as unknown as QuotaMapUpdater
@@ -59,6 +70,7 @@ export function AuthFileQuotaSection(props: AuthFileQuotaSectionProps) {
     if (isRuntimeOnlyAuthFile(file)) return;
     if (file.disabled) return;
     if (quota?.status === 'loading') return;
+    if (quotaWaitUntil(file, manualQuota) > Date.now()) return;
 
     const cacheGeneration = captureQuotaCacheGeneration();
 
@@ -72,7 +84,10 @@ export function AuthFileQuotaSection(props: AuthFileQuotaSectionProps) {
       commitIfQuotaCacheCurrent(cacheGeneration, () => {
         updateQuotaState((prev) => ({
           ...prev,
-          [file.name]: adapter.buildSuccessState(data),
+          [file.name]: {
+            ...adapter.buildSuccessState(data),
+            nextCheckAt: getQuotaNextCheck(file.authIndex ?? file.auth_index),
+          },
         }));
         showNotification(t('auth_files.quota_refresh_success', { name: file.name }), 'success');
       });
@@ -82,7 +97,10 @@ export function AuthFileQuotaSection(props: AuthFileQuotaSectionProps) {
       commitIfQuotaCacheCurrent(cacheGeneration, () => {
         updateQuotaState((prev) => ({
           ...prev,
-          [file.name]: adapter.buildErrorState(message, status),
+          [file.name]: {
+            ...adapter.buildErrorState(message, status),
+            nextCheckAt: quotaRetryAt(err) ?? getQuotaNextCheck(file.authIndex ?? file.auth_index),
+          },
         }));
         showNotification(
           t('auth_files.quota_refresh_failed', { name: file.name, message }),
@@ -90,13 +108,23 @@ export function AuthFileQuotaSection(props: AuthFileQuotaSectionProps) {
         );
       });
     }
-  }, [adapter, disableControls, file, quota?.status, showNotification, t, updateQuotaState]);
+  }, [
+    adapter,
+    disableControls,
+    file,
+    manualQuota,
+    quota?.status,
+    showNotification,
+    t,
+    updateQuotaState,
+  ]);
 
   const resetQuotaForFile = useCallback(() => {
     if (disableControls) return;
     if (isRuntimeOnlyAuthFile(file)) return;
     if (file.disabled) return;
     if (quota?.status === 'loading') return;
+    if (quotaWaitUntil(file, manualQuota) > Date.now()) return;
     if (resettingQuota) return;
 
     const resetQuota = adapter.resetQuota;
@@ -115,7 +143,10 @@ export function AuthFileQuotaSection(props: AuthFileQuotaSectionProps) {
           commitIfQuotaCacheCurrent(cacheGeneration, () => {
             updateQuotaState((prev) => ({
               ...prev,
-              [file.name]: adapter.buildSuccessState(data),
+              [file.name]: {
+                ...adapter.buildSuccessState(data),
+                nextCheckAt: getQuotaNextCheck(file.authIndex ?? file.auth_index),
+              },
             }));
             showNotification(t('codex_quota.reset_success', { name: file.name }), 'success');
           });
@@ -134,6 +165,7 @@ export function AuthFileQuotaSection(props: AuthFileQuotaSectionProps) {
     disableControls,
     file,
     quota?.status,
+    manualQuota,
     resettingQuota,
     showConfirmation,
     showNotification,
@@ -142,7 +174,7 @@ export function AuthFileQuotaSection(props: AuthFileQuotaSectionProps) {
   ]);
 
   const quotaStatus = quota?.status ?? 'idle';
-  const canRefreshQuota = !disableControls && !file.disabled && !resettingQuota;
+  const canRefreshQuota = !disableControls && !file.disabled && !resettingQuota && !cooling;
   const canUseResetQuota = canRefreshQuota && quotaStatus !== 'loading';
   const showResetQuotaAction = quota !== undefined && Boolean(adapter.canResetQuota?.(quota));
   const resetQuotaAction =
@@ -170,6 +202,14 @@ export function AuthFileQuotaSection(props: AuthFileQuotaSectionProps) {
 
   return (
     <div className={styles.quotaSection}>
+      {cooling && (
+        <div role="status" className={styles.quotaMessage}>
+          {t('quota_management.next_check', { time: new Date(nextCheck).toLocaleString() })}
+        </div>
+      )}
+      {quota?.backendQuota && (
+        <BackendQuotaBody quota={quota.backendQuota} classes={compactQuotaClasses} />
+      )}
       {quotaStatus === 'loading' ? (
         <div className={styles.quotaMessage}>{t(`${adapter.i18nPrefix}.loading`)}</div>
       ) : quotaStatus === 'idle' ? (
@@ -188,7 +228,16 @@ export function AuthFileQuotaSection(props: AuthFileQuotaSectionProps) {
           })}
         </div>
       ) : quota ? (
-        <adapter.Body quota={quota} classes={compactQuotaClasses} />
+        quota.backendQuota ? (
+          quota.hasManualQuota ? (
+            <details>
+              <summary>{t('quota_management.manual_details')}</summary>
+              <adapter.Body quota={quota} classes={compactQuotaClasses} />
+            </details>
+          ) : null
+        ) : (
+          <adapter.Body quota={quota} classes={compactQuotaClasses} />
+        )
       ) : (
         <div className={styles.quotaMessage}>{t(`${adapter.i18nPrefix}.idle`)}</div>
       )}

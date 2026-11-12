@@ -29,3 +29,5 @@ This is observed usage, not reserved capacity: calls between polls or already in
 ## Related notes
 
 The usage-timezone-and-account-facts note owns display/accounting. The Kimi concurrency-admission note owns request rejection, independent of usage protection. Existing release-delivery and capability-review notes still apply.
+
+[Background quota display](../../implemented/bug-fix/2026-11-12-background-quota-display.md) connects the existing snapshots to both card hosts and local list synchronization; it does not alter routing protection.

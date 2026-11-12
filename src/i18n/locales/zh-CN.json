@@ -1325,7 +1325,22 @@
       "sampling": "只复用已有配额刷新，不增加服务器任务或额外请求。快照仅存于本浏览器、按服务器隔离；每窗口最多 96 条，回看最多 6 小时。快照超过 30 分钟、采样间隔超过 1 小时或跨重置时不继续外推。页面关闭后不采样；临近上限、取整及负载变化都可能影响精度。",
       "partial_limit": "部分账号额度已耗尽，以下估算可能低于真实需求；请结合限额失败情况判断。"
     },
-    "next_check": "额度查询等待中，下次检查：{{time}}"
+    "next_check": "额度查询等待中，下次检查：{{time}}",
+    "window_5h": "5 小时额度",
+    "window_weekly": "周额度",
+    "window_monthly": "月额度",
+    "window_hours": "{{hours}} 小时额度",
+    "remaining_percent": "剩余 {{percent}}%",
+    "snapshot_observed": "观测时间：{{time}}",
+    "snapshot_time_unknown": "观测时间未知",
+    "snapshot_ready": "后台额度快照",
+    "snapshot_threshold": "已达阈值，等待重置后验证",
+    "snapshot_query_failed": "额度查询失败，以下为上次成功获取的额度",
+    "snapshot_stale": "额度数据已过期，以下为上次成功获取的额度",
+    "snapshot_checking": "正在检查额度，以下为上次成功获取的额度",
+    "snapshot_disabled": "额度保护已关闭，以下为上次获取的额度",
+    "snapshot_unknown": "上次获取的额度",
+    "manual_details": "手动查询详情"
   },
   "plugin_management": {
     "title": "插件管理",
