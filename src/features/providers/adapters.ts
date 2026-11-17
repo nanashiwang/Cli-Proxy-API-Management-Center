@@ -204,7 +204,9 @@ export function openaiToResource(config: OpenAIProviderConfig, index: number): P
   const firstEntry = config.apiKeyEntries?.[0];
   const previewApiKey = firstEntry?.apiKey ? maskApiKey(firstEntry.apiKey) : null;
   return {
-    id: buildId('openaiCompatibility', sourceIndex, truncateForId(name) || `#${sourceIndex}`),
+    id:
+      config.id ||
+      buildId('openaiCompatibility', sourceIndex, truncateForId(name) || `#${sourceIndex}`),
     brand: 'openaiCompatibility',
     originalIndex: sourceIndex,
     name: name || null,
@@ -223,7 +225,7 @@ export function openaiToResource(config: OpenAIProviderConfig, index: number): P
     apiKeyEntryCount: config.apiKeyEntries?.length ?? 0,
     disabled: config.disabled === true,
     flags: {},
-    selector: { brand: 'openaiCompatibility', name, index: sourceIndex },
+    selector: { brand: 'openaiCompatibility', id: config.id, name, index: sourceIndex },
     raw: config,
   };
 }

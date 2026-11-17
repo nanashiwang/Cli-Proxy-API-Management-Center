@@ -1758,6 +1758,8 @@
       "cloakSensitiveWords": "Стоп-слова (по одному в строке)",
       "apiKeyEntriesSection": "API-ключи",
       "apiKeyEntry": "Ключ #{{index}}",
+      "keyNote": "Примечание к ключу",
+      "keyNotePlaceholder": "Например: рабочий аккаунт, тестовый аккаунт",
       "addApiKeyEntry": "Добавить ключ",
       "showApiKey": "Показать ключ API",
       "hideApiKey": "Скрыть ключ API",

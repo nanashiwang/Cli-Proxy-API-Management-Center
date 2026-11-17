@@ -114,6 +114,8 @@ const normalizeApiKeyEntry = (entry: unknown): ApiKeyEntry | null => {
   const authIndex = normalizeAuthIndex(record?.['auth-index']);
 
   const result: ApiKeyEntry = {
+    id: normalizeAuthIndex(record?.id),
+    note: typeof record?.note === 'string' ? record.note : undefined,
     apiKey: trimmed,
     proxyUrl: proxyUrl ? String(proxyUrl) : undefined,
   };
@@ -249,6 +251,7 @@ const normalizeOpenAIProvider = (
   const testModel = provider['test-model'];
 
   const result: OpenAIProviderConfig = {
+    id: normalizeAuthIndex(provider.id),
     name: String(name),
     baseUrl: String(baseUrl),
     apiKeyEntries,

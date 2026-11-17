@@ -241,8 +241,12 @@ export function ResourceDetailView({ resource, usageByProvider }: ResourceDetail
                   )
                 : { success: 0, failure: 0 };
               return (
-                <div key={`${entry.apiKey}-${entryIndex}`} className={styles.apiKeyEntryCard}>
+                <div
+                  key={entry.id ?? `${entry.apiKey}-${entryIndex}`}
+                  className={styles.apiKeyEntryCard}
+                >
                   <span className={styles.apiKeyEntryIndex}>{entryIndex + 1}</span>
+                  {entry.note ? <span>{entry.note}</span> : null}
                   <span className={styles.apiKeyEntryKey}>{maskApiKey(entry.apiKey)}</span>
                   {entry.proxyUrl ? (
                     <span className={styles.apiKeyEntryProxy}>{entry.proxyUrl}</span>

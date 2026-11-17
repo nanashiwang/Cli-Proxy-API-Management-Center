@@ -45,7 +45,7 @@ export type ProviderResourceSelector =
   | { brand: 'claude'; apiKey: string; baseUrl?: string; index: number }
   | { brand: 'claudeApi'; apiKey: string; baseUrl?: string; index: number }
   | { brand: 'vertex'; apiKey: string; baseUrl?: string; index: number }
-  | { brand: 'openaiCompatibility'; name: string; index: number }
+  | { brand: 'openaiCompatibility'; id?: string; name: string; index: number }
   | { brand: 'openCode' }
   | {
       brand: 'apikeyFun';
@@ -191,6 +191,8 @@ export interface SponsorKeyEntryInput {
 }
 
 export interface ApiKeyEntryInput {
+  id?: string;
+  note?: string;
   apiKey: string;
   existingApiKey?: string;
   proxyUrl: string;

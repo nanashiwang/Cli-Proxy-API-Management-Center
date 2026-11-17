@@ -55,6 +55,7 @@ const VERTEX_KEY_FIELDS = [
 ] as const;
 
 const OPENAI_PROVIDER_FIELDS = [
+  'id',
   'name',
   'priority',
   'disabled',
@@ -70,7 +71,7 @@ const OPENAI_PROVIDER_FIELDS = [
 const MODEL_ALIAS_FIELDS = ['name', 'alias', 'priority', 'test-model', 'thinking'] as const;
 const OPENAI_MODEL_ALIAS_FIELDS = [...MODEL_ALIAS_FIELDS, 'image'] as const;
 
-const API_KEY_ENTRY_FIELDS = ['api-key', 'proxy-url', 'weight'] as const;
+const API_KEY_ENTRY_FIELDS = ['id', 'note', 'api-key', 'proxy-url', 'weight'] as const;
 
 const CLOAK_FIELDS = ['mode', 'strict-mode', 'sensitive-words', 'cache-user-id'] as const;
 
@@ -90,7 +91,7 @@ const openAIProviderIdentity = (record: Record<string, unknown>) =>
 const modelIdentity = (record: Record<string, unknown>) => getStringField(record, ['name']);
 
 const apiKeyEntryIdentity = (record: Record<string, unknown>) =>
-  getStringField(record, ['api-key']);
+  getStringField(record, ['id']) || getStringField(record, ['api-key']);
 
 const cloneWithoutKnownFields = (
   raw: unknown,
@@ -261,6 +262,7 @@ const mergeProviderKeyPayload = (
 
 const mergeOpenAIProviderPayload = (raw: unknown, payload: Record<string, unknown>) => {
   const next = mergeKnownFields(raw, payload, OPENAI_PROVIDER_FIELDS);
+  if (!payload.id && isRecord(raw) && raw.id) next.id = raw.id;
   const rawApiKeyEntries = isRecord(raw) ? raw['api-key-entries'] : undefined;
   const apiKeyEntries = payload['api-key-entries'];
   if (Array.isArray(apiKeyEntries)) {
@@ -268,7 +270,8 @@ const mergeOpenAIProviderPayload = (raw: unknown, payload: Record<string, unknow
       rawApiKeyEntries,
       apiKeyEntries.filter(isRecord),
       API_KEY_ENTRY_FIELDS,
-      apiKeyEntryIdentity
+      apiKeyEntryIdentity,
+      false
     );
   }
   const models = mergeModelPayloads(raw, payload.models, OPENAI_MODEL_ALIAS_FIELDS);
@@ -317,6 +320,8 @@ const serializeModelAliases = (models?: ModelAlias[], includeOpenAIFields = fals
 
 const serializeApiKeyEntry = (entry: ApiKeyEntry) => {
   const payload: Record<string, unknown> = { 'api-key': entry.apiKey };
+  if (entry.id) payload.id = entry.id;
+  if (entry.note?.trim()) payload.note = entry.note.trim();
   if (entry.proxyUrl) payload['proxy-url'] = entry.proxyUrl;
   if (entry.weight !== undefined) payload.weight = entry.weight;
   return payload;
@@ -413,6 +418,7 @@ const serializeGeminiKey = (config: GeminiKeyConfig) => {
 
 const serializeOpenAIProvider = (provider: OpenAIProviderConfig) => {
   const payload: Record<string, unknown> = {
+    id: provider.id,
     name: provider.name,
     'base-url': provider.baseUrl,
     'api-key-entries': Array.isArray(provider.apiKeyEntries)
@@ -581,15 +587,20 @@ export const providersApi = {
     mutateLatestProviderList('openai-compatibility', (latestItems) =>
       replaceLatestProviderRecord(
         latestItems,
-        (record, currentIndex) => currentIndex === index && matchesOpenAIProvider(record, name),
+        (record, currentIndex) =>
+          provider.id
+            ? record.id === provider.id
+            : currentIndex === index && matchesOpenAIProvider(record, name),
         serializeOpenAIProvider(provider),
         mergeOpenAIProviderPayload
       )
     ),
 
-  updateOpenAIProviderDisabled: (index: number, disabled: boolean) =>
-    apiClient.patch('/openai-compatibility', { index, value: { disabled } }),
+  updateOpenAIProviderDisabled: (index: number, disabled: boolean, id?: string) =>
+    apiClient.patch('/openai-compatibility', { ...(id ? { id } : { index }), value: { disabled } }),
 
-  deleteOpenAIProvider: (index: number) =>
-    apiClient.delete(`/openai-compatibility?index=${encodeURIComponent(String(index))}`),
+  deleteOpenAIProvider: (index: number, id?: string) =>
+    apiClient.delete(
+      `/openai-compatibility?${id ? `id=${encodeURIComponent(id)}` : `index=${encodeURIComponent(String(index))}`}`
+    ),
 };

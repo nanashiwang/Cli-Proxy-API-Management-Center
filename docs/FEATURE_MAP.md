@@ -25,3 +25,5 @@ Usage insights accept optional backend service-health counters and nullable rate
 OpenAI-compatible providers persist optional `test-model` through management GET/PUT/PATCH and YAML reload. Empty selects the first configured model; this preference does not change gateway routing. The management test selector supports case-insensitive model search. Other provider families retain their existing test-preference semantics.
 
 OpenAI-compatible connectivity tests use `max_completion_tokens`, with one legacy `max_tokens` retry only for an explicit HTTP 400 unsupported-parameter response. The selected model and credential remain unchanged.
+
+OpenAI-compatible providers and individual keys have persisted IDs. Rename, notes and reordering preserve account-pool membership; management mutations target provider ID with legacy fallback. Per-key notes appear in the editor, detail view and account groups. Legacy IDs are retained; only a unique matching historical pool binding is recovered. First load persists migrated IDs in the configuration. Ambiguous missing references remain inert.

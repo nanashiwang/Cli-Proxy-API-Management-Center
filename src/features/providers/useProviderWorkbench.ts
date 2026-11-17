@@ -248,10 +248,11 @@ const buildOpenAIConfig = (
   const models = buildModelAliases(input.models, true);
   const apiKeyEntries =
     input.apiKeyEntries
-      ?.map((entry, index) => {
-        const fallbackApiKey =
-          entry.existingApiKey?.trim() || existing?.apiKeyEntries?.[index]?.apiKey?.trim() || '';
+      ?.map((entry) => {
+        const fallbackApiKey = entry.existingApiKey?.trim() || '';
         return {
+          id: entry.id,
+          note: entry.note?.trim() || undefined,
           apiKey: entry.apiKey.trim() || fallbackApiKey,
           proxyUrl: entry.proxyUrl.trim() || undefined,
           weight: entry.weight,
@@ -398,7 +399,7 @@ const toggleSponsorConfig = async (raw: SponsorProviderRaw, disabled: boolean) =
     });
   }
   for (const item of raw.openai) {
-    await providersApi.updateOpenAIProviderDisabled(item.index, disabled);
+    await providersApi.updateOpenAIProviderDisabled(item.index, disabled, item.config.id);
   }
 };
 
@@ -725,7 +726,7 @@ export function useProviderWorkbench(): UseProviderWorkbenchResult {
           await providersApi.createOpenAIProvider(next);
         }
       } else if (currentOpenAI) {
-        await providersApi.deleteOpenAIProvider(currentOpenAI.index);
+        await providersApi.deleteOpenAIProvider(currentOpenAI.index, currentOpenAI.config.id);
       }
     },
     [config]
@@ -901,7 +902,7 @@ export function useProviderWorkbench(): UseProviderWorkbenchResult {
           const next = (config?.vertexApiKeys ?? []).filter((_, i) => i !== sel.index);
           updateConfigValue('vertex-api-key', next);
         } else if (sel.brand === 'openaiCompatibility') {
-          await providersApi.deleteOpenAIProvider(sel.index);
+          await providersApi.deleteOpenAIProvider(sel.index, sel.id);
           const next = (config?.openaiCompatibility ?? []).filter(
             (item, index) => (item.sourceIndex ?? index) !== sel.index
           );
@@ -928,11 +929,9 @@ export function useProviderWorkbench(): UseProviderWorkbenchResult {
             for (const item of raw.claude) {
               await providersApi.deleteClaudeConfig(item.config.apiKey, item.config.baseUrl);
             }
-            const openAIIndices = raw.openai
-              .map((item) => item.index)
-              .sort((left, right) => right - left);
-            for (const index of openAIIndices) {
-              await providersApi.deleteOpenAIProvider(index);
+            const openAIEntries = [...raw.openai].sort((left, right) => right.index - left.index);
+            for (const item of openAIEntries) {
+              await providersApi.deleteOpenAIProvider(item.index, item.config.id);
             }
           }, refetch);
         }
@@ -990,7 +989,7 @@ export function useProviderWorkbench(): UseProviderWorkbenchResult {
             await providersApi.updateVertexConfig(selector.apiKey, selector.baseUrl, next);
           }
         } else if (brand === 'openaiCompatibility' && selector.brand === 'openaiCompatibility') {
-          await providersApi.updateOpenAIProviderDisabled(selector.index, disabled);
+          await providersApi.updateOpenAIProviderDisabled(selector.index, disabled, selector.id);
         } else if (brand === 'openCode' && selector.brand === 'openCode') {
           await opencodeApi.saveConfig({
             ...(resource.raw as OpenCodeConfig),

@@ -1768,6 +1768,8 @@
       "cloakSensitiveWords": "Sensitive words (one per line)",
       "apiKeyEntriesSection": "API key entries",
       "apiKeyEntry": "Key #{{index}}",
+      "keyNote": "Key note",
+      "keyNotePlaceholder": "For example: production account, test account",
       "addApiKeyEntry": "Add key entry",
       "showApiKey": "Show API key",
       "hideApiKey": "Hide API key",

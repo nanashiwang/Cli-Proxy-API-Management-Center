@@ -122,7 +122,7 @@ export function ApiKeyEntriesEditor({
         const expanded = expandedIdx === idx;
         const summaryKey = entry.apiKey.trim() || entry.existingApiKey?.trim() || '';
         return (
-          <div key={idx} className={styles.entryCard}>
+          <div key={entry.id ?? idx} className={styles.entryCard}>
             <div className={styles.entryCardHeader}>
               <button
                 type="button"
@@ -130,7 +130,9 @@ export function ApiKeyEntriesEditor({
                 aria-expanded={expanded}
                 onClick={() => setExpandedIdx(expanded ? null : idx)}
               >
-                <span>{t('providersPage.form.apiKeyEntry', { index: idx + 1 })}</span>
+                <span>
+                  {entry.note?.trim() || t('providersPage.form.apiKeyEntry', { index: idx + 1 })}
+                </span>
                 <span className={styles.entrySummary}>
                   {entry.proxyUrl.trim() ? (
                     <span className={styles.entryBadge} title={entry.proxyUrl}>
@@ -189,6 +191,19 @@ export function ApiKeyEntriesEditor({
             ) : null}
             {expanded ? (
               <div className={styles.entryCardBody}>
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor={`key-note-${idx}`}>
+                    {t('providersPage.form.keyNote')}
+                  </label>
+                  <input
+                    id={`key-note-${idx}`}
+                    className={styles.input}
+                    value={entry.note ?? ''}
+                    onChange={(e) => onUpdate(idx, { note: e.target.value })}
+                    disabled={mutating}
+                    placeholder={t('providersPage.form.keyNotePlaceholder')}
+                  />
+                </div>
                 <div className={styles.field}>
                   <label className={styles.label}>{t('providersPage.form.apiKey')}</label>
                   <div className={styles.passwordField}>

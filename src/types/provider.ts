@@ -13,6 +13,8 @@ export interface ModelAlias {
 }
 
 export interface ApiKeyEntry {
+  id?: string;
+  note?: string;
   apiKey: string;
   proxyUrl?: string;
   weight?: number;
@@ -58,6 +60,7 @@ export interface ProviderKeyConfig {
 }
 
 export interface OpenAIProviderConfig {
+  id?: string;
   name: string;
   prefix?: string;
   baseUrl: string;
