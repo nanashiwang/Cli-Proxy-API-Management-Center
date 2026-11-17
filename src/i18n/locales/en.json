@@ -1838,6 +1838,7 @@
     "discovery": {
       "openButton": "Fetch from endpoint",
       "searchPlaceholder": "Search models",
+      "noMatches": "No matching models",
       "reload": "Reload",
       "loading": "Loading models…",
       "empty": "No models returned by the endpoint",

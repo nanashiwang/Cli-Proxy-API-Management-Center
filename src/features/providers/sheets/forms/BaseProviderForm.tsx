@@ -689,6 +689,8 @@ export function BaseProviderForm({
               id={`${fid}-testModel`}
               value={form.testModel ?? ''}
               options={testModelOptions}
+              searchPlaceholder={t('providersPage.discovery.searchPlaceholder')}
+              emptySearchText={t('providersPage.discovery.noMatches')}
               onChange={(value) => updateField('testModel', value)}
               disabled={mutating}
               ariaLabel={t('providersPage.form.testModel')}

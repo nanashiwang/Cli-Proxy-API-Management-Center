@@ -1864,6 +1864,7 @@
     "discovery": {
       "openButton": "從端點拉取",
       "searchPlaceholder": "搜尋模型",
+      "noMatches": "沒有符合的模型",
       "reload": "重新載入",
       "loading": "正在載入模型…",
       "empty": "端點未回傳任何模型",

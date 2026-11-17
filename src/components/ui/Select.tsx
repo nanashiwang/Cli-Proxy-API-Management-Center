@@ -22,6 +22,8 @@ interface SelectProps {
   options: ReadonlyArray<SelectOption>;
   onChange: (value: string) => void;
   placeholder?: string;
+  searchPlaceholder?: string;
+  emptySearchText?: string;
   className?: string;
   disabled?: boolean;
   ariaLabel?: string;
@@ -78,9 +80,11 @@ const resolveDropdownStyle = (element: HTMLElement): CSSProperties => {
 
 export function Select({
   value,
-  options,
+  options: allOptions,
   onChange,
   placeholder,
+  searchPlaceholder,
+  emptySearchText,
   className,
   disabled = false,
   ariaLabel,
@@ -94,7 +98,26 @@ export function Select({
   const selectId = id ?? generatedId;
   const listboxId = `${selectId}-listbox`;
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const searchRef = useRef<HTMLInputElement | null>(null);
+  const focusSearch = useCallback((node: HTMLInputElement | null) => {
+    searchRef.current = node;
+    node?.focus();
+  }, []);
+  const options = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    return !searchPlaceholder || !term
+      ? allOptions
+      : allOptions.filter((option) =>
+          `${option.label} ${option.value}`.toLowerCase().includes(term)
+        );
+  }, [allOptions, query, searchPlaceholder]);
+  const openDropdown = () => {
+    setQuery('');
+    setHighlightedIndex(-1);
+    setOpen(true);
+  };
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -180,7 +203,7 @@ export function Select({
         : options.length > 0
           ? 0
           : -1;
-  const selected = selectedIndex >= 0 ? options[selectedIndex] : undefined;
+  const selected = allOptions.find((option) => option.value === value);
   const displayText = selected?.label ?? placeholder ?? '';
   const isPlaceholder = !selected && placeholder;
 
@@ -191,6 +214,7 @@ export function Select({
       onChange(nextOption.value);
       setOpen(false);
       setHighlightedIndex(nextIndex);
+      wrapRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
     },
     [onChange, options]
   );
@@ -201,66 +225,67 @@ export function Select({
       const nextIndex = (resolvedHighlightedIndex + direction + options.length) % options.length;
       setHighlightedIndex(nextIndex);
     },
-    [options.length, resolvedHighlightedIndex]
+    [options, resolvedHighlightedIndex]
   );
 
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLButtonElement>) => {
-      if (disabled) return;
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (disabled) return;
 
-      switch (event.key) {
-        case 'ArrowDown':
-          event.preventDefault();
-          if (!isOpen) {
-            setOpen(true);
-            return;
-          }
-          moveHighlight(1);
-          return;
-        case 'ArrowUp':
-          event.preventDefault();
-          if (!isOpen) {
-            setOpen(true);
-            return;
-          }
-          moveHighlight(-1);
-          return;
-        case 'Home':
-          if (!isOpen || options.length === 0) return;
-          event.preventDefault();
-          setHighlightedIndex(0);
-          return;
-        case 'End':
-          if (!isOpen || options.length === 0) return;
-          event.preventDefault();
-          setHighlightedIndex(options.length - 1);
-          return;
-        case 'Enter':
-        case ' ': {
-          event.preventDefault();
-          if (!isOpen) {
-            setOpen(true);
-            return;
-          }
-          if (resolvedHighlightedIndex >= 0) {
-            commitSelection(resolvedHighlightedIndex);
-          }
+    const editingSearch = event.target === searchRef.current;
+    if (editingSearch && [' ', 'Home', 'End'].includes(event.key)) return;
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        if (!isOpen) {
+          openDropdown();
           return;
         }
-        case 'Escape':
-          if (!isOpen) return;
-          event.preventDefault();
-          setOpen(false);
+        moveHighlight(1);
+        return;
+      case 'ArrowUp':
+        event.preventDefault();
+        if (!isOpen) {
+          openDropdown();
           return;
-        case 'Tab':
-          if (isOpen) setOpen(false);
+        }
+        moveHighlight(-1);
+        return;
+      case 'Home':
+        if (!isOpen || options.length === 0) return;
+        event.preventDefault();
+        setHighlightedIndex(0);
+        return;
+      case 'End':
+        if (!isOpen || options.length === 0) return;
+        event.preventDefault();
+        setHighlightedIndex(options.length - 1);
+        return;
+      case 'Enter':
+      case ' ': {
+        event.preventDefault();
+        if (!isOpen) {
+          openDropdown();
           return;
-        default:
-          return;
+        }
+        if (resolvedHighlightedIndex >= 0) {
+          commitSelection(resolvedHighlightedIndex);
+        }
+        return;
       }
-    },
-    [commitSelection, disabled, isOpen, moveHighlight, options.length, resolvedHighlightedIndex]
-  );
+      case 'Escape':
+        if (!isOpen) return;
+        event.preventDefault();
+        event.stopPropagation();
+        setOpen(false);
+        wrapRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
+        return;
+      case 'Tab':
+        if (isOpen) setOpen(false);
+        return;
+      default:
+        return;
+    }
+  };
 
   useEffect(() => {
     if (!isOpen || resolvedHighlightedIndex < 0) return;
@@ -272,33 +297,56 @@ export function Select({
 
   const dropdown =
     isOpen && dropdownStyle ? (
-      <div
-        ref={dropdownRef}
-        className={styles.dropdown}
-        id={listboxId}
-        role="listbox"
-        aria-label={ariaLabel}
-        style={dropdownStyle}
-      >
-        {options.map((opt, index) => {
-          const active = opt.value === value;
-          const highlighted = index === resolvedHighlightedIndex;
-          return (
-            <button
-              key={opt.value}
-              id={`${selectId}-option-${index}`}
-              type="button"
-              role="option"
-              aria-selected={active}
-              className={`${styles.option} ${active ? styles.optionActive : ''} ${highlighted ? styles.optionHighlighted : ''}`.trim()}
-              onMouseEnter={() => setHighlightedIndex(index)}
-              onKeyDown={handleKeyDown}
-              onClick={() => commitSelection(index)}
-            >
-              {opt.label}
-            </button>
-          );
-        })}
+      <div ref={dropdownRef} className={styles.dropdown} style={dropdownStyle}>
+        {searchPlaceholder !== undefined && (
+          <input
+            ref={focusSearch}
+            className={styles.search}
+            placeholder={searchPlaceholder}
+            aria-label={searchPlaceholder}
+            role="combobox"
+            aria-expanded={isOpen}
+            aria-controls={listboxId}
+            aria-autocomplete="list"
+            aria-activedescendant={
+              resolvedHighlightedIndex >= 0 && options.length > 0
+                ? `${selectId}-option-${resolvedHighlightedIndex}`
+                : undefined
+            }
+            value={query}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setHighlightedIndex(0);
+            }}
+            onKeyDown={handleKeyDown}
+          />
+        )}
+        <div id={listboxId} role="listbox" aria-label={ariaLabel} className={styles.options}>
+          {options.map((opt, index) => {
+            const active = opt.value === value;
+            const highlighted = index === resolvedHighlightedIndex;
+            return (
+              <button
+                key={opt.value}
+                id={`${selectId}-option-${index}`}
+                type="button"
+                role="option"
+                aria-selected={active}
+                className={`${styles.option} ${active ? styles.optionActive : ''} ${highlighted ? styles.optionHighlighted : ''}`.trim()}
+                onMouseEnter={() => setHighlightedIndex(index)}
+                onKeyDown={handleKeyDown}
+                onClick={() => commitSelection(index)}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+        {options.length === 0 && emptySearchText && (
+          <div role="status" className={styles.emptySearch}>
+            {emptySearchText}
+          </div>
+        )}
       </div>
     ) : null;
 
@@ -312,7 +360,7 @@ export function Select({
           id={selectId}
           type="button"
           className={`${styles.trigger} ${size === 'sm' ? styles.triggerSm : ''}`.trim()}
-          onClick={disabled ? undefined : () => setOpen((prev) => !prev)}
+          onClick={disabled ? undefined : () => (isOpen ? setOpen(false) : openDropdown())}
           onKeyDown={handleKeyDown}
           aria-haspopup="listbox"
           aria-expanded={isOpen}

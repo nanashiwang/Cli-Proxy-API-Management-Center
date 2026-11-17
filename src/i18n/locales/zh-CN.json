@@ -1838,6 +1838,7 @@
     "discovery": {
       "openButton": "从端点拉取",
       "searchPlaceholder": "搜索模型",
+      "noMatches": "没有匹配的模型",
       "reload": "重新加载",
       "loading": "正在加载模型…",
       "empty": "端点未返回任何模型",
