@@ -2208,13 +2208,22 @@
       "dns": "DNS",
       "tls": "Сертификат TLS",
       "connection_refused": "Отказ соединения",
+      "stream_incomplete": "Незавершённый поток",
       "connection_closed": "Соединение закрыто",
       "authentication": "Аутентификация",
       "rate_limited": "Ограничение запросов",
       "upstream_server": "Ошибка upstream",
       "invalid_request": "Неверный запрос",
       "unknown": "Неизвестно"
-    }
+    },
+    "service_success_rate": "Успешность сервиса",
+    "service_failures": "Ошибки сервиса",
+    "service_incomplete": "Не завершено",
+    "service_cancelled": "Отменено",
+    "service_caller_errors": "Ошибки клиента",
+    "service_unknown": "Неизвестно",
+    "service_error_rate": "Доля ошибок сервиса",
+    "service_health_description": "Расчёт по сохранённым записям использования. Отмены, ошибки клиента и неизвестные результаты исключены; незавершённые ответы считаются ошибками сервиса. Без выборки: —. Общая статистика и стоимость не меняются."
   },
   "account_pools": {
     "temporary_status": "Пользователь {{owner}} · Временно, до завершения запроса · Активных {{active}}",

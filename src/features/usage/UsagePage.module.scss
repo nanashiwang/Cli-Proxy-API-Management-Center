@@ -271,6 +271,9 @@
   border-radius: 10px;
   background: var(--bg-secondary);
 }
+.miniMetrics + .miniMetrics {
+  margin-top: 8px;
+}
 .miniMetrics > div {
   display: flex;
   flex-direction: column;

@@ -2244,13 +2244,22 @@
       "dns": "DNS 解析",
       "tls": "TLS 憑證",
       "connection_refused": "連線遭拒",
+      "stream_incomplete": "串流回應未完成",
       "connection_closed": "連線已關閉",
       "authentication": "驗證失敗",
       "rate_limited": "請求受限",
       "upstream_server": "上游服務錯誤",
       "invalid_request": "請求無效",
       "unknown": "未知"
-    }
+    },
+    "service_success_rate": "服務成功率",
+    "service_failures": "服務失敗",
+    "service_incomplete": "未完成",
+    "service_cancelled": "已取消",
+    "service_caller_errors": "呼叫方錯誤",
+    "service_unknown": "未知",
+    "service_error_rate": "服務錯誤率",
+    "service_health_description": "依保留的用量記錄計算。服務成功率排除取消、呼叫方錯誤及未知記錄；未完成計為服務錯誤，無有效樣本顯示 —。總請求統計與費用維持原口徑。"
   },
   "account_pools": {
     "temporary_status": "使用者 {{owner}} · 暫時占用，請求結束後釋放 · 處理中 {{active}}",

@@ -2218,13 +2218,22 @@
       "dns": "DNS 解析",
       "tls": "TLS 证书",
       "connection_refused": "连接被拒绝",
+      "stream_incomplete": "流式响应未完成",
       "connection_closed": "连接已关闭",
       "authentication": "认证失败",
       "rate_limited": "请求受限",
       "upstream_server": "上游服务错误",
       "invalid_request": "请求无效",
       "unknown": "未知"
-    }
+    },
+    "service_success_rate": "服务成功率",
+    "service_failures": "服务失败",
+    "service_incomplete": "未完成",
+    "service_cancelled": "已取消",
+    "service_caller_errors": "调用方错误",
+    "service_unknown": "未知",
+    "service_error_rate": "服务错误率",
+    "service_health_description": "按保留的用量记录计算。服务成功率排除取消、调用方错误和未知记录；未完成计为服务错误，无有效样本显示 —。总请求统计与费用保持原口径。"
   },
   "account_pools": {
     "temporary_status": "用户 {{owner}} · 临时占用，请求结束后释放 · 在途 {{active}}",

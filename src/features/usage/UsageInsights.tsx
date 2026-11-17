@@ -155,24 +155,70 @@ export function UsageInsights({
             tone="var(--usage-orange)"
           />
         </div>
-        <UsageChart
-          hasActivity={data.summary.total_requests > 0}
-          labels={labels}
-          stacked
-          format={numeric}
-          series={[
-            {
-              label: t('usage_stats.succeeded'),
-              color: 'var(--usage-green)',
-              values: data.trend.map((p) => p.success_count),
-            },
-            {
-              label: t('usage_stats.failed'),
-              color: 'var(--usage-red)',
-              values: data.trend.map((p) => p.failure_count),
-            },
-          ]}
-        />
+        {data.health.service && (
+          <>
+            <div className={styles.miniMetrics}>
+              <MiniMetric
+                label={t('usage_stats.service_success_rate')}
+                value={formatRate(data.health.service.success_rate)}
+              />
+              <MiniMetric
+                label={t('usage_stats.service_failures')}
+                value={numeric(data.health.service.failed)}
+              />
+              <MiniMetric
+                label={t('usage_stats.service_incomplete')}
+                value={numeric(data.health.service.incomplete)}
+              />
+              <MiniMetric
+                label={t('usage_stats.service_cancelled')}
+                value={numeric(data.health.service.cancelled)}
+              />
+              <MiniMetric
+                label={t('usage_stats.service_caller_errors')}
+                value={numeric(data.health.service.caller_errors)}
+              />
+              <MiniMetric
+                label={t('usage_stats.service_unknown')}
+                value={numeric(data.health.service.unknown)}
+              />
+            </div>
+            <p className={styles.panelFootnote}>{t('usage_stats.service_health_description')}</p>
+          </>
+        )}
+        {data.health.service ? (
+          <UsageChart
+            hasActivity={data.health.service.samples > 0}
+            labels={labels}
+            format={formatRate}
+            series={[
+              {
+                label: t('usage_stats.service_success_rate'),
+                color: 'var(--usage-green)',
+                values: data.trend.map((p) => p.service?.success_rate ?? null),
+              },
+            ]}
+          />
+        ) : (
+          <UsageChart
+            hasActivity={data.summary.total_requests > 0}
+            labels={labels}
+            stacked
+            format={numeric}
+            series={[
+              {
+                label: t('usage_stats.succeeded'),
+                color: 'var(--usage-green)',
+                values: data.trend.map((p) => p.success_count),
+              },
+              {
+                label: t('usage_stats.failed'),
+                color: 'var(--usage-red)',
+                values: data.trend.map((p) => p.failure_count),
+              },
+            ]}
+          />
+        )}
         <div className={styles.panelFootnote}>
           {t('usage_stats.http_errors', {
             client: data.health.client_error_count,
@@ -201,7 +247,9 @@ export function UsageInsights({
           <div className={styles.dimensionHead}>
             <span>{t(`usage_stats.dimension_${dimension}`)}</span>
             <span>{t('usage_stats.total_requests')}</span>
-            <span>{t('usage_stats.error_rate')}</span>
+            <span>
+              {t(data.health.service ? 'usage_stats.service_error_rate' : 'usage_stats.error_rate')}
+            </span>
             <span>{t('usage_stats.cost')}</span>
           </div>
           {rows.length ? (
@@ -371,9 +419,19 @@ function DimensionRow({
         <b>{row.total_requests.toLocaleString()}</b>
         <small>{formatRate(total ? row.total_requests / total : 0)}</small>
       </div>
-      <div style={row.failure_count ? { color: 'var(--usage-red)' } : undefined}>
-        <b>{formatRate(row.error_rate)}</b>
-        <small>{t('usage_stats.failures_count', { count: row.failure_count })}</small>
+      <div
+        style={
+          (row.service ? row.service.failed + row.service.incomplete : row.failure_count)
+            ? { color: 'var(--usage-red)' }
+            : undefined
+        }
+      >
+        <b>{formatRate(row.service ? row.service.error_rate : row.error_rate)}</b>
+        <small>
+          {t('usage_stats.failures_count', {
+            count: row.service ? row.service.failed + row.service.incomplete : row.failure_count,
+          })}
+        </small>
       </div>
       <div>
         <b>{row.priced_requests ? formatUSD(row.total_cost_usd) : '—'}</b>

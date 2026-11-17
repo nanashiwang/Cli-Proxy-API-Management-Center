@@ -48,3 +48,8 @@ CPA implements these behaviors in its existing Go/React contracts. Timezone is
 per usage query; credit balance does not replace manual quota resets. Pricing
 was independently checked against official OpenAI documentation on 2026-10-05.
 The paired backend docs/CODEX_PROXY_OCT05_CN.md records the precise scope.
+
+Additional service-health reference: 3e33e84a45e740aaf15650c2ab26af5c3d3db88b
+Source areas: frontend/src/views/usage/, frontend/src/api/modules/usage.ts.
+CPA adapts nullable service-health counters to React and the CPA Go contract,
+while preserving overall request statistics and historical billing.

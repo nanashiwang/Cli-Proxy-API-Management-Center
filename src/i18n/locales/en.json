@@ -2218,13 +2218,22 @@
       "dns": "DNS resolution",
       "tls": "TLS certificate",
       "connection_refused": "Connection refused",
+      "stream_incomplete": "Incomplete stream",
       "connection_closed": "Connection closed",
       "authentication": "Authentication",
       "rate_limited": "Rate limited",
       "upstream_server": "Upstream server",
       "invalid_request": "Invalid request",
       "unknown": "Unknown"
-    }
+    },
+    "service_success_rate": "Service success rate",
+    "service_failures": "Service failures",
+    "service_incomplete": "Incomplete",
+    "service_cancelled": "Cancelled",
+    "service_caller_errors": "Caller errors",
+    "service_unknown": "Unknown",
+    "service_error_rate": "Service error rate",
+    "service_health_description": "Calculated from retained usage records. Service health excludes cancellations, caller errors and unknown records; incomplete delivery counts as a service error. No samples display —. Overall request totals and billing remain unchanged."
   },
   "account_pools": {
     "temporary_status": "User {{owner}} · Temporary, released after request completion · In flight {{active}}",

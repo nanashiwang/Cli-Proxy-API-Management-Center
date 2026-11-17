@@ -26,6 +26,7 @@ export const diagnosticReason = (value: unknown) =>
   enumeration(value, ['initial', 'same_account_retry', 'account_switch', 'model_fallback']);
 export const diagnosticFailureCategory = (value: unknown) =>
   enumeration(value, [
+    'stream_incomplete',
     'cancelled',
     'timeout',
     'dns',

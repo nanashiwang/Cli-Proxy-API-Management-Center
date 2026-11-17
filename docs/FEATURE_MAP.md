@@ -19,3 +19,5 @@ Before adding a feature, inspect adjacent flows and the current source of truth;
 Quota refresh controls display server-provided next-check deadlines and skip cooling accounts for both individual and batch actions. Management quota reads reuse the backend observation cache and Retry-After/backoff policy.
 
 Background quota display consumes existing `codex_quota` / `provider_quota` snapshots in both quota card hosts, timeline and recovery sorting. Visible connected pages synchronize the local auth-files list every 15 seconds without provider calls. Per-window observation/reset times and guard health distinguish retained values from fresh verification; manual provider details remain separate.
+
+Usage insights accept optional backend service-health counters and nullable rates. Service trends and dimension error rates exclude cancellation, caller errors and unknown records; incomplete delivery is a service error. Retained-record scope is explicit, legacy totals/billing and old-backend rendering remain intact. Backend sources and boundaries are recorded in CLIProxyAPI/docs/CODEX_PROXY_NOV17_CN.md.

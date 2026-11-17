@@ -329,7 +329,19 @@ export interface UsagePerformance {
   output_tokens_per_second: number | null;
   throughput_samples: number;
 }
+export interface UsageServiceHealth {
+  succeeded: number;
+  failed: number;
+  incomplete: number;
+  cancelled: number;
+  caller_errors: number;
+  unknown: number;
+  samples: number;
+  success_rate: number | null;
+  error_rate: number | null;
+}
 export interface UsageHealth {
+  service?: UsageServiceHealth;
   success_rate: number;
   status_codes: Record<string, number>;
   client_error_count: number;
@@ -352,6 +364,7 @@ export interface UsageCost {
   };
 }
 export interface UsageTrend extends UsageDimensionSnapshot {
+  service?: UsageServiceHealth;
   known_cost_usd: number | null;
   latency_p50_ms: number | null;
   latency_p95_ms: number | null;
@@ -364,6 +377,7 @@ export interface UsageTrend extends UsageDimensionSnapshot {
   avg_ttft_ms: number | null;
 }
 export interface UsageDimension extends UsageDimensionSnapshot {
+  service?: UsageServiceHealth;
   key: string;
   label: string;
   avg_latency_ms: number | null;
