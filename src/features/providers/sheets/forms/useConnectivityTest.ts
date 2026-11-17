@@ -1,3 +1,4 @@
+import { requestOpenAIConnectivity } from './openAIConnectivity';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { apiCallApi, getApiCallErrorMessage } from '@/services/api';
 import {
@@ -235,20 +236,10 @@ export function useConnectivityTest(
       updateOpenaiStatus(idx, { state: 'loading', message: '' });
       setInFlight((n) => n + 1);
       try {
-        const result = await apiCallApi.request(
-          {
-            authIndex: resolvedAuthIndex,
-            method: 'POST',
-            url: endpoint,
-            header: headerObj,
-            data: JSON.stringify({
-              model,
-              messages: [{ role: 'user', content: 'Hi' }],
-              stream: false,
-              max_tokens: 5,
-            }),
-          },
-          { timeout: DEFAULT_TIMEOUT_MS }
+        const result = await requestOpenAIConnectivity(
+          { authIndex: resolvedAuthIndex, url: endpoint, header: headerObj },
+          model,
+          DEFAULT_TIMEOUT_MS
         );
         if (result.statusCode < 200 || result.statusCode >= 300) {
           throw new Error(getApiCallErrorMessage(result));

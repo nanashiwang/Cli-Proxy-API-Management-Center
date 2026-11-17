@@ -23,3 +23,5 @@ Background quota display consumes existing `codex_quota` / `provider_quota` snap
 Usage insights accept optional backend service-health counters and nullable rates. Service trends and dimension error rates exclude cancellation, caller errors and unknown records; incomplete delivery is a service error. Retained-record scope is explicit, legacy totals/billing and old-backend rendering remain intact. Backend sources and boundaries are recorded in CLIProxyAPI/docs/CODEX_PROXY_NOV17_CN.md.
 
 OpenAI-compatible providers persist optional `test-model` through management GET/PUT/PATCH and YAML reload. Empty selects the first configured model; this preference does not change gateway routing. The management test selector supports case-insensitive model search. Other provider families retain their existing test-preference semantics.
+
+OpenAI-compatible connectivity tests use `max_completion_tokens`, with one legacy `max_tokens` retry only for an explicit HTTP 400 unsupported-parameter response. The selected model and credential remain unchanged.

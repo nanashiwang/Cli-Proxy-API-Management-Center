@@ -27,3 +27,11 @@ Older backends still discard this field; deploy matching backend and frontend re
 Active-note searches for test-model, testModel and provider selection found no existing owner for this contract. Quota and auth notes are unrelated.
 
 Backend `go test ./...` and server build pass. Frontend `bun run verify` passes (one pre-existing AccountPoolsPage lint warning). Browser checks exercise the provider editor with an isolated local backend and no live credentials.
+
+## Connectivity probe compatibility
+
+OpenAI-compatible connectivity probes prefer `max_completion_tokens`, including for reasoning models such as the selected gpt-6-luna. A single legacy `max_tokens` retry is allowed only after HTTP 400 explicitly rejects the modern parameter. Both attempts retain the model, auth index, headers and five-token cap. Successful, authentication, quota, network and unrelated validation responses never trigger fallback. This probes endpoint connectivity, not answer quality; reasoning can consume the small output budget.
+
+Keeping the legacy field by default causes modern models to fail even with valid credentials. Model-name heuristics miss aliases and future models; explicit parameter rejection supports legacy endpoints without such a catalogue. No backend routing or config contract changes are needed.
+
+Probe verification: 615 frontend tests and production build pass. A server-side request using the configured gpt-6-luna key and the same five-token modern payload returns HTTP 200 in 1.08 seconds; all five completion tokens are reasoning tokens, confirming that connectivity success does not imply visible answer text.
