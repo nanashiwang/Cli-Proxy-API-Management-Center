@@ -9,6 +9,7 @@ import { captureQuotaCacheGeneration } from '@/stores/useQuotaStore';
 
 export interface ApiCallRequest {
   authIndex?: string;
+  proxy_url?: string;
   method: string;
   url: string;
   header?: Record<string, string>;
@@ -78,14 +79,18 @@ export const getApiCallErrorMessage = (result: ApiCallResult): string => {
 
 const quotaNextChecks = new Map<string, number>();
 export const getQuotaNextCheck = (authIndex: unknown): number | undefined =>
-  quotaNextChecks.get(`${captureQuotaCacheGeneration()}:${String(authIndex)}`);
+  quotaNextChecks.get(`${captureQuotaCacheGeneration().cacheGeneration}:${String(authIndex)}`);
 
-export const apiCallApi = {
+const createApiCallApi = (client: Pick<typeof apiClient, 'post'>) => ({
   request: async (payload: ApiCallRequest, config?: AxiosRequestConfig): Promise<ApiCallResult> => {
-    const cacheKey = `${captureQuotaCacheGeneration()}:${payload.authIndex}`;
+    const cacheKey = `${captureQuotaCacheGeneration().cacheGeneration}:${payload.authIndex}`;
     if (quotaNextChecks.size > 4096) quotaNextChecks.clear();
     if (!payload.url.endsWith('/profile')) quotaNextChecks.delete(cacheKey);
-    const response = await apiClient.post<Record<string, unknown>>('/api-call', payload, config);
+    const response = await client.post<Record<string, unknown>>(
+      '/requests/api-call',
+      payload,
+      config
+    );
     const statusCode = Number(response?.status_code ?? 0);
     const header = (response?.header ?? {}) as Record<string, string[]>;
     const { bodyText, body } = normalizeBody(response?.body);
@@ -114,10 +119,6 @@ export const apiCallApi = {
       const nextCheckAt =
         Number.isFinite(parsed) && parsed > Date.now() ? parsed : Date.now() + 120_000;
       quotaNextChecks.set(cacheKey, nextCheckAt);
-      throw Object.assign(
-        new Error(getApiCallErrorMessage({ statusCode, header, bodyText, body })),
-        { status: 429, nextCheckAt }
-      );
     }
     return {
       statusCode,
@@ -126,4 +127,10 @@ export const apiCallApi = {
       body,
     };
   },
-};
+});
+
+export const apiCallApi = createApiCallApi(apiClient);
+
+/** Pin a mutation to its initiating connection, including response event ownership. */
+export const captureApiCallApi = (isCurrent?: () => boolean) =>
+  createApiCallApi(apiClient.captureConnection(isCurrent));

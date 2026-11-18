@@ -1,7 +1,7 @@
 import { apiCallApi, type ApiCallRequest, type ApiCallResult } from '@/services/api/apiCall';
 import { isRecord } from '@/utils/helpers';
 
-type ProbeRequest = Pick<ApiCallRequest, 'authIndex' | 'url' | 'header'>;
+type ProbeRequest = Pick<ApiCallRequest, 'authIndex' | 'url' | 'header' | 'proxy_url'>;
 
 const rejectsCompletionLimit = (result: ApiCallResult): boolean => {
   if (result.statusCode !== 400) return false;
@@ -19,7 +19,8 @@ const rejectsCompletionLimit = (result: ApiCallResult): boolean => {
 export async function requestOpenAIConnectivity(
   request: ProbeRequest,
   model: string,
-  timeout: number
+  timeout: number,
+  useMaxCompletionTokens?: boolean
 ): Promise<ApiCallResult> {
   const send = (limit: 'max_completion_tokens' | 'max_tokens') =>
     apiCallApi.request(
@@ -36,7 +37,10 @@ export async function requestOpenAIConnectivity(
       { timeout }
     );
 
-  const result = await send('max_completion_tokens');
+  const firstLimit = useMaxCompletionTokens === false ? 'max_tokens' : 'max_completion_tokens';
+  const result = await send(firstLimit);
   // Retry only an explicit parameter rejection, never auth, quota or network failures.
-  return rejectsCompletionLimit(result) ? send('max_tokens') : result;
+  return firstLimit === 'max_completion_tokens' && rejectsCompletionLimit(result)
+    ? send('max_tokens')
+    : result;
 }

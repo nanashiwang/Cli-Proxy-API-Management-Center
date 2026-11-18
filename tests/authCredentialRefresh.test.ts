@@ -10,9 +10,8 @@ test('manual refresh invokes the credential endpoint without overwriting expiry'
   restore = () => post.mockRestore();
   await authFilesApi.requestManualRefresh('account.json');
   expect(post).toHaveBeenCalledWith(
-    '/auth-files/refresh',
-    { name: 'account.json' },
-    { timeout: 0 }
+    '/credentials/refresh',
+    { name: 'account.json' }
   );
 });
 
@@ -27,5 +26,5 @@ test('bulk refresh preserves per-account failure results', async () => {
   const post = spyOn(apiClient, 'post').mockResolvedValue(response);
   restore = () => post.mockRestore();
   expect(await authFilesApi.refreshAll()).toEqual(response);
-  expect(post).toHaveBeenCalledWith('/auth-files/refresh', { all: true }, { timeout: 0 });
+  expect(post).toHaveBeenCalledWith('/credentials/refresh', { all: true }, { timeout: 300_000 });
 });

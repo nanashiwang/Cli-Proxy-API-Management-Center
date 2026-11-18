@@ -5,6 +5,9 @@ import { useRevealGroup } from '@/hooks/motion';
 import styles from './VaultHeader.module.scss';
 
 export type VaultHeaderProps = {
+  syncingModelCatalog?: boolean;
+  onSyncModelCatalog?: () => void;
+  modelCatalogSyncDisabled?: boolean;
   totalCount: number;
   activeCount: number;
   problemCount: number;
@@ -14,9 +17,9 @@ export type VaultHeaderProps = {
   disableControls: boolean;
   onUpload: () => void;
   onRefresh: () => void;
-  onRefreshAll: () => void;
-  refreshingAll: boolean;
-  refreshAllDisabled: boolean;
+  refreshingCredentials?: boolean;
+  credentialRefreshDisabled?: boolean;
+  onRefreshCredentials?: () => void;
 };
 
 /**
@@ -25,6 +28,9 @@ export type VaultHeaderProps = {
  */
 export function VaultHeader(props: VaultHeaderProps) {
   const {
+    syncingModelCatalog = false,
+    onSyncModelCatalog,
+    modelCatalogSyncDisabled = false,
     totalCount,
     activeCount,
     problemCount,
@@ -34,9 +40,9 @@ export function VaultHeader(props: VaultHeaderProps) {
     disableControls,
     onUpload,
     onRefresh,
-    onRefreshAll,
-    refreshingAll,
-    refreshAllDisabled,
+    refreshingCredentials = false,
+    credentialRefreshDisabled = false,
+    onRefreshCredentials,
   } = props;
   const { t } = useTranslation();
   const revealRef = useRevealGroup<HTMLElement>();
@@ -70,15 +76,31 @@ export function VaultHeader(props: VaultHeaderProps) {
         </p>
       </div>
       <div className={styles.actions} data-reveal>
-        <button
-          type="button"
-          className={styles.ghostAction}
-          onClick={onRefreshAll}
-          disabled={disableControls || refreshAllDisabled || refreshingAll || loading}
-        >
-          {refreshingAll ? <LoadingSpinner size={14} /> : <IconRefreshCw size={14} />}
-          {t('auth_files.refresh_all_credentials')}
-        </button>
+        {onSyncModelCatalog && (
+          <button
+            type="button"
+            className={styles.ghostAction}
+            onClick={onSyncModelCatalog}
+            disabled={modelCatalogSyncDisabled || syncingModelCatalog}
+            aria-busy={syncingModelCatalog}
+          >
+            {syncingModelCatalog ? <LoadingSpinner size={14} /> : <IconRefreshCw size={14} />}
+            {t('auth_files.sync_catalog_button')}
+          </button>
+        )}
+        {onRefreshCredentials && (
+          <button
+            type="button"
+            className={styles.ghostAction}
+            onClick={onRefreshCredentials}
+            disabled={
+              disableControls || loading || refreshingCredentials || credentialRefreshDisabled
+            }
+          >
+            {refreshingCredentials ? <LoadingSpinner size={14} /> : <IconRefreshCw size={14} />}
+            {t('auth_files.refresh_all_button')}
+          </button>
+        )}
         <button
           type="button"
           className={styles.ghostAction}

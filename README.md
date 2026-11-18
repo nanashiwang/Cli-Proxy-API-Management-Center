@@ -177,3 +177,5 @@ Issues and PRs are welcome. Please include:
 ## License
 
 MIT
+
+Toolchain: **Bun 1.4.3** (`bun@1.4.3`).

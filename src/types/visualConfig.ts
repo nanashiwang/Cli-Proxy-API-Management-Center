@@ -6,6 +6,13 @@ export type PluginStoreAuthApplyTo = 'registry' | 'metadata' | 'artifact';
 export type PayloadParamValidationErrorCode =
   'payload_invalid_number' | 'payload_invalid_boolean' | 'payload_invalid_json';
 
+export type CodexLiveICEServerDraft = {
+  id: string;
+  urlsText: string;
+  username: string;
+  credential: string;
+};
+
 export type VisualConfigFieldPath =
   | 'quotaGuardFiveHourPercent'
   | 'quotaGuardFiveHourJitter'
@@ -13,6 +20,19 @@ export type VisualConfigFieldPath =
   | 'quotaGuardMonthlyJitter'
   | 'quotaGuardWeeklyPercent'
   | 'quotaGuardWeeklyJitter'
+  | 'trustedProxies'
+  | 'discoveryServiceType'
+  | 'transientErrorCooldownSeconds'
+  | 'videoResultAuthCacheTTL'
+  | 'claudeHeaderTimezone'
+  | 'codexStreamBootstrapTimeout'
+  | 'antigravityConnectionPoolIdleTimeout'
+  | 'antigravityConnectionPoolMaxIdleConnsPerHost'
+  | 'codexLiveMediaRelayMaxSessions'
+  | 'codexLiveMediaRelayPublicIP'
+  | 'codexLiveMediaRelayUDPPortMin'
+  | 'codexLiveMediaRelayUDPPortMax'
+  | 'codexLiveMediaRelayICEServers'
   | 'port'
   | 'errorLogsMaxFiles'
   | 'logsMaxTotalSizeMb'
@@ -26,7 +46,21 @@ export type VisualConfigFieldPath =
   | 'streaming.nonstreamKeepaliveInterval';
 
 export type VisualConfigValidationErrorCode =
-  'quota_guard_range' | 'port_range' | 'non_negative_integer' | 'integer_range_1_3600';
+  | 'quota_guard_range'
+  | 'invalid_trusted_proxies'
+  | 'invalid_discovery_service_type'
+  | 'invalid_duration'
+  | 'positive_duration'
+  | 'invalid_timezone'
+  | 'invalid_ip'
+  | 'udp_port_pair'
+  | 'udp_port_capacity'
+  | 'invalid_ice_servers'
+  | 'integer_range_0_65535'
+  | 'port_range'
+  | 'integer'
+  | 'non_negative_integer'
+  | 'integer_range_1_3600';
 
 export type VisualConfigValidationErrors = Partial<
   Record<VisualConfigFieldPath, VisualConfigValidationErrorCode>
@@ -63,6 +97,22 @@ export type PayloadRule = {
   params: PayloadParamEntry[];
 };
 
+export const PAYLOAD_REPLACE_ROLES = ['user', 'system', 'developer'] as const;
+
+export function isPayloadReplaceRole(value: string): boolean {
+  return PAYLOAD_REPLACE_ROLES.some((role) => role === value);
+}
+
+export type PayloadReplaceRule = {
+  id: string;
+  models: PayloadRule['models'];
+  /** Paths select path mode when present, even if the draft list is empty. */
+  target: { role: string; all: boolean; positions: string; paths?: string[] };
+  replacements: { id: string; from: string; to: string; regex?: boolean }[];
+  /** Malformed source shape; clear explicitly after repairing the draft. */
+  invalid?: boolean;
+};
+
 export type PayloadFilterRule = {
   id: string;
   models: PayloadModelEntry[];
@@ -88,7 +138,45 @@ export type PluginStoreAuthRule = {
   allowInsecure: boolean;
 };
 
+/** UI draft keys; YAML persistence uses the v8 tree, not these flattened names. */
 export type VisualConfigValues = {
+  githubToken: string;
+  trustedProxies: string[];
+  discoveryEnabled: boolean;
+  discoveryServiceName: string;
+  discoveryServiceType: string;
+  discoverySubtypes: string[];
+  discoveryInterfacesInclude: string[];
+  discoveryInterfacesExclude: string[];
+  discoveryAuthRequired: boolean;
+  discoveryAdvertiseManagement: boolean;
+
+  routingSessionAffinitySubagents: boolean;
+  saveCooldownStatus: boolean;
+  transientErrorCooldownSeconds: string;
+  videoResultAuthCacheTTL: string;
+  claudeHeaderTimezone: string;
+  claudeModelLevelCooling: boolean;
+  claudeDisableCloakMode: boolean;
+  claudeCodeDisableCloakingModelList: boolean;
+  codexDisableCloaking: boolean;
+  codexModelLevelCooling: boolean;
+  codexStreamBootstrapBuffering: boolean;
+  codexStreamBootstrapTimeout: string;
+  codexOptimizeMultiAgentV2: boolean;
+  codexOrphanDelegationCompatibility: boolean;
+  codexResponseSteering: boolean;
+  antigravityConnectionPoolEnabled: boolean;
+  antigravityConnectionPoolIdleTimeout: string;
+  antigravityConnectionPoolMaxIdleConnsPerHost: string;
+  xaiInjectXSearch: boolean;
+  codexLiveMediaRelayEnabled: boolean;
+  codexLiveMediaRelayMaxSessions: string;
+  codexLiveMediaRelayDisablePrivateRemoteIPs: boolean;
+  codexLiveMediaRelayPublicIP: string;
+  codexLiveMediaRelayUDPPortMin: string;
+  codexLiveMediaRelayUDPPortMax: string;
+  codexLiveMediaRelayICEServers: CodexLiveICEServerDraft[];
   host: string;
   port: string;
   tlsEnable: boolean;
@@ -100,6 +188,7 @@ export type VisualConfigValues = {
   rmDisableAutoUpdatePanel: boolean;
   rmPanelRepo: string;
   authDir: string;
+  /** Client authentication keys at access.api-keys (never the upstream api-keys map). */
   apiKeysText: string;
   pluginsEnabled: boolean;
   pluginStoreSources: string[];
@@ -128,14 +217,18 @@ export type VisualConfigValues = {
   quotaGuardMonthlyJitter: string;
   quotaGuardWeeklyPercent: string;
   quotaGuardWeeklyJitter: string;
-  quotaSwitchProject: boolean;
-  quotaSwitchPreviewModel: boolean;
+  /** OAuth-only: oauth.providers.antigravity.antigravity-credits. */
   quotaAntigravityCredits: boolean;
   routingStrategy: RoutingStrategy;
   routingSessionAffinity: boolean;
   routingSessionAffinityTTL: string;
   wsAuth: boolean;
+  antigravitySensitiveWordsReplace: Record<string, string>;
+  devinSensitiveWordsReplace: Record<string, string>;
+  antigravitySensitivePatternsReplace: { pattern: string; replacement: string }[];
+  devinSensitivePatternsReplace: { pattern: string; replacement: string }[];
   antigravitySensitiveWords: string[];
+  devinSensitiveWords: string[];
   antigravitySignatureCacheEnabled: boolean;
   antigravitySignatureBypassStrict: boolean;
   claudeHeaderUserAgent: string;
@@ -152,6 +245,7 @@ export type VisualConfigValues = {
   payloadOverrideRules: PayloadRule[];
   payloadOverrideRawRules: PayloadRule[];
   payloadFilterRules: PayloadFilterRule[];
+  payloadReplaceRules: PayloadReplaceRule[];
   streaming: StreamingConfig;
 };
 
@@ -161,6 +255,43 @@ export const makeClientId = () => {
 };
 
 export const DEFAULT_VISUAL_VALUES: VisualConfigValues = {
+  githubToken: '',
+  trustedProxies: [],
+  discoveryEnabled: false,
+  discoveryServiceName: '',
+  discoveryServiceType: '',
+  discoverySubtypes: [],
+  discoveryInterfacesInclude: [],
+  discoveryInterfacesExclude: [],
+  discoveryAuthRequired: true,
+  discoveryAdvertiseManagement: false,
+
+  routingSessionAffinitySubagents: true,
+  saveCooldownStatus: false,
+  transientErrorCooldownSeconds: '',
+  videoResultAuthCacheTTL: '',
+  claudeHeaderTimezone: '',
+  claudeModelLevelCooling: false,
+  claudeDisableCloakMode: false,
+  claudeCodeDisableCloakingModelList: false,
+  codexDisableCloaking: false,
+  codexModelLevelCooling: false,
+  codexStreamBootstrapBuffering: false,
+  codexStreamBootstrapTimeout: '',
+  codexOptimizeMultiAgentV2: false,
+  codexOrphanDelegationCompatibility: false,
+  codexResponseSteering: false,
+  antigravityConnectionPoolEnabled: false,
+  antigravityConnectionPoolIdleTimeout: '',
+  antigravityConnectionPoolMaxIdleConnsPerHost: '',
+  xaiInjectXSearch: false,
+  codexLiveMediaRelayEnabled: false,
+  codexLiveMediaRelayMaxSessions: '',
+  codexLiveMediaRelayDisablePrivateRemoteIPs: false,
+  codexLiveMediaRelayPublicIP: '',
+  codexLiveMediaRelayUDPPortMin: '',
+  codexLiveMediaRelayUDPPortMax: '',
+  codexLiveMediaRelayICEServers: [],
   host: '',
   port: '',
   tlsEnable: false,
@@ -200,14 +331,17 @@ export const DEFAULT_VISUAL_VALUES: VisualConfigValues = {
   quotaGuardMonthlyJitter: '3',
   quotaGuardWeeklyPercent: '93',
   quotaGuardWeeklyJitter: '3',
-  quotaSwitchProject: true,
-  quotaSwitchPreviewModel: true,
   quotaAntigravityCredits: false,
   routingStrategy: 'round-robin',
   routingSessionAffinity: false,
   routingSessionAffinityTTL: '',
-  wsAuth: false,
+  wsAuth: true,
+  antigravitySensitiveWordsReplace: {},
+  devinSensitiveWordsReplace: {},
+  antigravitySensitivePatternsReplace: [],
+  devinSensitivePatternsReplace: [],
   antigravitySensitiveWords: [],
+  devinSensitiveWords: [],
   antigravitySignatureCacheEnabled: true,
   antigravitySignatureBypassStrict: false,
   claudeHeaderUserAgent: '',
@@ -224,6 +358,7 @@ export const DEFAULT_VISUAL_VALUES: VisualConfigValues = {
   payloadOverrideRules: [],
   payloadOverrideRawRules: [],
   payloadFilterRules: [],
+  payloadReplaceRules: [],
   streaming: {
     keepaliveSeconds: '',
     bootstrapRetries: '',

@@ -9,14 +9,7 @@ interface ProviderCategoryListProps {
   onSelect: (brand: ProviderBrand) => void;
 }
 
-const QUICK_FILL_BRAND_ORDER: readonly ProviderBrand[] = [
-  'code0',
-  'fennoAI',
-  'qiniuCloud',
-  'claudeApi',
-  'lmuAI',
-  'infistar',
-];
+const QUICK_FILL_BRAND_ORDER: readonly ProviderBrand[] = ['fennoAI', 'qiniuCloud', 'aiCodeMirror'];
 
 const QUICK_FILL_BRANDS: ReadonlySet<ProviderBrand> = new Set(QUICK_FILL_BRAND_ORDER);
 
@@ -97,7 +90,14 @@ export function ProviderCategoryList({ groups, activeBrand, onSelect }: Provider
                 </span>
               </span>
             </span>
-            <span className={`${styles.badge} ${total === 0 ? styles.badgeAmber : ''}`}>
+            <span
+              className={[
+                styles.badge,
+                total === 0 ? (group.id === 'kimi' ? styles.badgeKimi : styles.badgeAmber) : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            >
               {total}
             </span>
           </button>

@@ -30,7 +30,7 @@ Git history follows Conventional Commit style, for example `feat: add support fo
 
 ## Architecture & Configuration Notes
 
-This UI is not the proxy; it talks to the backend Management API under `/v0/management`. Treat backend contracts as the source of truth. For OAuth/provider changes, inspect `../CLIProxyAPI` before changing route names, provider keys, callback parameters, or auth-file semantics. Store no secrets in the repo; management keys are entered at runtime and persisted only in browser storage.
+This UI is not the proxy; it talks to the backend Management API under `/v8/management`. Treat backend contracts as the source of truth. For OAuth/provider changes, inspect `../CLIProxyAPI` before changing route names, provider keys, callback parameters, or auth-file semantics. Store no secrets in the repo; management keys are entered at runtime and persisted only in browser storage.
 
 
 ## Capability review and decision notes
@@ -44,3 +44,5 @@ This UI is not the proxy; it talks to the backend Management API under `/v0/mana
 - Update affected capability-map entries and notes alongside code. Run `bash .agents/verify-notes.sh` plus the existing checks required for the change. Existing architecture, language, build, release and subdirectory rules remain in force.
 
 Project-specific context: Use personal/main for pushes and Bun for existing application checks. New user-facing strings still require all supported locales. Backend and frontend release versions remain separate.
+
+Toolchain: **Bun 1.4.3** (`bun@1.4.3`).

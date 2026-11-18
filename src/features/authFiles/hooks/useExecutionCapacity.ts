@@ -30,7 +30,7 @@ export function useExecutionCapacity(files: AuthFileItem[], enabled: boolean) {
       controller = new AbortController();
       try {
         const data = await apiClient.post<{ accounts?: Record<string, unknown> }>(
-          '/auth-files/capacity',
+          '/credentials/capacity',
           { ids: JSON.parse(idsKey) },
           { signal: controller.signal }
         );
