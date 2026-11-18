@@ -121,6 +121,7 @@ export function AuthFilesPage() {
 
   const {
     modelsModalOpen,
+    modelsReadOnly,
     modelsLoading,
     modelsList,
     modelsFileName,
@@ -905,6 +906,12 @@ export function AuthFilesPage() {
 
       <AuthFileModelsModal
         open={modelsModalOpen}
+        readOnly={modelsReadOnly}
+        disabled={disableControls || refreshingAll}
+        onSaved={() => {
+          invalidateDerivedCaches([modelsFileName]);
+          void loadFiles({ background: true });
+        }}
         fileName={modelsFileName}
         fileType={modelsFileType}
         loading={modelsLoading}

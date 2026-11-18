@@ -153,12 +153,12 @@ const normalizeExcludedModels = (value: unknown): string[] => {
 const parseExcludedModelsText = (value: string): string[] =>
   normalizeExcludedModels(value.split(/\r?\n/));
 
-const readExcludedModels = (value: Record<string, unknown>): string[] =>
+export const readExcludedModels = (value: Record<string, unknown>): string[] =>
   normalizeExcludedModels(
     value.excluded_models !== undefined ? value.excluded_models : value['excluded-models']
   );
 
-const getExcludedModelsField = (
+export const getExcludedModelsField = (
   value: Record<string, unknown>
 ): 'excluded_models' | 'excluded-models' =>
   value.excluded_models === undefined && value['excluded-models'] !== undefined

@@ -259,6 +259,14 @@
     "routing_strategy_fill_first": "fill-first (优先填充)"
   },
   "auth_files": {
+    "model_controls_hint": "仅修改当前认证文件。开启表示允许，关闭表示排除；点击保存后生效。",
+    "model_controls_readonly": "此凭证仅存在于运行时，请在对应提供商配置中修改模型限制。",
+    "model_controls_unsaved": "有未保存的修改",
+    "model_controls_global": "全局 OAuth 规则已排除，需在全局排除模型设置中修改。",
+    "model_controls_excluded": "已排除",
+    "model_controls_allowed": "允许",
+    "model_controls_rules": "编辑排除规则",
+    "model_controls_rules_hint": "每行一个模型名称或通配符规则，* 匹配任意字符。列表显示当前注册模型及已配置的具体模型；移除通配符后保存并重新打开可刷新列表。",
     "title": "认证文件管理",
     "meta_total": "{{count}} 个凭证",
     "meta_active": "{{count}} 个启用",
