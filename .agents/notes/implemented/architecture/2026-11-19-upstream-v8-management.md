@@ -18,11 +18,11 @@ Selective backports avoid the v8 migration but do not meet the requested full fe
 
 Provider grouping and credential identity remain stable on save. Quota cache keys include runtime/plugin identity; personal cooldown deadlines use a numeric connection generation and never leak across connections. Upstream provider adapters receive raw 429 responses while the transport retains Retry-After deadlines. Profile enrichment does not erase a quota deadline. The guard controls share the advanced configuration section, and credential bulk refresh reuses upstream's detailed results.
 
-The frontend requires a matching personal v8 backend. Frontend and backend releases remain separate; both must finish compatibility checks before publication. The latest merged stable tag determines the frontend base, preventing future CPA releases from remaining on an obsolete upstream version. Concurrent changes from personal/main are merged after this upstream integration commit, preserving their ownership and history.
+The frontend requires a matching personal v8 backend. Frontend and backend releases remain separate; both must finish compatibility checks before publication. The latest merged stable tag determines the frontend base, preventing future CPA releases from remaining on an obsolete upstream version. The subsequent personal/main model-controls change is merged with its own history and adapted to v8 connection isolation.
 
 ## Verification
 
-Bun 1.4.3 passes 2,566 tests, ESLint (one pre-existing AccountPoolsPage hook warning), TypeScript and production build. Regression coverage includes provider identity and test-model persistence, grouped provider editing, quota guard YAML round-trip, exact balance values, cooldown response/connection isolation, and personal usage metrics. Browser checks use synthetic v8 API responses to exercise navigation, quota empty state, account groups and the log-loss alert. This does not replace live backend contract validation or published artifact verification.
+Bun 1.4.3 passes 2,570 tests, ESLint (one pre-existing AccountPoolsPage hook warning), TypeScript and production build. Regression coverage includes provider identity and test-model persistence, grouped provider editing, quota guard YAML round-trip, exact balance values, cooldown response/connection isolation, and personal usage metrics. Browser checks use synthetic v8 API responses to exercise navigation, quota empty state, account groups and the log-loss alert. This does not replace live backend contract validation or published artifact verification.
 
 ## Related-note audit
 

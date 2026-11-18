@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { apiClient, authFilesApi } from '@/services/api';
 import { useNotificationStore } from '@/stores';
 import type { AuthFileItem } from '@/types';
+import { isRuntimeOnlyAuthFile } from '@/features/authFiles/constants';
 import type { AuthFileModelItem } from '@/features/authFiles/constants';
 
 type ModelsError = 'unsupported' | null;
@@ -10,6 +11,7 @@ type ModelsError = 'unsupported' | null;
 export type UseAuthFilesModelsResult = {
   modelsModalOpen: boolean;
   modelsLoading: boolean;
+  modelsReadOnly: boolean;
   modelsList: AuthFileModelItem[];
   modelsFileName: string;
   modelsFileType: string;
@@ -25,6 +27,7 @@ export function useAuthFilesModels(): UseAuthFilesModelsResult {
   const showNotification = useNotificationStore((state) => state.showNotification);
 
   const [modelsModalOpen, setModelsModalOpen] = useState(false);
+  const [modelsReadOnly, setModelsReadOnly] = useState(true);
   const [modelsLoading, setModelsLoading] = useState(false);
   const [modelsList, setModelsList] = useState<AuthFileModelItem[]>([]);
   const [modelsFileName, setModelsFileName] = useState('');
@@ -65,8 +68,9 @@ export function useAuthFilesModels(): UseAuthFilesModelsResult {
       const cacheKey = item.name.trim();
       const requestId = ++activeModelsRequestIdRef.current;
 
+      setModelsReadOnly(isRuntimeOnlyAuthFile(item));
       setModelsFileName(item.name);
-      setModelsFileType(item.type || '');
+      setModelsFileType(String(item.type || item.provider || ''));
       setModelsList([]);
       setModelsError(null);
       setModelsModalOpen(true);
@@ -114,6 +118,7 @@ export function useAuthFilesModels(): UseAuthFilesModelsResult {
 
   return {
     modelsModalOpen,
+    modelsReadOnly,
     modelsLoading,
     modelsList,
     modelsFileName,

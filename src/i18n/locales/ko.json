@@ -229,6 +229,14 @@
     "routing_strategy_fill_first": "fill-first (우선 채우기)"
   },
   "auth_files": {
+    "model_controls_hint": "Changes apply only to this credential. On allows a model; off excludes it. Save to apply.",
+    "model_controls_readonly": "This credential exists only at runtime. Edit model restrictions in its provider configuration.",
+    "model_controls_unsaved": "Unsaved changes",
+    "model_controls_global": "Excluded by a global OAuth rule. Change it in the global model exclusions settings.",
+    "model_controls_excluded": "Excluded",
+    "model_controls_allowed": "Allowed",
+    "model_controls_rules": "Edit exclusion rules",
+    "model_controls_rules_hint": "One model ID or wildcard rule per line; * matches any characters. The list includes registered models and configured exact IDs. After removing a wildcard, save and reopen to refresh the list.",
     "sync_catalog_button": "모델 카탈로그 동기화",
     "sync_catalog_success": "모델 카탈로그가 동기화되었습니다. 업데이트된 제공업체: {{providers}}",
     "sync_catalog_unchanged": "모델 카탈로그가 동기화되었습니다. 변경 사항이 없습니다.",
