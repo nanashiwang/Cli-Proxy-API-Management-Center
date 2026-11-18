@@ -29,3 +29,5 @@ Candidate tests cover filtered/empty registries, draft restoration, casing, wild
 Search of active notes for excluded/models modal finds no owning decision; provider-test-model concerns connectivity requests and is unrelated. Process/release notes remain unchanged.
 
 V8 integration retains the field-only credential PATCH and shared OAuth restrictions. Loads and saves belong to their initiating connection revision; switching files or connections releases local busy state while stale completions cannot alter the new editor. The paired v8 browser mock verifies exclusion, save, reopen, exact-rule restoration and the 390px layout.
+
+Each file/connection session owns its own save lock. An invalidated session can release only its own lock; late finally callbacks cannot clear loading or saving in the replacement editor. Deferred-promise regression tests exercise both success and failure across file changes, connection changes, closure and duplicate saves without a browser-test dependency.
