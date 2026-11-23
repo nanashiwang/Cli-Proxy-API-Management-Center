@@ -31,6 +31,8 @@ export interface MemberCardProps {
   member: RoutingMember;
   route: RouteMember | undefined;
   strategy: RoutingStrategy;
+  showPacing?: boolean;
+  nowMs: number;
   weights: readonly (number | null)[];
   cooldownSeconds: number;
   theme: ResolvedTheme;
@@ -47,6 +49,8 @@ export function MemberCard({
   member,
   route,
   strategy,
+  showPacing,
+  nowMs,
   weights,
   cooldownSeconds,
   theme,
@@ -209,7 +213,20 @@ export function MemberCard({
         <span className={styles.name}>{member.name}</span>
         <span className={styles.kind}>
           {kindLabel}
-          {showWeight ? (
+          {showPacing && member.quotaPace && strategy === 'weighted-round-robin' ? (
+            <span className={styles.weight}>
+              {' · '}
+              {t('routing.pace_weight', {
+                base: singleWeight ?? 1,
+                effective:
+                  (singleWeight ?? 1) *
+                  (nowMs < member.quotaPace.expiresAt ? member.quotaPace.factor : 1),
+              })}
+              {nowMs < member.quotaPace.expiresAt && member.quotaPace.window
+                ? ` (${member.quotaPace.window})`
+                : ''}
+            </span>
+          ) : showWeight ? (
             <span className={styles.weight}>
               {' · '}
               {t('routing.weight_badge', { weight: singleWeight })}

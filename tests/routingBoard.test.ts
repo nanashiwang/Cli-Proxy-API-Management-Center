@@ -93,10 +93,45 @@ describe('routing board reading', () => {
     expect(readRoutingSettings(RAW)).toEqual({
       strategy: 'weighted-round-robin',
       sessionAffinity: true,
+      quotaPacing: false,
+      quotaPacingPool: '',
       requestRetry: 3,
       maxRetryCredentials: 0,
     });
     expect(readRoutingSettings({ routing: { strategy: 'bogus' } }).strategy).toBe('round-robin');
+  });
+
+  test('reads pool scope, previews observed weights and saves only changed routing fields', () => {
+    const config = {
+      ...RAW,
+      routing: { ...RAW.routing, 'quota-pacing': true, 'quota-pacing-pool': 'pilot' },
+      'account-pools': { enabled: true, groups: [{ id: 'pilot', name: 'Pilot' }] },
+    };
+    const model = buildRoutingBoard(config, [
+      {
+        name: 'sample.json',
+        type: 'codex',
+        priority: 100,
+        weight: 2,
+        quotaPace: { factor: 0.5, window: '7d', expiresAt: 1000 },
+      },
+      { name: 'peer.json', type: 'codex', priority: 100, weight: 1 },
+    ]);
+    expect(model.pools).toEqual([{ id: 'pilot', name: 'Pilot' }]);
+    expect(model.quotaPacingSupported).toBe(true);
+    const draft = draftFromBoard(model);
+    const share = (now: number) =>
+      resolveRoute(model, draft, { channels: {}, credentials: {} }, null, now)
+        .tiers.flatMap((t) => t.members)
+        .find((m) => m.key === 'cred:sample.json')?.share;
+    expect(share(500)).toBe(50);
+    expect(share(1000)).toBe(66.7);
+    draft.settings.quotaPacing = false;
+    draft.settings.quotaPacingPool = '';
+    const plan = buildRoutingPlan(model, draft);
+    expect(buildRoutingConfigPatch(config, model, plan)).toEqual({
+      routing: { 'quota-pacing': false, 'quota-pacing-pool': '' },
+    });
   });
 
   test('expands groups with key overrides, compat providers and credentials', () => {

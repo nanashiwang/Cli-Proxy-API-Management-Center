@@ -275,6 +275,8 @@ export function assignPriorities(
 const SETTING_FIELDS: readonly (keyof RoutingSettings)[] = [
   'strategy',
   'sessionAffinity',
+  'quotaPacing',
+  'quotaPacingPool',
   'requestRetry',
   'maxRetryCredentials',
 ];
@@ -461,7 +463,14 @@ export function resolveRoute(
       } else if (activeCooldownSeconds(member, model, nowMs) > 0) state = 'cooling';
       else if (member.unavailable && !member.cooldowns?.records) state = 'blocked';
       else {
-        const value = memberUnits(member, draft.weights[key] ?? [], strategy);
+        const factor =
+          draft.settings.quotaPacing &&
+          strategy === 'weighted-round-robin' &&
+          member.quotaPace &&
+          member.quotaPace.expiresAt > nowMs
+            ? member.quotaPace.factor
+            : 1;
+        const value = memberUnits(member, draft.weights[key] ?? [], strategy) * factor;
         if (value > 0) {
           units.set(key, value);
           state = 'serving';
@@ -479,7 +488,13 @@ export function resolveRoute(
     if (!hasActive && total > 0) {
       state = 'active';
       hasActive = true;
-      if (strategy !== 'fill-first') {
+      if (
+        strategy !== 'fill-first' &&
+        (strategy !== 'weighted-round-robin' ||
+          !draft.settings.quotaPacing ||
+          (board.settings.quotaPacing &&
+            draft.settings.quotaPacingPool === board.settings.quotaPacingPool))
+      ) {
         for (const member of members) {
           const value = units.get(member.key);
           if (value !== undefined) member.share = Math.round((value / total) * 1000) / 10;

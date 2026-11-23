@@ -147,6 +147,8 @@ describe('routing board rendering', () => {
       createElement(PolicyPanel, {
         settings: {
           strategy: 'weighted-round-robin',
+          quotaPacing: false,
+          quotaPacingPool: '',
           sessionAffinity: false,
           requestRetry: 3,
           maxRetryCredentials: 0,
@@ -165,6 +167,8 @@ describe('routing board rendering', () => {
       createElement(PolicyPanel, {
         settings: {
           strategy: 'round-robin',
+          quotaPacing: false,
+          quotaPacingPool: '',
           sessionAffinity: true,
           requestRetry: 1,
           maxRetryCredentials: 0,

@@ -49,6 +49,7 @@ export interface AuthFileCooldownSnapshot {
 
 export interface AuthFileItem {
   executionCapacity?: ExecutionCapacity;
+  quotaPace?: { factor: number; window: string; expiresAt: number };
   name: string;
   siwcBindSupported?: boolean;
   useSiwc?: boolean;

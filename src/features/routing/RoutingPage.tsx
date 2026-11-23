@@ -358,6 +358,10 @@ export function RoutingPage() {
       <div className={styles.layout} ref={layoutRef}>
         <section className={styles.board} aria-label={t('routing.title')}>
           <TierLadder
+            showPacing={
+              draft.settings.quotaPacing &&
+              draft.settings.quotaPacingPool === board.settings.quotaPacingPool
+            }
             members={members}
             draft={draft}
             preview={preview}
@@ -371,7 +375,13 @@ export function RoutingPage() {
             onEditWeights={handleEditWeights}
           />
         </section>
-        <PolicyPanel settings={draft.settings} disabled={saving} onChange={handleSettings} />
+        <PolicyPanel
+          pools={board.pools}
+          quotaPacingSupported={board.quotaPacingSupported}
+          settings={draft.settings}
+          disabled={saving}
+          onChange={handleSettings}
+        />
       </div>
     );
   };

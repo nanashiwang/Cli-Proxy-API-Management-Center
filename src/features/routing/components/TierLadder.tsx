@@ -25,6 +25,7 @@ const TIER_STATE_CLASS: Record<RouteTierState, string> = {
 export interface TierLadderProps {
   members: ReadonlyMap<string, RoutingMember>;
   draft: RoutingDraft;
+  showPacing?: boolean;
   preview: RoutePreview;
   priorities: Readonly<Record<string, number>>;
   model: string | null;
@@ -46,6 +47,7 @@ const sameTarget = (left: RoutingDropTarget | null, right: RoutingDropTarget) =>
 export function TierLadder({
   members,
   draft,
+  showPacing,
   preview,
   priorities,
   model,
@@ -188,6 +190,8 @@ export function TierLadder({
                     member={member}
                     route={routeMembers.get(member.key)}
                     strategy={draft.settings.strategy}
+                    nowMs={nowMs}
+                    showPacing={showPacing}
                     weights={draft.weights[member.key] ?? []}
                     cooldownSeconds={activeCooldownSeconds(member, model, nowMs)}
                     theme={theme}

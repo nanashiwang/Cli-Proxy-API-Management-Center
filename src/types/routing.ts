@@ -75,6 +75,7 @@ export interface RoutingMember {
   detail: string;
   priority: number;
   weights: RoutingWeightSlot[];
+  quotaPace?: { factor: number; window: string; expiresAt: number };
   /** Keys the member schedules; a keyless OpenAI-compatible provider still schedules one. */
   keyCount: number;
   disabled: boolean;
@@ -92,6 +93,8 @@ export interface RoutingMember {
 export interface RoutingSettings {
   strategy: RoutingStrategy;
   sessionAffinity: boolean;
+  quotaPacing: boolean;
+  quotaPacingPool: string;
   requestRetry: number;
   /** 0 tries every available credential. */
   maxRetryCredentials: number;
@@ -101,6 +104,8 @@ export interface RoutingBoard {
   members: RoutingMember[];
   settings: RoutingSettings;
   forceModelPrefix: boolean;
+  quotaPacingSupported?: boolean;
+  pools?: { id: string; name: string }[];
 }
 
 export interface RoutingTier {

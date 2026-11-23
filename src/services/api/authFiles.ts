@@ -271,6 +271,15 @@ const normalizeAuthFileEntry = (
   observedAt: string | undefined,
   receivedAtMs: number
 ): AuthFileEntry => {
+  const pace = entry.quota_pacing;
+  const quotaPace =
+    isRecord(pace) && typeof pace.factor === 'number' && pace.factor >= 0.5 && pace.factor <= 1.5
+      ? {
+          factor: pace.factor,
+          window: typeof pace.window === 'string' ? pace.window : '',
+          expiresAt: receivedAtMs + Math.max(0, Number(pace.valid_for_ms) || 0),
+        }
+      : undefined;
   const declaredStatusMessage =
     typeof entry.statusMessage === 'string' ? entry.statusMessage.trim() : '';
   const statusMessage = readTextField(entry, 'status_message') || declaredStatusMessage;
@@ -289,6 +298,7 @@ const normalizeAuthFileEntry = (
 
   return {
     ...entry,
+    quotaPace,
     siwcBindSupported: entry.siwc_bind_supported === true,
     useSiwc: entry.use_siwc === true,
     siwcBound: entry.siwc_bound === true,
@@ -587,7 +597,11 @@ export const authFilesApi = {
       auth_index: authIndex,
     }),
   refreshAll: async () => {
-    const response = await apiClient.post<unknown>('/credentials/refresh', { all: true }, { timeout: 300_000 });
+    const response = await apiClient.post<unknown>(
+      '/credentials/refresh',
+      { all: true },
+      { timeout: 300_000 }
+    );
     return { ok: true, results: normalizeAuthFileRefreshResults(response) };
   },
 

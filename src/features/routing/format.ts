@@ -9,6 +9,8 @@ export function formatRoutingDuration(t: TFunction, seconds: number): string {
 
 export const SETTING_LABEL_KEYS: Record<keyof RoutingSettings, string> = {
   strategy: 'routing.strategy_label',
+  quotaPacing: 'routing.pace_label',
+  quotaPacingPool: 'routing.pace_pool',
   sessionAffinity: 'routing.affinity_label',
   requestRetry: 'routing.request_retry',
   maxRetryCredentials: 'routing.max_retry_credentials',
@@ -20,6 +22,7 @@ export function formatSettingValue(
   value: RoutingSettings[keyof RoutingSettings]
 ): string {
   if (field === 'strategy') return t(`routing.strategy_${String(value).replace(/-/g, '_')}`);
+  if (field === 'quotaPacingPool' && !value) return t('routing.pace_all');
   if (typeof value === 'boolean') return t(value ? 'routing.value_on' : 'routing.value_off');
   if (field === 'maxRetryCredentials' && value === 0) return t('routing.unlimited');
   return String(value);

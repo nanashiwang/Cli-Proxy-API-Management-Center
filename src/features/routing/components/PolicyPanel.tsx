@@ -14,6 +14,8 @@ const CREDENTIALS_MAX = 1000;
 export interface PolicyPanelProps {
   settings: RoutingSettings;
   disabled?: boolean;
+  quotaPacingSupported?: boolean;
+  pools?: { id: string; name: string }[];
   onChange: (next: RoutingSettings) => void;
 }
 
@@ -41,7 +43,13 @@ function StrategyMark({ strategy }: { strategy: RoutingStrategy }) {
   );
 }
 
-export function PolicyPanel({ settings, disabled = false, onChange }: PolicyPanelProps) {
+export function PolicyPanel({
+  settings,
+  disabled = false,
+  quotaPacingSupported,
+  pools = [],
+  onChange,
+}: PolicyPanelProps) {
   const { t } = useTranslation();
   const id = useId();
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -134,6 +142,52 @@ export function PolicyPanel({ settings, disabled = false, onChange }: PolicyPane
           })}
         </div>
       </section>
+
+      {quotaPacingSupported && settings.strategy === 'weighted-round-robin' && (
+        <>
+          <section className={styles.policyRow}>
+            <FieldLabel
+              label={t('routing.pace_label')}
+              hint={t('routing.pace_desc')}
+              hintId={`${id}-pace-desc`}
+              className={styles.policyRowText}
+              labelClassName={styles.policyRowLabel}
+            />
+            <ToggleSwitch
+              checked={settings.quotaPacing}
+              disabled={disabled}
+              onChange={(quotaPacing) => update({ quotaPacing })}
+              ariaLabel={t('routing.pace_label')}
+              ariaDescribedBy={`${id}-pace-desc`}
+            />
+          </section>
+          {settings.quotaPacing && (pools.length > 0 || !!settings.quotaPacingPool) && (
+            <section className={styles.policySection}>
+              <label htmlFor={`${id}-pace-pool`} className={styles.policyLabel}>
+                {t('routing.pace_pool')}
+              </label>
+              <select
+                className="input"
+                id={`${id}-pace-pool`}
+                disabled={disabled}
+                value={settings.quotaPacingPool}
+                onChange={(e) => update({ quotaPacingPool: e.target.value })}
+              >
+                <option value="">{t('routing.pace_all')}</option>
+                {settings.quotaPacingPool &&
+                  !pools.some((p) => p.id === settings.quotaPacingPool) && (
+                    <option value={settings.quotaPacingPool}>{settings.quotaPacingPool}</option>
+                  )}
+                {pools.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name || p.id}
+                  </option>
+                ))}
+              </select>
+            </section>
+          )}
+        </>
+      )}
 
       <section className={styles.policyRow}>
         {/* The hidden hint copy describes both the switch and the InfoTip. */}

@@ -107,6 +107,8 @@ export function readRoutingSettings(raw: unknown): RoutingSettings {
   const routing = readPath(raw, ['routing']);
   return {
     strategy: normalizeRoutingStrategy(readPath(routing, ['strategy'])),
+    quotaPacing: readPath(routing, ['quota-pacing']) === true,
+    quotaPacingPool: readText(readPath(routing, ['quota-pacing-pool'])),
     sessionAffinity: readPath(routing, ['session-affinity']) === true,
     requestRetry: Math.max(0, readInteger(readPath(routing, ['retry', 'request-retry'])) ?? 0),
     maxRetryCredentials: Math.max(
@@ -226,6 +228,7 @@ function credentialMember(file: AuthFileItem): RoutingMember | null {
     excludedModels: [],
     modelSource: { type: 'credential', name },
     unavailable: file.unavailable === true,
+    quotaPace: file.quotaPace,
     cooldowns: file.cooldownSnapshot ?? null,
     location: { kind: 'credential', name },
   };
@@ -233,7 +236,16 @@ function credentialMember(file: AuthFileItem): RoutingMember | null {
 
 /** Every schedulable member of the stored configuration and the credential list. */
 export function buildRoutingBoard(raw: unknown, files: readonly AuthFileItem[]): RoutingBoard {
+  const groups = readPath(raw, ['account-pools', 'groups']);
   return {
+    quotaPacingSupported: typeof readPath(raw, ['routing', 'quota-pacing']) === 'boolean',
+    pools:
+      readPath(raw, ['account-pools', 'enabled']) === true && Array.isArray(groups)
+        ? groups
+            .filter(isRecord)
+            .map((g) => ({ id: readText(g.id), name: readText(g.name) }))
+            .filter((g) => g.id)
+        : [],
     members: [
       ...ROUTING_KEY_FAMILIES.flatMap((family) => keyMembers(raw, family)),
       ...compatMembers(raw),
@@ -295,6 +307,9 @@ export function buildRoutingConfigPatch(
   const routing: Record<string, unknown> = {};
   const retry: Record<string, unknown> = {};
   if (plan.settings.strategy !== undefined) routing.strategy = plan.settings.strategy;
+  if (plan.settings.quotaPacing !== undefined) routing['quota-pacing'] = plan.settings.quotaPacing;
+  if (plan.settings.quotaPacingPool !== undefined)
+    routing['quota-pacing-pool'] = plan.settings.quotaPacingPool;
   if (plan.settings.sessionAffinity !== undefined) {
     routing['session-affinity'] = plan.settings.sessionAffinity;
   }
