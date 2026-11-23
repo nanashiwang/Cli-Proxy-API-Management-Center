@@ -80,13 +80,14 @@ test('reasoning modes and absent historical settings stay distinct', () => {
 });
 
 test('Fast badge follows the billing snapshot or observed tier, not requested speed', async () => {
-  const { usageHasFastBilling } = await import('../src/features/usage/costPresentation');
+  const { usageBillingSpeed } = await import('../src/features/usage/costPresentation');
   const asRecord = (value: unknown) => value as import('../src/types/usage').UsageRecord;
-  expect(usageHasFastBilling(asRecord({ service_tier: 'priority' }))).toBe(false);
-  expect(usageHasFastBilling(asRecord({ response_service_tier: 'priority' }))).toBe(true);
-  expect(usageHasFastBilling(asRecord({ billing: { pricing: { service_tier: 'fast' } } }))).toBe(
-    true
+  expect(usageBillingSpeed(asRecord({ service_tier: 'priority' }))).toBeNull();
+  expect(usageBillingSpeed(asRecord({ response_service_tier: 'priority' }))).toBe('Fast');
+  expect(usageBillingSpeed(asRecord({ billing: { pricing: { service_tier: 'fast' } } }))).toBe(
+    'Fast'
   );
-  expect(usageHasFastBilling(asRecord({ response_service_tier: 'priority', billing }))).toBe(false);
-  expect(usageHasFastBilling(asRecord({}))).toBe(false);
+  expect(usageBillingSpeed(asRecord({ response_service_tier: 'priority', billing }))).toBeNull();
+  expect(usageBillingSpeed(asRecord({ response_service_tier: 'ultrafast' }))).toBe('Ultrafast');
+  expect(usageBillingSpeed(asRecord({}))).toBeNull();
 });

@@ -1,11 +1,13 @@
 import type { UsageRecord } from '@/types/usage';
 
 /** Billing facts take precedence over the requested tier (which may be downgraded). */
-export function usageHasFastBilling(record: UsageRecord): boolean {
+export function usageBillingSpeed(record: UsageRecord) {
   const tier = (record.billing?.pricing?.service_tier || record.response_service_tier || '')
     .trim()
     .toLowerCase();
-  return tier === 'fast' || tier === 'priority';
+  if (tier === 'ultrafast') return 'Ultrafast';
+  if (tier === 'fast' || tier === 'priority') return 'Fast';
+  return null;
 }
 
 const amount = (value: unknown): number | null =>

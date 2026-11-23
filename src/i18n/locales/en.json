@@ -2794,6 +2794,13 @@
     "no": "No"
   },
   "usage_stats": {
+    "all_error_origins": "All error origins",
+    "error_origins": {
+      "upstream_response": "Upstream response",
+      "upstream_connection": "Upstream connection",
+      "proxy_processing": "Proxy processing",
+      "unknown": "Unknown origin"
+    },
     "eyebrow": "Persistent billing analytics",
     "title": "Usage Statistics",
     "subtitle": "Track account, model, token, and USD cost from request-time pricing snapshots.",

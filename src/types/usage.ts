@@ -75,7 +75,11 @@ export interface UsageResponseTiming {
   upstream_overhead_ms?: number;
 }
 
+export type UsageErrorOrigin =
+  'upstream_response' | 'upstream_connection' | 'proxy_processing' | 'unknown';
+
 export interface UsageRequestDetail {
+  error_origin?: UsageErrorOrigin;
   timing?: UsageResponseTiming;
   diagnostics?: UsageDiagnostics;
   /** Observations are absent on historical records; never infer them from model/alias. */
@@ -253,6 +257,7 @@ export interface ModelPricingSummary {
 
 /** Server-side analytics contract. Rates are fractions in [0, 1]. */
 export interface UsageFilters {
+  error_origin?: UsageErrorOrigin;
   timezone?: string;
   range?: UsageRange;
   from?: string;
@@ -389,6 +394,7 @@ export interface UsageOption {
   label: string;
 }
 export interface UsageDashboard {
+  error_origin_filter?: boolean;
   timezone?: string;
   summary: UsageSummary;
   performance: UsagePerformance;

@@ -2794,6 +2794,13 @@
     "no": "No"
   },
   "usage_stats": {
+    "all_error_origins": "모든 오류 출처",
+    "error_origins": {
+      "upstream_response": "업스트림 응답 오류",
+      "upstream_connection": "업스트림 연결 실패",
+      "proxy_processing": "프록시 처리 오류",
+      "unknown": "알 수 없는 출처"
+    },
     "eyebrow": "Persistent billing analytics",
     "title": "Usage Statistics",
     "subtitle": "Track account, model, token, and USD cost from request-time pricing snapshots.",

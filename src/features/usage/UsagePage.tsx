@@ -42,7 +42,14 @@ import styles from './UsagePage.module.scss';
 
 type DimensionFilters = Pick<
   UsageFilters,
-  'provider' | 'model' | 'account' | 'api_key' | 'pool' | 'status' | 'include_warmup'
+  | 'provider'
+  | 'model'
+  | 'account'
+  | 'api_key'
+  | 'pool'
+  | 'status'
+  | 'error_origin'
+  | 'include_warmup'
 >;
 const emptyRecords: UsageRecordsResponse = {
   items: [],
@@ -204,11 +211,13 @@ export function UsagePage() {
       return {
         key,
         label:
-          key === 'status'
-            ? t(`usage_stats.${value === 'failed' ? 'failed' : 'succeeded'}`)
-            : (optionKey
-                ? data?.filters[optionKey].find((option) => option.value === value)?.label
-                : null) || String(value),
+          key === 'error_origin'
+            ? t(`usage_stats.error_origins.${value}`)
+            : key === 'status'
+              ? t(`usage_stats.${value === 'failed' ? 'failed' : 'succeeded'}`)
+              : (optionKey
+                  ? data?.filters[optionKey].find((option) => option.value === value)?.label
+                  : null) || String(value),
       };
     });
   const canShowRecords =
@@ -322,6 +331,20 @@ export function UsagePage() {
               size="sm"
             />
           ))}
+          {data?.error_origin_filter && (
+            <Select
+              value={filters.error_origin || ''}
+              ariaLabel={t('usage_stats.all_error_origins')}
+              options={[
+                { value: '', label: t('usage_stats.all_error_origins') },
+                ...['upstream_response', 'upstream_connection', 'proxy_processing', 'unknown'].map(
+                  (value) => ({ value, label: t(`usage_stats.error_origins.${value}`) })
+                ),
+              ]}
+              onChange={(value) => changeFilter('error_origin', value)}
+              size="sm"
+            />
+          )}
           <label className={styles.warmupToggle}>
             <input
               type="checkbox"

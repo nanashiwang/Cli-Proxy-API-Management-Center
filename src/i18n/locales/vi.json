@@ -2796,6 +2796,13 @@
     "no": "No"
   },
   "usage_stats": {
+    "all_error_origins": "Mọi nguồn lỗi",
+    "error_origins": {
+      "upstream_response": "Phản hồi từ nhà cung cấp",
+      "upstream_connection": "Kết nối đến nhà cung cấp",
+      "proxy_processing": "Lỗi xử lý tại proxy",
+      "unknown": "Chưa rõ nguồn lỗi"
+    },
     "eyebrow": "Persistent billing analytics",
     "title": "Usage Statistics",
     "subtitle": "Track account, model, token, and USD cost from request-time pricing snapshots.",

@@ -2794,6 +2794,13 @@
     "no": "No"
   },
   "usage_stats": {
+    "all_error_origins": "Tüm hata kaynakları",
+    "error_origins": {
+      "upstream_response": "Sağlayıcı yanıtı",
+      "upstream_connection": "Sağlayıcı bağlantısı",
+      "proxy_processing": "Proxy işleme hatası",
+      "unknown": "Bilinmeyen kaynak"
+    },
     "eyebrow": "Persistent billing analytics",
     "title": "Usage Statistics",
     "subtitle": "Track account, model, token, and USD cost from request-time pricing snapshots.",

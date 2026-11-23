@@ -33,3 +33,5 @@ Upstream integration uses v8 grouped providers under `/config/api-keys/:family`,
 
 Quota refresh keeps upstream raw response handling and personal next-check deadlines, isolated by connection generation. Bulk credential refresh uses the upstream result dialog. The quota guard remains in the advanced configuration section and persists top-level `quota-guard`; the removed legacy quota-switch controls are superseded by v8 routing.
 The auth-file supported-model dialog edits per-file exclusions through field-only PATCH, with independent copy/search controls and save/discard handling. Candidates combine registered models with persisted exact exclusions so users can restore filtered models. Shared wildcard semantics and global OAuth locks remain distinct; wildcard rules are editable without inventing account support from the provider catalog. Runtime credentials remain read-only.
+
+The usage page enables error-origin filtering when the v8 dashboard advertises support. The cost cell distinguishes Fast and Ultrafast using the request-time billing snapshot.

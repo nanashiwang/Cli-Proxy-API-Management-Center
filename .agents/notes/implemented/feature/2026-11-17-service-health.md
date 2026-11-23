@@ -21,3 +21,5 @@ Passed rendering regressions for service versus overall rate, no service samples
 ## Consequences
 
 Retained usage records do not establish complete upstream attempt history. Show this scope in the UI. Existing usage decisions remain applicable; none is superseded.
+
+The dashboard advertises error-origin filtering. The same query selects both totals and rows. Older servers omit the capability. Render the stored error origin, including unknown for historical failures. Ultrafast and Fast badges read the pricing snapshot or the reported tier, preserving response downgrades.

@@ -2801,6 +2801,13 @@
     "no": "否"
   },
   "usage_stats": {
+    "all_error_origins": "全部错误来源",
+    "error_origins": {
+      "upstream_response": "上游返回错误",
+      "upstream_connection": "上游连接失败",
+      "proxy_processing": "代理处理错误",
+      "unknown": "来源未知"
+    },
     "eyebrow": "持久化计费分析",
     "title": "使用统计",
     "subtitle": "按请求时价格快照统计账号、模型、Token 与美元费用。",

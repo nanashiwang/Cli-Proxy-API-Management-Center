@@ -1,12 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import type { UsageRecord } from '@/types/usage';
-import { usageCostRows, usageRecordedCost, usageHasFastBilling } from './costPresentation';
+import { usageCostRows, usageRecordedCost, usageBillingSpeed } from './costPresentation';
 import { formatUSD } from './utils';
 import { UsageInfoPopover } from './UsageInfoPopover';
 import styles from './UsageCostCell.module.scss';
 
 export function UsageCostCell({ record }: { record: UsageRecord }) {
   const { t, i18n } = useTranslation();
+  const speed = usageBillingSpeed(record);
   const pricing = record.billing?.pricing;
   const cost = usageRecordedCost(record);
   const format = (value: number | null) => (value === null ? '—' : formatUSD(value));
@@ -16,13 +17,13 @@ export function UsageCostCell({ record }: { record: UsageRecord }) {
     <div className={styles.cell}>
       <div className={styles.amount}>
         <span>{total}</span>
-        {usageHasFastBilling(record) && (
+        {speed && (
           <span
             className={styles.fastBadge}
-            title={t('usage_stats.fast_billing')}
-            aria-label={t('usage_stats.fast_billing')}
+            title={speed === 'Fast' ? t('usage_stats.fast_billing') : 'Ultrafast'}
+            aria-label={speed === 'Fast' ? t('usage_stats.fast_billing') : 'Ultrafast'}
           >
-            ⚡ Fast
+            {speed === 'Fast' ? '⚡' : '⚡⚡'} {speed}
           </span>
         )}
         {!record.billing?.priced && <small>{t('usage_stats.unpriced')}</small>}

@@ -104,6 +104,9 @@ export function UsageRecordsTable({
               >
                 {row.status_code || t(row.failed ? 'usage_stats.failed' : 'usage_stats.succeeded')}
               </span>
+              {row.failed && row.error_origin && (
+                <small>{t(`usage_stats.error_origins.${row.error_origin}`)}</small>
+              )}
               {!row.generate && <span className={styles.muted}>{t('usage_stats.warmup')}</span>}
             </div>
           </td>
